@@ -1,9 +1,9 @@
 package sparktemplate.clustering;
 
 import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
-import org.apache.spark.ml.feature.Normalizer;
-import org.apache.spark.ml.feature.StringIndexer;
+import org.apache.spark.ml.feature.*;
 import org.apache.spark.ml.linalg.VectorUDT;
 import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.Dataset;
@@ -25,7 +25,13 @@ import java.util.List;
  */
 public class DataPrepare {
 
-    private static final boolean removeStrings = true; // remove all columns with String type
+    private DataModels dataModels;
+
+    public DataPrepare() {
+        this.dataModels = new DataModels();
+    }
+
+    private static final boolean removeStrings = false; // remove all columns with String type
 
     static Dataset<Row> createDataSet(Row row, StructType structType, SparkSession sparkSession) {
         List<Row> rows = new ArrayList<>();
@@ -36,7 +42,7 @@ public class DataPrepare {
         return df2;
     }
 
-    public static Dataset<Row> prepareDataset(Dataset<Row> df) {
+    public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle) {
 
         Dataset<Row> prepared;
 
@@ -92,7 +98,14 @@ public class DataPrepare {
                 // set stages to pipeline
                 Pipeline pipeline = new Pipeline().setStages(pipelineStages);
                 // fit and transform, drop old columns
-                Dataset<Row> indexed = pipeline.fit(df).transform(df).drop(df3.columns());
+                PipelineModel pipelineModel;
+                if (isSingle) {
+                    pipelineModel = this.dataModels.getPipelineModel();
+                } else {
+                    pipelineModel = pipeline.fit(df);
+                    this.dataModels.setPipelineModel(pipelineModel);
+                }
+                Dataset<Row> indexed = pipelineModel.transform(df).drop(df3.columns());
                 //indexed.show();
 
                 prepared = indexed.drop(otherArray);
@@ -102,22 +115,62 @@ public class DataPrepare {
             prepared = df.drop(otherArray);
         }
 
-        StructType schema = new StructType(new StructField[]{
-                // new StructField("label", DataTypes.StringType, false, Metadata.empty()),
-                new StructField("features", new VectorUDT(), false, Metadata.empty())
-        });
-        ExpressionEncoder<Row> encoder = RowEncoder.apply(schema);
+
+        // TRANSFORM DATASET OF ROWS TO DATASET OF ROW(VECTOR)
 
 
-        Dataset<Row> vectorsData = prepared.map(s -> {
+        // EXAMPLE 1 /////////////////////////////////////////////////////////////////////////
+//        StructType schema = new StructType(new StructField[]{
+//                // new StructField("label", DataTypes.StringType, false, Metadata.empty()),
+//                new StructField("features", new VectorUDT(), false, Metadata.empty())
+//        });
+//        ExpressionEncoder<Row> encoder = RowEncoder.apply(schema);
+//        ///
+//        Dataset<Row> vectorsData = prepared.map(s -> {
+//            double[] doubles = new double[s.size()];
+//            for (int i = 0; i < doubles.length; i++) {
+//                doubles[i] = Double.parseDouble(String.valueOf(s.get(i)).trim());
+//            }
+//            return RowFactory.create(Vectors.dense(doubles));
+//        }, encoder);
+        ///////////////////////////////////////////////////////////////////////////////////////////
 
-            double[] doubles = new double[s.size()];
-            for (int i = 0; i < doubles.length; i++) {
-                doubles[i] = Double.parseDouble(String.valueOf(s.get(i)).trim());
-            }
-            return RowFactory.create(Vectors.dense(doubles));
 
-        }, encoder);
+        ///  ONE-HOT-ENCODER
+        String[] afterStringIndexer = prepared.drop(df.columns()).columns();
+        String[] afterStringIndexer2 = new String[afterStringIndexer.length];
+
+        for (int i = 0; i < afterStringIndexer2.length; i++) {
+            afterStringIndexer2[i] = new StringBuffer().append(afterStringIndexer[i]).append("*").toString();
+        }
+
+        OneHotEncoderEstimator encoderHot = new OneHotEncoderEstimator()
+                .setInputCols(afterStringIndexer)
+                .setOutputCols(afterStringIndexer2);
+
+        /// MODEL
+        OneHotEncoderModel oneHotEncoderModel;
+
+        if (isSingle) {
+            oneHotEncoderModel = this.dataModels.getOneHotEncoderModel();
+        } else {
+            oneHotEncoderModel = encoderHot.fit(prepared);
+            this.dataModels.setOneHotEncoderModel(oneHotEncoderModel);
+        }
+
+        Dataset<Row> encoded = oneHotEncoderModel.transform(prepared).drop(afterStringIndexer);
+        encoded.show();
+        //////////////////////////////////////////////////////////////////////////////////////
+
+
+        // EXAMPLE 2 BETTER/////////////////////////////////////////////////////////////////////////////
+        VectorAssembler assembler = new VectorAssembler()
+                .setInputCols(encoded.columns())
+                .setOutputCol("features");
+        Dataset<Row> output = assembler.transform(encoded).drop(encoded.columns());
+        output.show();
+        //////////////////////////////////////////////////////////////////////////////////////////
+
 
         // Normalize each Vector using $L^1$ norm.
         Normalizer normalizer = new Normalizer()
@@ -126,6 +179,6 @@ public class DataPrepare {
                 .setP(1.0);
 
         //l1NormData.show();
-        return normalizer.transform(vectorsData);
+        return normalizer.transform(output);
     }
 }

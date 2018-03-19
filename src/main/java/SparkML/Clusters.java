@@ -35,64 +35,64 @@ import java.util.List;
  */
 public class Clusters {
     public static void main(String[] args) {
-        Logger.getLogger("org").setLevel(Level.OFF);
-        Logger.getLogger("akka").setLevel(Level.OFF);
-
-        Logger.getLogger("INFO").setLevel(Level.OFF);
-
-        SparkConf conf = new SparkConf()
-                .setAppName("Spark_FP_GROWTH")
-                .set("spark.driver.allowMultipleContexts", "true")
-                .setMaster("local");
-        SparkContext context = new SparkContext(conf);
-        SparkSession sparkSession = new SparkSession(context);
-
-
-        String data_path = "data/mllib/iris.csv"; //"data/mllib/kddcup_train.txt.gz";   //"data/mllib/kdd_10_proc.txt"
-        Dataset<Row> df = sparkSession.read()
-                .format("com.databricks.spark.csv")
-                .option("header", true)
-                .option("inferSchema", true)
-                .load(data_path);
-                //.limit(1000);
-
-
-
-
-
-
-        // Loads data.
-        Dataset<Row> dataset = DataPrepare.prepareDataset(df);//sparkSession.read().format("libsvm").load("data/mllib/sample_kmeans_data.txt");
-        //dataset.show();
-        System.out.println(Arrays.toString(dataset.schema().fields()));
-
-        // Trains a k-means model.
-        KMeans kmeans = new KMeans().setK(4).setSeed(10L).setFeaturesCol("normFeatures");
-        KMeansModel model = kmeans.fit(dataset);
-
-        // Make predictions
-        Dataset<Row> predictions = model.transform(dataset);
-        predictions.show(10);
-        System.out.println("========== "+predictions.first().get(predictions.columns().length-1)); // SKUPIENIE PIERWSZEGO WIERSZA
-
-        // Evaluate clustering by computing Silhouette score
-        ClusteringEvaluator evaluator = new ClusteringEvaluator();
-
-        double silhouette = evaluator.evaluate(predictions);
-        System.out.println("Silhouette with squared euclidean distance = " + silhouette);
-
-        // Shows the result.
-        Vector[] centers = model.clusterCenters();
-        System.out.println("Cluster Centers: "+centers.length); // LICZBA SKUPIEN
-        for (Vector center : centers) {
-            System.out.println(center);
-        }
-
-
-        predictions.createOrReplaceTempView("clusters");
-        sparkSession.sql("select prediction, count(*) from clusters group by prediction").show();
-
-        predictions.filter(predictions.col("prediction").equalTo(3)).show(30);
+//        Logger.getLogger("org").setLevel(Level.OFF);
+//        Logger.getLogger("akka").setLevel(Level.OFF);
+//
+//        Logger.getLogger("INFO").setLevel(Level.OFF);
+//
+//        SparkConf conf = new SparkConf()
+//                .setAppName("Spark_FP_GROWTH")
+//                .set("spark.driver.allowMultipleContexts", "true")
+//                .setMaster("local");
+//        SparkContext context = new SparkContext(conf);
+//        SparkSession sparkSession = new SparkSession(context);
+//
+//
+//        String data_path = "data/mllib/iris.csv"; //"data/mllib/kddcup_train.txt.gz";   //"data/mllib/kdd_10_proc.txt"
+//        Dataset<Row> df = sparkSession.read()
+//                .format("com.databricks.spark.csv")
+//                .option("header", true)
+//                .option("inferSchema", true)
+//                .load(data_path);
+//                //.limit(1000);
+//
+//
+//
+//
+//
+//
+//        // Loads data.
+//        Dataset<Row> dataset = DataPrepare.prepareDataset(df);//sparkSession.read().format("libsvm").load("data/mllib/sample_kmeans_data.txt");
+//        //dataset.show();
+//        System.out.println(Arrays.toString(dataset.schema().fields()));
+//
+//        // Trains a k-means model.
+//        KMeans kmeans = new KMeans().setK(4).setSeed(10L).setFeaturesCol("normFeatures");
+//        KMeansModel model = kmeans.fit(dataset);
+//
+//        // Make predictions
+//        Dataset<Row> predictions = model.transform(dataset);
+//        predictions.show(10);
+//        System.out.println("========== "+predictions.first().get(predictions.columns().length-1)); // SKUPIENIE PIERWSZEGO WIERSZA
+//
+//        // Evaluate clustering by computing Silhouette score
+//        ClusteringEvaluator evaluator = new ClusteringEvaluator();
+//
+//        double silhouette = evaluator.evaluate(predictions);
+//        System.out.println("Silhouette with squared euclidean distance = " + silhouette);
+//
+//        // Shows the result.
+//        Vector[] centers = model.clusterCenters();
+//        System.out.println("Cluster Centers: "+centers.length); // LICZBA SKUPIEN
+//        for (Vector center : centers) {
+//            System.out.println(center);
+//        }
+//
+//
+//        predictions.createOrReplaceTempView("clusters");
+//        sparkSession.sql("select prediction, count(*) from clusters group by prediction").show();
+//
+//        predictions.filter(predictions.col("prediction").equalTo(3)).show(30);
 
     }
 

@@ -21,48 +21,51 @@ import java.util.Arrays;
  */
 public class KMean implements AClustering {
 
+
     private KMeans kmeans;
     private KMeansModel model;
     private Dataset<Row> predictions;
     public SparkSession sparkSession;
     private final String prediciton = "prediction";
+    public DataPrepare dataPrepare;
 
     public KMean(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
+        this.dataPrepare = new DataPrepare();
     }
 
     @Override
     public void buildClusterer(MemDataSet dataSet, ASettings settings) {
-        buildCluster(DataPrepare.prepareDataset(dataSet.getDs()));
+        buildCluster(dataPrepare.prepareDataset(dataSet.getDs(), false));
     }
 
     @Override
     public void buildClusterer(MemDataSet dataSet) {
-        buildCluster(DataPrepare.prepareDataset(dataSet.getDs()));
+        buildCluster(dataPrepare.prepareDataset(dataSet.getDs(), false));
     }
 
     @Override
     public void buildClusterer(DBDataSet dataSet, ASettings settings) {
-        buildCluster(DataPrepare.prepareDataset(dataSet.getDs()));
+        buildCluster(dataPrepare.prepareDataset(dataSet.getDs(), false));
     }
 
     @Override
     public void buildClusterer(DBDataSet dataSet) {
-        buildCluster(DataPrepare.prepareDataset(dataSet.getDs()));
+        buildCluster(dataPrepare.prepareDataset(dataSet.getDs(), false));
     }
 
     @Override
     public int clusterRecord(DataRecord dataRecord) {
 
-        Dataset<Row> single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-        Dataset<Row> single_prepared = DataPrepare.prepareDataset(single);
+        Dataset<Row> single = dataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
+        Dataset<Row> single_prepared = dataPrepare.prepareDataset(single,true);
         Dataset<Row> prediction = model.transform(single_prepared);
         return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
     }
 
     @Override
     public Cluster getCluster(int index) {
-        Cluster cluster = new Cluster(sparkSession);
+        Cluster cluster = new Cluster(sparkSession, this.dataPrepare);
         cluster.initCluster(predictions.filter(predictions.col(prediciton).equalTo(index)));
         return cluster;
     }
@@ -93,6 +96,8 @@ public class KMean implements AClustering {
         // Make predictions
         Dataset<Row> predictions = model.transform(ds);
 
+        predictions.show(false);
+        predictions.printSchema();
 
         this.kmeans = kmeans;
         this.model = model;

@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.ml.feature.StringIndexer;
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.*;
@@ -31,7 +32,7 @@ public class Testy {
         SparkSession sparkSession = new SparkSession(context);
        // JavaSparkContext javaSparkContext = new JavaSparkContext(conf);
 
-        String data_path = "data/mllib/kdd_10_proc.txt";
+        String data_path = "data/mllib/koszyk.txt";
         Dataset<Row> df = sparkSession.read()
                 .format("com.databricks.spark.csv")
                 .option("header", true)
@@ -43,24 +44,23 @@ public class Testy {
         System.out.println(df.count());
 
 
-
-
-
-        List<Row> list = new ArrayList<>();
-        list.add(RowFactory.create());
-
-
-
+        StringIndexer stringIndexer = new StringIndexer();
+        stringIndexer.setInputCol("kolor").setOutputCol("kolor2");
+        stringIndexer.setHandleInvalid("keep");
+        stringIndexer.fit(df).transform(df).show();
 
 
 
 
 
-         //ZLICZANIE UNIKALNYCH WARTOSCI W KOLUMNACH
-        String[] cols = df.columns();
-        for (String col: cols) {
-            System.out.println(col+" : "+df.select(col).distinct().count());
-        }
+
+
+
+//         //ZLICZANIE UNIKALNYCH WARTOSCI W KOLUMNACH
+//        String[] cols = df.columns();
+//        for (String col: cols) {
+//            System.out.println(col+" : "+df.select(col).distinct().count());
+//        }
 
 
 

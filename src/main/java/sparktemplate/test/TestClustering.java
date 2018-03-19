@@ -37,7 +37,7 @@ public class TestClustering {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path =  "data/mllib/kdd_10_proc.txt"; //"data/mllib/iris.csv";
+        String path =  "data/mllib/kdd.txt"; // kdd_10_proc.txt"; //"data/mllib/iris.csv";
 
         System.out.println("// TEST MemDataSet");
         MemDataSet memDataSet = new MemDataSet(sparkSession);
@@ -51,6 +51,8 @@ public class TestClustering {
         kMean.buildClusterer(memDataSet);
         System.out.println("clusterRecord: " + kMean.clusterRecord(dataRecord4) + "\ngetNoCluster: " + kMean.getNoCluster());
         //System.out.println(kMean.getCluster(3).checkRecord(dataRecord4)); // PROBLEM
+
+
         for (int i = 0; i < kMean.getNoCluster(); i++) {
             System.out.println(" __ " + kMean.getCluster(i).checkRecord(dataRecord4));
         }

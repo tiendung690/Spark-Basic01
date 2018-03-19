@@ -13,10 +13,12 @@ public class Cluster {
     //Tutaj struktury danych reprezentujace skupienie
     private Dataset<Row> ds;
     private SparkSession sparkSession;
+    private DataPrepare dataPrepare;
 
-    Cluster(SparkSession sparkSession) {
+    Cluster(SparkSession sparkSession, DataPrepare dataPrepare) {
         //Wstepna inicjacja skupienia
         this.sparkSession = sparkSession;
+        this.dataPrepare = dataPrepare;
     }
 
     void initCluster(Dataset<Row> ds) {
@@ -27,7 +29,8 @@ public class Cluster {
     //  PROBLEM ?????? kazdy DataRecord jest konwertowany w przypadku petli kilka razy, lepiej raz zamienic i sprawdzac niz konwersja w tej metodzie
     public boolean checkRecord(DataRecord record) {
         //Ta metoda sprawdza, czy podany rekord znajduje się w skupieniu
-        Dataset<Row> single = DataPrepare.prepareDataset(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession));
+        //Dataset<Row> single = DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession);
+        Dataset<Row> single = this.dataPrepare.prepareDataset(this.dataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true);
         final Object obj = single.first().get(0);
         return ds.filter(value -> value.get(0).equals(obj)).count() > 0;
 
