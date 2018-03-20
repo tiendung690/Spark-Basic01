@@ -171,25 +171,53 @@ public class DataPrepare {
 
     public static Dataset<Row> fillMissingValues(Dataset<Row> ds) {
 
-        // find symbolical and numerical
-        List<String> listStr = new ArrayList();
-        List<Integer> listStrIndex = new ArrayList();
-        List<String> listNum = new ArrayList();
+        // find symbolical and numerical values in dataset
+        List<String> listStr = new ArrayList(); // column name
+        List<Integer> listStrIndex = new ArrayList(); // column index
+        List<String> listNum = new ArrayList(); // column name
+        List<Integer> listNumIndex = new ArrayList(); // column index
 
         int ii = 0;
         for (StructField o : ds.schema().fields()) {
-            if (o.dataType().equals(DataTypes.StringType)) {
+            if (o.dataType().equals(DataTypes.StringType) || o.dataType().equals(DataTypes.DateType)) {
                 listStr.add(o.name());
                 listStrIndex.add(ii);
                 ii++;
-            } else {
+            } else if (o.dataType().equals(DataTypes.IntegerType)
+                    || o.dataType().equals(DataTypes.DoubleType)
+                    || o.dataType().equals(DataTypes.StringType)
+                    || o.dataType().equals(DataTypes.FloatType)
+                    || o.dataType().equals(DataTypes.LongType)
+                    || o.dataType().equals(DataTypes.ShortType)){
                 listNum.add(o.name());
+                listNumIndex.add(ii);
+                ii++;
+            } else {
                 ii++;
             }
         }
 
+        // K - column, V - replacement value
+        Map<String, Object> mapReplacementValues = new HashMap<>();
 
-        Map<String, Object> map = new HashMap<>();
+        ///////////////////////  NUMERICAL VALUES
+
+        // count dataset values (accept nulls)
+        long ss = ds.map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
+
+        for (int i = 0; i < listNumIndex.size(); i++) {
+
+            int colId = listNumIndex.get(i);
+
+            Double sum = ds.filter(value -> !value.isNullAt(colId))
+                    .map(value -> Double.parseDouble(value.get(colId).toString()), Encoders.DOUBLE())
+                    .reduce((v1, v2) -> v1 + v2);
+
+            Double avg = sum/ss;
+            mapReplacementValues.put(listNum.get(i), avg);
+        }
+
+        /////////////////////////////  SYMBOLICAL VALUES
 
         for (int i = 0; i < listStrIndex.size(); i++) {
 
@@ -198,30 +226,27 @@ public class DataPrepare {
             Dataset<String> words = ds
                     .filter(value -> !value.isNullAt(colId))
                     .flatMap(s -> Arrays.asList(s.get(colId).toString().toLowerCase().split(" ")).iterator(), Encoders.STRING())
-                    .filter(s -> !s.isEmpty())
+                    //.filter(s -> !s.isEmpty())
                     .coalesce(1); //one partition (parallelism level)
 
-            Dataset<Row> t2 = words.groupBy("value") //<k, iter(V)>
+            // words.show();
+
+            Dataset<Row> t2 = words.groupBy("value")
                     .count()
                     .toDF("word", "count");
 
             t2 = t2.sort(functions.desc("count"));
-            t2.show();
 
-            String comm = (String) t2.first().get(0);
-            map.put(listStr.get(i), comm);
+            String commonValue = (String) t2.first().get(0);
+            mapReplacementValues.put(listStr.get(i), commonValue);
         }
 
+        System.out.println("Replacement values (column, value) :"+Arrays.asList(mapReplacementValues));
 
-        //  (wartosc, kolumna)
-        //ds.na().fill(comm, new String[]{"kolor"}).show();
-        Dataset<Row> dsWithoutNulls = ds.na().fill(map).na().fill(0);
-        // null sting to val
-        // ds.na().fill("sasas").show();
-        // null num to val
-        // ds.na().fill(0).show();
-
+        // Fill missing values
+        Dataset<Row> dsWithoutNulls = ds.na().fill(mapReplacementValues);//.na().fill(mapStr);
         dsWithoutNulls.show();
-        return dsWithoutNulls;
+        return  dsWithoutNulls;
+
     }
 }
