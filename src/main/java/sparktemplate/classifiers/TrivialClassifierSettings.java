@@ -2,6 +2,9 @@ package sparktemplate.classifiers;
 
 import sparktemplate.ASettings;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 //Implementacja zbioru ustawien (opcji) dla klasyfikatora TrivialClassifier
 
@@ -34,17 +37,9 @@ public class TrivialClassifierSettings implements ASettings
 
 
     @Override
-    public boolean hasKey(String key) {
-        return false;
-    }
-
-    @Override
-    public String getValue(String key) {
-        return null;
-    }
-
-    @Override
-    public Object setting(String key, String value) {
-        return null;
+    public Map getMap() {
+        Map<String, String> map = new HashMap();
+        map.put("type", getParameter2());
+        return map;
     }
 }
