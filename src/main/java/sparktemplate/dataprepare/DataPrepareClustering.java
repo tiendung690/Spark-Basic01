@@ -1,19 +1,13 @@
-package sparktemplate.clustering;
+package sparktemplate.dataprepare;
 
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.feature.*;
-import org.apache.spark.ml.linalg.VectorUDT;
-import org.apache.spark.ml.linalg.Vectors;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
-import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
@@ -23,24 +17,15 @@ import java.util.List;
 /**
  * Created by as on 12.03.2018.
  */
-public class DataPrepare {
+public class DataPrepareClustering {
 
-    private DataModels dataModels;
+    private DataModelsClustering dataModelsClustering;
 
-    public DataPrepare() {
-        this.dataModels = new DataModels();
+    public DataPrepareClustering() {
+        this.dataModelsClustering = new DataModelsClustering();
     }
 
     private static final boolean removeStrings = false; // remove all columns with String type
-
-    static Dataset<Row> createDataSet(Row row, StructType structType, SparkSession sparkSession) {
-        List<Row> rows = new ArrayList<>();
-        rows.add(row);
-        Dataset<Row> df2 = sparkSession.createDataFrame(rows, structType);
-        //df2.printSchema();
-        //df2.show();
-        return df2;
-    }
 
     public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle) {
 
@@ -58,12 +43,12 @@ public class DataPrepare {
                     && !o.dataType().equals(DataTypes.IntegerType)
                     && !o.dataType().equals(DataTypes.DoubleType)) {
                 listOther.add(o.name());
-                System.out.println("Other type: " + o.name());
+                //System.out.println("Other type: " + o.name());
             }
         }
 
-        System.out.println("StringType in Dataset: " + listString.toString());
-        System.out.println("Other DataTypes in Dataset (except int,double,string): " + listOther.toString());
+        //System.out.println("StringType in Dataset: " + listString.toString());
+        //System.out.println("Other DataTypes in Dataset (except int,double,string): " + listOther.toString());
         String[] stringArray = listString.toArray(new String[0]);
         String[] otherArray = listOther.toArray(new String[0]);
 
@@ -100,10 +85,10 @@ public class DataPrepare {
                 // fit and transform, drop old columns
                 PipelineModel pipelineModel;
                 if (isSingle) {
-                    pipelineModel = this.dataModels.getPipelineModel();
+                    pipelineModel = this.dataModelsClustering.getPipelineModel();
                 } else {
                     pipelineModel = pipeline.fit(df);
-                    this.dataModels.setPipelineModel(pipelineModel);
+                    this.dataModelsClustering.setPipelineModel(pipelineModel);
                 }
                 Dataset<Row> indexed = pipelineModel.transform(df).drop(df3.columns());
                 //indexed.show();
@@ -111,7 +96,7 @@ public class DataPrepare {
                 prepared = indexed.drop(otherArray);
             }
         } else {
-            System.out.println("No StringType in Dataset");
+            //System.out.println("No StringType in Dataset");
             prepared = df.drop(otherArray);
         }
 
@@ -152,14 +137,14 @@ public class DataPrepare {
         OneHotEncoderModel oneHotEncoderModel;
 
         if (isSingle) {
-            oneHotEncoderModel = this.dataModels.getOneHotEncoderModel();
+            oneHotEncoderModel = this.dataModelsClustering.getOneHotEncoderModel();
         } else {
             oneHotEncoderModel = encoderHot.fit(prepared);
-            this.dataModels.setOneHotEncoderModel(oneHotEncoderModel);
+            this.dataModelsClustering.setOneHotEncoderModel(oneHotEncoderModel);
         }
 
         Dataset<Row> encoded = oneHotEncoderModel.transform(prepared).drop(afterStringIndexer);
-        encoded.show();
+        //encoded.show();
         //////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -168,7 +153,7 @@ public class DataPrepare {
                 .setInputCols(encoded.columns())
                 .setOutputCol("features");
         Dataset<Row> output = assembler.transform(encoded).drop(encoded.columns());
-        output.show();
+        //output.show();
         //////////////////////////////////////////////////////////////////////////////////////////
 
 

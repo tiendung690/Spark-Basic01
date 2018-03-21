@@ -10,6 +10,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
 import sparktemplate.DataRecord;
+import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
@@ -43,7 +44,7 @@ public class TrivialLogisticRegression implements AClassifier {
     public String classify(DataRecord dataRecord) {
 
         // create dataset
-        Dataset<Row> singleRecord = DataPrepareClassification.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), this.sparkSession);
+        Dataset<Row> singleRecord = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), this.sparkSession);
 
         // prepare dataset
         Dataset<Row> singleRecordPrepared = DataPrepareClassification.prepareLabeledPoint(singleRecord);
@@ -70,7 +71,7 @@ public class TrivialLogisticRegression implements AClassifier {
 
     private PipelineModel buildPipelineModel(Dataset<Row> trainingData) {
 
-        Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepareClassification.fillMissingValues(trainingData));
+        Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();
 
         // Index labels, adding metadata to the label column.
@@ -114,7 +115,7 @@ public class TrivialLogisticRegression implements AClassifier {
     public Dataset<Row> makePredictions(MemDataSet memDataSet){
 
         // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepareClassification.fillMissingValues(memDataSet.getDs()));
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(memDataSet.getDs()));
         // make predictions
         Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
         //predictions.show(5);
@@ -123,7 +124,7 @@ public class TrivialLogisticRegression implements AClassifier {
 
     public Dataset<Row> makePredictions(DBDataSet dbDataSet){
         // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepareClassification.fillMissingValues(dbDataSet.getDs()));
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
         // Make predictions
         Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
         //predictions.show(5);

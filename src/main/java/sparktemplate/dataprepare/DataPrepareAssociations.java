@@ -1,4 +1,4 @@
-package sparktemplate.association;
+package sparktemplate.dataprepare;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.*;
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by as on 13.03.2018.
  */
-public class DataPrepare {
+public class DataPrepareAssociations {
 
     private static final boolean removeNumerics = true; // remove all columns with numeric values
     private static final boolean removeNull = true; // remove all null columns in row

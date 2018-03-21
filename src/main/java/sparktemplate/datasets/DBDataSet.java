@@ -10,7 +10,6 @@ import sparktemplate.DataRecord;
 import java.sql.*;
 
 
-
 /**
  * Klasa  <tt>DBDataSet</tt> reprezentuje zbior daych przechowywanych w bazie danych
  *
@@ -23,9 +22,10 @@ public class DBDataSet {
     //Typy atrybutow prosze samemu ustalic, ale polecam tak jak w API WEKA
 
     public SparkSession sparkSession;
-    public Dataset<Row> ds;
+    private Dataset<Row> ds;
     private String url, user, password, table;
-    private final String driver = "com.mysql.jdbc.Driver";
+    private final String driver = "org.postgresql.Driver";
+    private final String driver2 = "com.mysql.jdbc.Driver";
     private ResultSet rs;
     public Statement st;
 
@@ -63,7 +63,7 @@ public class DBDataSet {
         try {
             Class.forName(driver);
             Connection conn = DriverManager.getConnection(url, user, password);
-            String query = "SELECT * FROM "+table+"";
+            String query = "SELECT * FROM " + table + "";
             this.st = conn.createStatement();
             this.rs = st.executeQuery(query);
         } catch (Exception e) {
@@ -92,7 +92,7 @@ public class DBDataSet {
 
     public DataRecord getFirstRecord() //Zwrocenie informacji o pierwszym wierszu danych
     {
-        return new DataRecord(ds.first(),ds.schema());
+        return new DataRecord(ds.first(), ds.schema());
     }
 
     public DataRecord getNextRecord() //Zwrocenie informacji o nastepnym wierszu danych
@@ -100,10 +100,10 @@ public class DBDataSet {
         //Uwaga: Jeśli juz nie ma nastepnego powinien zwrocic null
 
         try {
-            if(rs.next()){
+            if (rs.next()) {
                 Row row = RowFactory.create(JdbcRDD.resultSetToObjectArray(rs));
-                return new DataRecord(row,ds.schema());
-            }else{
+                return new DataRecord(row, ds.schema());
+            } else {
                 return null;
             }
         } catch (SQLException e) {

@@ -4,17 +4,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.fpm.FPGrowth;
 import org.apache.spark.ml.fpm.FPGrowthModel;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
-import org.apache.spark.sql.catalyst.encoders.RowEncoder;
-import org.apache.spark.sql.types.*;
-import sparktemplate.association.DataPrepare;
-
-import java.util.ArrayList;
-import java.util.List;
+import sparktemplate.dataprepare.DataPrepareAssociations;
 
 /**
  * Created by as on 11.03.2018.
@@ -53,7 +46,7 @@ public class AssocRules {
         System.out.println(df.count());
         //df.randomSplit(new double[]{0.2,0.8})[0].limit(1000);
 
-        Dataset<Row> df2 = DataPrepare.prepareDataSet(df, sparkSession);
+        Dataset<Row> df2 = DataPrepareAssociations.prepareDataSet(df, sparkSession);
 
 //        // find columns with StringType from dataset
 //        List<String> listString = new ArrayList<>();

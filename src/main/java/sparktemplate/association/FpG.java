@@ -7,6 +7,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.dataprepare.DataPrepareAssociations;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -27,36 +28,36 @@ public class FpG implements AAssociations {
 
     @Override
     public void buildAssociations(MemDataSet dataSet, ASettings settings) {
-        System.out.println("settings.getValue "+settings.getValue("k1"));
-        System.out.println("settings.hasKey "+settings.hasKey("k1"));
-        buildAssociations(DataPrepare.prepareDataSet(dataSet.getDs(), sparkSession));
+        // System.out.println("settings.getValue "+settings.getValue("k1"));
+        // System.out.println("settings.hasKey "+settings.hasKey("k1"));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
     }
 
     @Override
     public void buildAssociations(MemDataSet dataSet) {
-        buildAssociations(DataPrepare.prepareDataSet(dataSet.getDs(), sparkSession));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
     }
 
     @Override
     public void buildAssociations(DBDataSet dataSet, ASettings settings) {
-        buildAssociations(DataPrepare.prepareDataSet(dataSet.getDs(), sparkSession));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
     }
 
     @Override
     public void buildAssociations(DBDataSet dataSet) {
-        buildAssociations(DataPrepare.prepareDataSet(dataSet.getDs(), sparkSession));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
     }
 
     @Override
     public void saveAssociationRules(String fileName) throws IOException {
         this.assocRules.write().mode(SaveMode.Overwrite).json(fileName);
-        System.out.println("saveAssociationRules: "+fileName);
+        System.out.println("saveAssociationRules: " + fileName);
     }
 
     @Override
     public void loadAssociationRules(String fileName) throws IOException {
         this.assocRules = sparkSession.read().json(fileName);
-        System.out.println("loadAssociationRules: "+fileName);
+        System.out.println("loadAssociationRules: " + fileName);
     }
 
     private void buildAssociations(Dataset<Row> dataset) {

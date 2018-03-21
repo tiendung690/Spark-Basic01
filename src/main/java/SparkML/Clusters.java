@@ -1,35 +1,5 @@
 package SparkML;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.ml.Pipeline;
-import org.apache.spark.ml.PipelineStage;
-import org.apache.spark.ml.feature.Normalizer;
-import org.apache.spark.ml.feature.StringIndexer;
-import org.apache.spark.ml.linalg.VectorUDT;
-import org.apache.spark.ml.linalg.Vectors;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.ml.clustering.KMeansModel;
-import org.apache.spark.ml.clustering.KMeans;
-import org.apache.spark.ml.evaluation.ClusteringEvaluator;
-import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
-import org.apache.spark.sql.catalyst.encoders.RowEncoder;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.Metadata;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
-import sparktemplate.clustering.DataPrepare;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Created by as on 12.03.2018.
  */
@@ -62,7 +32,7 @@ public class Clusters {
 //
 //
 //        // Loads data.
-//        Dataset<Row> dataset = DataPrepare.prepareDataset(df);//sparkSession.read().format("libsvm").load("data/mllib/sample_kmeans_data.txt");
+//        Dataset<Row> dataset = DataPrepareClustering.prepareDataset(df);//sparkSession.read().format("libsvm").load("data/mllib/sample_kmeans_data.txt");
 //        //dataset.show();
 //        System.out.println(Arrays.toString(dataset.schema().fields()));
 //

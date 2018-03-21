@@ -1,4 +1,4 @@
-package sparktemplate.clustering;
+package sparktemplate.dataprepare;
 
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.feature.OneHotEncoderModel;
@@ -7,12 +7,12 @@ import org.apache.spark.ml.feature.OneHotEncoderModel;
  * Created by as on 19.03.2018.
  */
 
-public class DataModels {
+public class DataModelsClustering {
 
     private PipelineModel pipelineModel;
     private OneHotEncoderModel oneHotEncoderModel;
 
-    public DataModels() {
+    public DataModelsClustering() {
     }
 
     public PipelineModel getPipelineModel() {

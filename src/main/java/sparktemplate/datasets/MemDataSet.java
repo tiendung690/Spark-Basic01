@@ -60,10 +60,9 @@ public class MemDataSet{
     {
         return ds.columns()[attributeIndex];
     }
-    
-    //-----------------
 
-    // indeks wiekszy od size() co wtedy????
+
+    // indeks wiekszy od size() ???
     public DataRecord getDataRecord(int index) //Zwrocenie informacji o wierszu danych o podanym numerze
     {
         AtomicLong atIndex = new AtomicLong(index);
@@ -77,7 +76,7 @@ public class MemDataSet{
 
         //Dataset<Row> filtered = sparkSession.createDataFrame(filteredRDD, ds.schema());
         //filteredDataFrame.show();
-        System.err.println(atIndex+" ,GET_DATA_RECORD_MEM: "+filteredRDD.count());
+        System.err.println("getDataRecord at index: "+atIndex+", count:"+filteredRDD.count());
         return new DataRecord(filteredRDD.first(),ds.schema());
     }
         

@@ -37,30 +37,31 @@ public class TestClustering {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path =  "data/mllib/kdd.txt"; // kdd_10_proc.txt"; //"data/mllib/iris.csv";
+        String path = "data/mllib/kdd.txt";
 
-        System.out.println("// TEST MemDataSet");
+        // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
-
+        // get single record at index
         DataRecord dataRecord4 = memDataSet.getDataRecord(0);
 
-
-        // KMeans TEST
+        // kmeans test
         KMean kMean = new KMean(sparkSession);
         kMean.buildClusterer(memDataSet);
-        System.out.println("clusterRecord: " + kMean.clusterRecord(dataRecord4) + "\ngetNoCluster: " + kMean.getNoCluster());
-        //System.out.println(kMean.getCluster(3).checkRecord(dataRecord4)); // PROBLEM
+        // show predicted clusters
+        kMean.getPredictions().show(false);
+        System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4));
+        System.out.println("get clusters no.: " + kMean.getNoCluster());
 
-
+        // check if record exists in each cluster
         for (int i = 0; i < kMean.getNoCluster(); i++) {
-            System.out.println(" __ " + kMean.getCluster(i).checkRecord(dataRecord4));
+            System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4));
         }
 
         // save
-        //kMean.saveClusterer("data/saved_data/Clusters");
+        kMean.saveClusterer("data/saved_data/Clusters");
         // load
-        //kMean.loadClusterer("data/saved_data/Clusters");
+        kMean.loadClusterer("data/saved_data/Clusters");
 
     }
 }
