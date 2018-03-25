@@ -1,10 +1,15 @@
 package SparkML;
 
+import org.apache.spark.ml.clustering.KMeans;
+
 /**
  * Created by as on 12.03.2018.
  */
 public class Clusters {
     public static void main(String[] args) {
+
+
+
 //        Logger.getLogger("org").setLevel(Level.OFF);
 //        Logger.getLogger("akka").setLevel(Level.OFF);
 //

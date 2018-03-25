@@ -28,7 +28,7 @@ public class Main {
                 //.set("spark.execution.cores", "1");
         JavaSparkContext jsc = new JavaSparkContext(conf);
 
-        int NUM_SAMPLES = 1000000;
+        int NUM_SAMPLES = 100;
         List<Integer> l = new ArrayList<>(NUM_SAMPLES);
         for (int i = 0; i < NUM_SAMPLES; i++) {
             l.add(i);
