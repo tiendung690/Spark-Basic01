@@ -2,6 +2,7 @@ package sparktemplate.clustering;
 
 import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.clustering.KMeansModel;
+import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
@@ -26,7 +27,7 @@ public class KMean implements AClustering {
     private Dataset<Row> predictions;
     public SparkSession sparkSession;
     private final String prediciton = "prediction";
-    public DataPrepareClustering dataPrepareClustering;
+    private DataPrepareClustering dataPrepareClustering;
 
     public KMean(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
@@ -106,5 +107,15 @@ public class KMean implements AClustering {
         this.model = model;
         this.predictions = predictions;
 
+    }
+
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Centers: \n");
+        Vector[] centers = model.clusterCenters();
+        for (Vector center: centers) {
+            stringBuilder.append(center).append("\n");
+        }
+        return stringBuilder.toString();
     }
 }

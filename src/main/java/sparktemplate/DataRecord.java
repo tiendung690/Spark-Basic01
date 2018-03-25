@@ -19,7 +19,6 @@ public class DataRecord {
     //Tutaj pozostaje do rozwiazania problem typow poszczegolnych atrybutow. Czy to będzie tutaj istotne?
     //Wartosci mozna reprezentowac w postaci kolekcji String-ow, ale w ten sposob ni ebedzie informacji o typie wartosci, a czasem to jest potrzebne.
 
-    // Dataset sklada sie z StructType oraz Row
     private StructType structType;
     private Row row;
 

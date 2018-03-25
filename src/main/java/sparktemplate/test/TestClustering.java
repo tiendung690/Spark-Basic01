@@ -58,6 +58,8 @@ public class TestClustering {
             System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4));
         }
 
+        System.out.println(kMean.toString());
+
         // save
         kMean.saveClusterer("data/saved_data/Clusters");
         // load

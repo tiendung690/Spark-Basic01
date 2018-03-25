@@ -15,10 +15,9 @@ public class DataPrepare {
     public static Dataset<Row> createDataSet(Row row, StructType structType, SparkSession sparkSession) {
         List<Row> rows = new ArrayList<>();
         rows.add(row);
-        Dataset<Row> df2 = sparkSession.createDataFrame(rows, structType);
         //df2.printSchema();
         //df2.show();
-        return df2;
+        return sparkSession.createDataFrame(rows, structType);
     }
 
 
@@ -65,6 +64,8 @@ public class DataPrepare {
             Double sum = ds.filter(value -> !value.isNullAt(colId))
                     .map(value -> Double.parseDouble(value.get(colId).toString()), Encoders.DOUBLE())
                     .reduce((v1, v2) -> v1 + v2);
+
+            //long ss = ds.filter(value -> !value.isNullAt(colId)).map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
 
             Double avg = sum/ss;
             mapReplacementValues.put(listNum.get(i), avg);

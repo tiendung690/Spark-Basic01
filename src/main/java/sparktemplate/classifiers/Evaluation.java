@@ -40,7 +40,7 @@ public class Evaluation {
      * @return Wartosc accuracy
      */
 
-    double getAccuracy() {
+    public double getAccuracy() {
         return this.evaluator.setMetricName("accuracy").evaluate(this.predictions);
     }
 
@@ -63,7 +63,7 @@ public class Evaluation {
      *
      * @return Wartosc coverage
      */
-    double getCoverage() {
+    public double getCoverage() {
         return this.evaluator.setMetricName("weightedRecall").evaluate(this.predictions);
     }
 
@@ -112,47 +112,59 @@ public class Evaluation {
     }
 
 
-    void trainTest(MemDataSet memDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
+    public void trainTest(MemDataSet memDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
 
         String classificationType = classifierSettings.getMap().get("type").toString();
 
-        if(classificationType.equals("linearsvm")){
+        switch (classificationType) {
+            case "linearsvm": {
 
-            System.out.println("type: "+classificationType);
-            TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
-            algo.build(memDataSet, classifierSettings);
-            this.predictions = algo.makePredictions(testingDataSet);
+                System.out.println("type: " + classificationType);
+                TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
+                algo.build(memDataSet, classifierSettings);
+                this.predictions = algo.makePredictions(testingDataSet);
 
-        }else if (classificationType.equals("decisiontree")){
+                break;
+            }
+            case "decisiontree": {
 
-            System.out.println("type: "+classificationType);
-            TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
-            algo.build(memDataSet, classifierSettings);
-            this.predictions = algo.makePredictions(testingDataSet);
+                System.out.println("type: " + classificationType);
+                TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
+                algo.build(memDataSet, classifierSettings);
+                this.predictions = algo.makePredictions(testingDataSet);
 
-        }else if (classificationType.equals("randomforests")){
+                break;
+            }
+            case "randomforests": {
 
-            System.out.println("type: "+classificationType);
-            TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
-            algo.build(memDataSet, classifierSettings);
-            this.predictions = algo.makePredictions(testingDataSet);
+                System.out.println("type: " + classificationType);
+                TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
+                algo.build(memDataSet, classifierSettings);
+                this.predictions = algo.makePredictions(testingDataSet);
 
-        }else if (classificationType.equals("logisticregression")){
+                break;
+            }
+            case "logisticregression": {
 
-            System.out.println("type: "+classificationType);
-            TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
-            algo.build(memDataSet, classifierSettings);
-            this.predictions = algo.makePredictions(testingDataSet);
+                System.out.println("type: " + classificationType);
+                TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
+                algo.build(memDataSet, classifierSettings);
+                this.predictions = algo.makePredictions(testingDataSet);
 
-        }else if (classificationType.equals("naivebayes")){
+                break;
+            }
+            case "naivebayes": {
 
-            System.out.println("type: "+classificationType);
-            TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
-            algo.build(memDataSet, classifierSettings);
-            this.predictions = algo.makePredictions(testingDataSet);
+                System.out.println("type: " + classificationType);
+                TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
+                algo.build(memDataSet, classifierSettings);
+                this.predictions = algo.makePredictions(testingDataSet);
 
-        }else{
-            System.out.println("Wrong classification type!");
+                break;
+            }
+            default:
+                System.out.println("Wrong classification type!");
+                break;
         }
     }
 

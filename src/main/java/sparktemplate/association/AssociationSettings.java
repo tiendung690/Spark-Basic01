@@ -15,27 +15,3 @@ public class AssociationSettings implements ASettings{
         return null;
     }
 }
-//public class AssociationSettings implements ASettings<AssociationSettings> {
-//
-//    HashMap<String,String> hashMap;
-//
-//    public AssociationSettings() {
-//        this.hashMap = new HashMap();
-//    }
-//
-//    @Override
-//    public boolean hasKey(String key) {
-//        return hashMap.containsKey(key);
-//    }
-//
-//    @Override
-//    public String getValue(String key) {
-//        return hashMap.get(key);
-//    }
-//
-//    @Override
-//    public AssociationSettings setting(String key, String value) {
-//        this.hashMap.put(key,value);
-//        return this;
-//    }
-//}

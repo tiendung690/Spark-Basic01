@@ -28,8 +28,6 @@ public class FpG implements AAssociations {
 
     @Override
     public void buildAssociations(MemDataSet dataSet, ASettings settings) {
-        // System.out.println("settings.getValue "+settings.getValue("k1"));
-        // System.out.println("settings.hasKey "+settings.hasKey("k1"));
         buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
     }
 
