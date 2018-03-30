@@ -30,9 +30,12 @@ public class TestClustering {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("SparkTemplateTest")
-                .set("spark.driver.allowMultipleContexts", "true")
-                .setMaster("local");
+                .setAppName("SparkTemplateTest_Clustering")
+                .setMaster("spark://10.2.28.17:7077")
+                .set("spark.driver.host","10.2.28.31")
+                .set("spark.executor.memory", "4g");
+//                .set("spark.driver.allowMultipleContexts", "true")
+//                .setMaster("local");
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 

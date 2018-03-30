@@ -54,13 +54,18 @@ public class DataPrepare {
 
         ///////////////////////  NUMERICAL VALUES
 
-        // count dataset values (accept nulls)
-        long ss = ds.map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
+        // count col values (accept nulls)
+        //long ss = ds.map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
 
         for (int i = 0; i < listNumIndex.size(); i++) {
 
             int colId = listNumIndex.get(i);
 
+            // count values (without nulls)
+            long ss = ds.filter(value -> !value.isNullAt(colId))
+                    .map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
+
+            // sum values
             Double sum = ds.filter(value -> !value.isNullAt(colId))
                     .map(value -> Double.parseDouble(value.get(colId).toString()), Encoders.DOUBLE())
                     .reduce((v1, v2) -> v1 + v2);
