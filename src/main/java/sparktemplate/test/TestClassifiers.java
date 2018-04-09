@@ -35,7 +35,11 @@ public class TestClassifiers {
 
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: decisiontree, randomforests, logisticregression, naivebayes, linearsvm
-            TrivialClassifierSettings classifierSettings = new TrivialClassifierSettings(1, "decisiontree");
+            TrivialClassifierSettings classifierSettings = new TrivialClassifierSettings()
+                    .setClassificationAlgo("logisticregression")
+                    .setMaxIter(10)
+                    .setRegParam(0.2)
+                    .setElasticNetParam(0.8);
 
             MemDataSet dataSetTest = new MemDataSet(spark); //Utworzenie obiektu na dane testowe
             dataSetTest.loadDataSet(fNameTabTest); //Wczytanie danych testowych

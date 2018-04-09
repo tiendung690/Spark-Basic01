@@ -25,8 +25,8 @@ public class TrivialClassifier implements AClassifier
     {
         //Odczytanie parametrow
         TrivialClassifierSettings  locSettings = (TrivialClassifierSettings)settings;        
-        System.out.println("Pierwszy parametr="+locSettings.getParameter1());
-        System.out.println("Drugi parametr="+locSettings.getParameter2());        
+        System.out.println("Pierwszy parametr="+locSettings.getClassificationAlgo());
+        System.out.println("Drugi parametr="+locSettings.getMaxIter());
         
         //Tutaj tworzenie klasyfikatora
         

@@ -40,22 +40,13 @@ public class KMean implements AClustering {
 
     @Override
     public void buildClusterer(MemDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false));
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false), settings);
     }
 
-    @Override
-    public void buildClusterer(MemDataSet dataSet) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false));
-    }
 
     @Override
     public void buildClusterer(DBDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false));
-    }
-
-    @Override
-    public void buildClusterer(DBDataSet dataSet) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false));
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false), settings);
     }
 
     @Override
@@ -91,10 +82,12 @@ public class KMean implements AClustering {
         System.out.println("loadClusterer: "+fileName);
     }
 
-    private void buildCluster(Dataset<Row> ds) {
+    private void buildCluster(Dataset<Row> ds, ASettings settings) {
+
+        ClusteringSettings cs = (ClusteringSettings) settings;
 
         // Trains a k-means model.
-        KMeans kmeans = new KMeans().setK(4).setSeed(10L).setFeaturesCol("normFeatures");
+        KMeans kmeans = new KMeans().setK(cs.getK()).setSeed(cs.getSeed()).setFeaturesCol("normFeatures");
         KMeansModel model = kmeans.fit(ds);
 
         // Make predictions

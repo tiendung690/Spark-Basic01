@@ -21,7 +21,7 @@ interface AClustering {
      */
         
     void buildClusterer(MemDataSet dataSet, ASettings settings);
-    void buildClusterer(MemDataSet dataSet);
+    //void buildClusterer(MemDataSet dataSet);
     
     /**
      * Abstrakcyjna metoda szukajaca skupien w oparciu o dane z obiektu klasy DBDataSet.
@@ -31,7 +31,7 @@ interface AClustering {
      */
         
     void buildClusterer(DBDataSet dataSet, ASettings settings);
-    void buildClusterer(DBDataSet dataSet);
+    //void buildClusterer(DBDataSet dataSet);
     
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do skupienia

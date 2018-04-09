@@ -10,36 +10,44 @@ import java.util.Map;
 
 public class TrivialClassifierSettings implements ASettings
 {
+   private String classificationAlgo;
+   private int maxIter;
+   private double regParam;
+   private double elasticNetParam;
 
-    private int parameter1;
-    private String parameter2;
-
-    public TrivialClassifierSettings(int parameter1, String parameter2) {
-        this.parameter1 = parameter1;
-        this.parameter2 = parameter2;
+    public String getClassificationAlgo() {
+        return classificationAlgo;
     }
 
-    public int getParameter1() {
-        return parameter1;
+    public TrivialClassifierSettings setClassificationAlgo(String classificationAlgo) {
+        this.classificationAlgo = classificationAlgo;
+        return this;
     }
 
-    public void setParameter1(int parameter1) {
-        this.parameter1 = parameter1;
+    public int getMaxIter() {
+        return maxIter;
     }
 
-    public String getParameter2() {
-        return parameter2;
+    public TrivialClassifierSettings setMaxIter(int maxIter) {
+        this.maxIter = maxIter;
+        return this;
     }
 
-    public void setParameter2(String parameter2) {
-        this.parameter2 = parameter2;
+    public double getRegParam() {
+        return regParam;
     }
 
+    public TrivialClassifierSettings setRegParam(double regParam) {
+        this.regParam = regParam;
+        return this;
+    }
 
-    @Override
-    public Map getMap() {
-        Map<String, String> map = new HashMap();
-        map.put("type", getParameter2());
-        return map;
+    public double getElasticNetParam() {
+        return elasticNetParam;
+    }
+
+    public TrivialClassifierSettings setElasticNetParam(double elasticNetParam) {
+        this.elasticNetParam = elasticNetParam;
+        return this;
     }
 }

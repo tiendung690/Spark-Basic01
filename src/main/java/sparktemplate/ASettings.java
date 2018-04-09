@@ -13,5 +13,4 @@ public interface ASettings {
 
     //Klasy implementujace ten interfejs są definiowane na potrzeby reprezentowania parametrow poszczególnych metod eksploracji danych
 
-    Map getMap();
 }

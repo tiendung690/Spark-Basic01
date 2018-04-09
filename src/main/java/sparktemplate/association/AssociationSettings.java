@@ -10,8 +10,24 @@ import java.util.Map;
  */
 
 public class AssociationSettings implements ASettings{
-    @Override
-    public Map getMap() {
-        return null;
+    private double minConfidence;
+    private double minSupport;
+
+    public double getMinConfidence() {
+        return minConfidence;
+    }
+
+    public AssociationSettings setMinConfidence(double minConfidence) {
+        this.minConfidence = minConfidence;
+        return this;
+    }
+
+    public double getMinSupport() {
+        return minSupport;
+    }
+
+    public AssociationSettings setMinSupport(double minSupport) {
+        this.minSupport = minSupport;
+        return this;
     }
 }

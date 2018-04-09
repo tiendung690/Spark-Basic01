@@ -19,7 +19,7 @@ interface AAssociations {
      */
         
     void buildAssociations(MemDataSet dataSet, ASettings settings);
-    void buildAssociations(MemDataSet dataSet);
+    //void buildAssociations(MemDataSet dataSet);
     
     /**
      * Abstrakcyjna metoda szukajaca regul asocjacyjnych  w oparciu o dane z obiektu klasy DBDataSet.
@@ -29,7 +29,7 @@ interface AAssociations {
      */
         
     void buildAssociations(DBDataSet dataSet, ASettings settings);
-    void buildAssociations(DBDataSet dataSet);
+    //void buildAssociations(DBDataSet dataSet);
     /**
      * Zapis do pliku tekstowego o podanej nazwie
      * @param fileName nazwa pliku

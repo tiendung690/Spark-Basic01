@@ -1,5 +1,6 @@
 package sparktemplate.association;
 
+import com.sun.nio.sctp.Association;
 import org.apache.spark.ml.fpm.FPGrowth;
 import org.apache.spark.ml.fpm.FPGrowthModel;
 import org.apache.spark.sql.Dataset;
@@ -28,22 +29,12 @@ public class FpG implements AAssociations {
 
     @Override
     public void buildAssociations(MemDataSet dataSet, ASettings settings) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
-    }
-
-    @Override
-    public void buildAssociations(MemDataSet dataSet) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
     }
 
     @Override
     public void buildAssociations(DBDataSet dataSet, ASettings settings) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
-    }
-
-    @Override
-    public void buildAssociations(DBDataSet dataSet) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession));
+        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
     }
 
     @Override
@@ -58,12 +49,14 @@ public class FpG implements AAssociations {
         System.out.println("loadAssociationRules: " + fileName);
     }
 
-    private void buildAssociations(Dataset<Row> dataset) {
+    private void buildAssociations(Dataset<Row> dataset, ASettings settings) {
+
+        AssociationSettings as = (AssociationSettings) settings;
 
         FPGrowthModel model = new FPGrowth()
                 .setItemsCol("text")
-                .setMinSupport(0.01)
-                .setMinConfidence(0.4)
+                .setMinSupport(as.getMinSupport())
+                .setMinConfidence(as.getMinConfidence())
                 .fit(dataset);
 
         // Display frequent itemsets.

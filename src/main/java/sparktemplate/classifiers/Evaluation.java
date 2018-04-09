@@ -114,7 +114,11 @@ public class Evaluation {
 
     public void trainTest(MemDataSet memDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
 
-        String classificationType = classifierSettings.getMap().get("type").toString();
+        TrivialClassifierSettings trivialClassifierSettings = (TrivialClassifierSettings) classifierSettings;
+
+        String classificationType = trivialClassifierSettings.getClassificationAlgo();
+
+
 
         switch (classificationType) {
             case "linearsvm": {

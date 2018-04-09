@@ -9,6 +9,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.DataRecord;
 import sparktemplate.association.AssociationSettings;
+import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
@@ -31,16 +32,17 @@ public class TestClustering {
 
         SparkConf conf = new SparkConf()
                 .setAppName("SparkTemplateTest_Clustering")
-                .setMaster("spark://10.2.28.17:7077")
-                .set("spark.driver.host","10.2.28.31")
-                .set("spark.executor.memory", "4g");
-//                .set("spark.driver.allowMultipleContexts", "true")
-//                .setMaster("local");
+               // .setMaster("spark://192.168.100.4:7077")
+               // .set("spark.driver.host","192.168.100.2")
+             //   .set("spark.local.dir", "C:/spark-2.3.0-bin-hadoop2.7")
+//                .set("spark.executor.memory", "4g");
+                .set("spark.driver.allowMultipleContexts", "true")
+                .setMaster("local");
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path = "data/mllib/kdd.txt";
+        String path = "data/mllib/kmean.txt";//"hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
@@ -50,7 +52,11 @@ public class TestClustering {
 
         // kmeans test
         KMean kMean = new KMean(sparkSession);
-        kMean.buildClusterer(memDataSet);
+        ClusteringSettings clusteringSettings = new ClusteringSettings()
+                .setK(2)
+                .setSeed(10L);
+
+        kMean.buildClusterer(memDataSet, clusteringSettings);
         // show predicted clusters
         kMean.getPredictions().show(false);
         System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4));
@@ -64,9 +70,9 @@ public class TestClustering {
         System.out.println(kMean.toString());
 
         // save
-        kMean.saveClusterer("data/saved_data/Clusters");
+        //kMean.saveClusterer("data/saved_data/Clusters");
         // load
-        kMean.loadClusterer("data/saved_data/Clusters");
+        //kMean.loadClusterer("data/saved_data/Clusters");
 
     }
 }
