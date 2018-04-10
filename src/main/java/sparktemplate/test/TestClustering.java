@@ -42,7 +42,7 @@ public class TestClustering {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path = "data/mllib/kmean.txt";//"hdfs:/192.168.100.4/data/mllib/kmean.txt";
+        String path = "data/mllib/iris.csv";//"hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
