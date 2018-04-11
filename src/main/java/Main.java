@@ -24,15 +24,27 @@ public class Main {
 
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
+//        SparkConf conf = new SparkConf()
+//                .setAppName("Spark_App_Test_0.1")
+//                //.set("spark.driver.allowMultipleContexts", "true")
+//                .setMaster("spark://192.168.100.4:7077")
+//                //.set("spark.submit.deployMode", "client")
+//                //.setJars(new String[]{"out/artifacts/unnamed/unnamed.jar"})
+//                .set("spark.driver.host","192.168.100.2");
+////                .set("spark.executor.memory", "4g");
+//                //.set("spark.execution.cores", "1");
+
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_App_Test_0.1")
-                //.set("spark.driver.allowMultipleContexts", "true")
-                .setMaster("spark://192.168.100.4:7077")
+                .setAppName("Spark_Experiment_Pi")
+                .setMaster("spark://10.2.28.17:7077")
+                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+                .set("spark.executor.memory", "15g")
                 //.set("spark.submit.deployMode", "client")
-                //.setJars(new String[]{"out/artifacts/unnamed/unnamed.jar"})
-                .set("spark.driver.host","192.168.100.2");
-//                .set("spark.executor.memory", "4g");
-                //.set("spark.execution.cores", "1");
+                .set("spark.driver.host", "10.2.28.31");
+
+//        SparkConf conf = new SparkConf()
+//                .setAppName("Spark_Experiment_Pi")
+//                .setMaster("local");
 
         SparkContext context = new SparkContext(conf);
         JavaSparkContext jsc = new JavaSparkContext(context);
