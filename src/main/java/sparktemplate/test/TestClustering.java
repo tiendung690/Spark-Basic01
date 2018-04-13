@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by as on 13.03.2018.
@@ -30,19 +31,27 @@ public class TestClustering {
         Logger.getLogger("akka").setLevel(Level.OFF);
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
+//        SparkConf conf = new SparkConf()
+//                .setAppName("SparkTemplateTest_Clustering")
+//                .set("spark.driver.allowMultipleContexts", "true")
+//                .setMaster("local");
+
         SparkConf conf = new SparkConf()
-                .setAppName("SparkTemplateTest_Clustering")
-               // .setMaster("spark://192.168.100.4:7077")
-               // .set("spark.driver.host","192.168.100.2")
-             //   .set("spark.local.dir", "C:/spark-2.3.0-bin-hadoop2.7")
-//                .set("spark.executor.memory", "4g");
-                .set("spark.driver.allowMultipleContexts", "true")
-                .setMaster("local");
+                .setAppName("Spark_Default_Kmeans")
+                .setMaster("spark://10.2.28.17:7077")
+                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+                //.set("spark.executor.memory", "15g")
+                .set("spark.default.parallelism", "12")
+                .set("spark.driver.host", "10.2.28.31");
+
+
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path = "data/mllib/iris.csv";//"hdfs:/192.168.100.4/data/mllib/kmean.txt";
+        String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
+        //String path = "data/mllib/kdd_10_proc.txt.gz";
+        //String path = "data/mllib/iris.csv";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
@@ -73,6 +82,8 @@ public class TestClustering {
         //kMean.saveClusterer("data/saved_data/Clusters");
         // load
         //kMean.loadClusterer("data/saved_data/Clusters");
+
+        new Scanner(System.in).nextLine();
 
     }
 }

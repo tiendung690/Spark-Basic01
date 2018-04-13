@@ -5,6 +5,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.storage.StorageLevel;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
@@ -29,8 +30,11 @@ public class MainTestPrepareData {
         SparkConf conf = new SparkConf()
                 .setAppName("Spark_Experiment_Implementation_Kmeans")
                 .setMaster("spark://10.2.28.17:7077")
-                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-                .set("spark.executor.memory", "15g")
+                .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
+                //.set("spark.executor.memory", "15g")
+                //.set("spark.executor.instances", "3")// for yarn
+                //.set("spark.submit.deployMode", "cluster")
+                //.set("spark.default.parallelism", "12")
                 .set("spark.driver.host", "10.2.28.31");
 
         SparkContext sc = new SparkContext(conf);
@@ -48,12 +52,20 @@ public class MainTestPrepareData {
         MemDataSet memDataSet = new MemDataSet(spark);
         memDataSet.loadDataSet(path);
 
+        memDataSet.getDs().cache();
+
         DataPrepareClustering dpc = new DataPrepareClustering();
         Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false);//.select("features");
+
+        // lekko przyspiesza
+        // ds.persist(new StorageLevel(false, true, false, true, 1));
+
         ds.show();
         ds.printSchema();
         System.out.println(ds.count());
-        spark.close();
-        //new Scanner(System.in).nextLine();
+        //spark.close();
+
+
+        new Scanner(System.in).nextLine();
     }
 }

@@ -23,6 +23,7 @@ import sparktemplate.datasets.MemDataSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by as on 09.04.2018.
@@ -30,9 +31,9 @@ import java.util.List;
 public class Kmns {
     public static void main(String[] args) {
         // INFO DISABLED
-//        Logger.getLogger("org").setLevel(Level.OFF);
-//        Logger.getLogger("akka").setLevel(Level.OFF);
-//        Logger.getLogger("INFO").setLevel(Level.OFF);
+        Logger.getLogger("org").setLevel(Level.OFF);
+        Logger.getLogger("akka").setLevel(Level.OFF);
+        Logger.getLogger("INFO").setLevel(Level.OFF);
 
 //        SparkConf conf = new SparkConf()
 //                .setAppName("Spark_Experiment_Implementation_Kmeans")
@@ -43,15 +44,24 @@ public class Kmns {
                 .setAppName("Spark_Experiment_Implementation_Kmeans")
                 .setMaster("spark://10.2.28.17:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
-                .set("spark.executor.memory", "15g")
+                //.set("spark.executor.memory", "15g")
+                //.set("spark.executor.cores", "10")
+                //.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+                //.set("spark.submit.deployMode", "cluster")
+                .set("spark.default.parallelism", "12")
                 .set("spark.driver.host", "10.2.28.31");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
+        System.out.println("**********" + sc.defaultParallelism() + "  ," + sc.defaultMinPartitions());
+
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
+
+        //String path = "data/mllib/kddcup_train.txt.gz";
+        String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
+        //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
@@ -65,6 +75,9 @@ public class Kmns {
         ds.show();
         ds.printSchema();
 
+        Dataset<Row> ds2 = ds.repartition(12);
+        ds2.cache();
+
 
 //        JavaRDD<Row> x1 = ds.toJavaRDD();
 //        JavaRDD<String> x2 = ds.toJavaRDD().map(value -> String.valueOf(value.get(0)));
@@ -73,9 +86,10 @@ public class Kmns {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Convert dataset to JavaRDD of Vectors
-        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> {
+        JavaRDD<Vector> x3 = ds2.toJavaRDD().map(row -> {
 
-            return (DenseVector) row.get(0);
+
+            return (Vector) row.get(0);
 //            double[] array = new double[row.size()];
 //            for (int i = 0; i < row.size(); i++) {
 //                array[i] = row.getDouble(i);
@@ -83,6 +97,10 @@ public class Kmns {
 //            return new DenseVector(array);
         });
 
+        //System.out.println("NUM PARTITIONS: " + x33.getNumPartitions());
+        //JavaRDD<Vector> x3 = x33.repartition(12);
+        //x3.cache();
+        //System.out.println("NUM PARTITIONS: " + x3.getNumPartitions());
 
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
@@ -94,7 +112,7 @@ public class Kmns {
 
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
 
-        for (int m = 0; m < 5; m++) {
+        for (int m = 0; m < 1; m++) {
 
             // Compute distances
             JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
@@ -123,7 +141,8 @@ public class Kmns {
         dm.printSchema();
 
 
-        spark.close();
+        new Scanner(System.in).nextLine();
+        //spark.close();
     }
 
 
@@ -224,15 +243,26 @@ public class Kmns {
 
     public static double[] mean(JavaRDD<DataModel> list, int index) {
 
-        double[] mm = list.filter(v1 -> v1.getCluster() == index)
+        JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
+        long count = filtered.count();
+
+//        double[] mm = list.filter(v1 -> v1.getCluster() == index)
+//                .map(v1 -> v1.getInputData().toArray())
+//                .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
+
+        double[] mm = filtered
                 .map(v1 -> v1.getInputData().toArray())
                 .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
 
         //System.out.println("MM: "+Arrays.toString(mm));
 
         for (int i = 0; i < mm.length; i++) {
-            mm[i] /= list.filter(v1 -> v1.getCluster() == index).count();   // it may be slow, NEED CHANGE
+            mm[i] /= count;   // CHANGE
         }
+
+//        for (int i = 0; i < mm.length; i++) {
+//            mm[i] /= list.filter(v1 -> v1.getCluster() == index).count();   // it may be slow, NEED CHANGE
+//        }
 
         //  System.out.println("CENTROID: " + index + ", :" + Arrays.toString(mm));
 
