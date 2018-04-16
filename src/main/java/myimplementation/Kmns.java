@@ -1,5 +1,6 @@
 package myimplementation;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -13,8 +14,10 @@ import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.feature.LabeledPoint;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.ml.linalg.DenseVector;
+import org.apache.spark.ml.linalg.SparseVector;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.VectorUDT;
+import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.util.MLUtils;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.*;
@@ -41,7 +44,7 @@ public class Kmns {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation_Euclidean")
+                .setAppName("KMeans_Implementation_Euclidean_normalArray")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
@@ -76,14 +79,15 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
+        //String path = "data/mllib/kdd_10_proc.txt";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        //String path = "data/mllib/iris.csv";
-        String path = "data/mllib/creditcard.csv";
+        String path = "data/mllib/iris.csv";
+        //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
@@ -112,8 +116,6 @@ public class Kmns {
 
         // Convert dataset to JavaRDD of Vectors
         JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> {
-
-
             return (Vector) row.get(0);
 //            double[] array = new double[row.size()];
 //            for (int i = 0; i < row.size(); i++) {
@@ -129,13 +131,13 @@ public class Kmns {
 
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
-        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, 2));
-//        ArrayList<Vector> clusterCenters = new ArrayList<>();
-//        clusterCenters.add(new DenseVector(new double[]{2.0,2.0}));
-//        clusterCenters.add(new DenseVector(new double[]{4.0,6.0}));
+        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, 3, 20L));
+        //ArrayList<Vector> clusterCenters = new ArrayList<>();
+        //clusterCenters.add(new DenseVector(new double[]{4.8,3.0,1.4,0.3,0.0,1.0}));
+        //clusterCenters.add(new DenseVector(new double[]{6.9,3.1,4.9,1.5,1.0,0.0}));
 
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
-        int max_iter = 5;
+        int max_iter = 20;
         boolean bol = true;
         int ii = 0;
         do {
@@ -160,7 +162,7 @@ public class Kmns {
                 System.out.println("ITERATION: " + ii);
             }
         } while (bol);
-        System.out.println("Finish centers:" + Arrays.toString(clusterCenters.toArray()));
+        //System.out.println("Finish centers:" + Arrays.toString(clusterCenters.toArray()));
 
 
         // Compute distances
@@ -170,21 +172,46 @@ public class Kmns {
 //        System.out.println("\nPREDICTION TRANSOFORM");
 //        x5.foreach(vector -> System.out.println(vector.getCluster()+"  "+Arrays.toString(vector.getInputData().toArray())));
         Dataset<Row> dm = createDataSetUDF(x5, spark);
-        dm.show();
+        dm.show(false);
         dm.printSchema();
+
+        printCenters(clusterCenters);
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("values");
         clusteringEvaluator.setPredictionCol("cluster");
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(dm));
 
-        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "cluster", "values", 2);
+        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "cluster", "values", 3);
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
+        //saveAsCSV(dm);
         //new Scanner(System.in).nextLine();
         spark.close();
     }
 
+    public static void printCenters(ArrayList<Vector> v){
+        System.out.println("Centers:");
+        for (int i = 0; i < v.size() ; i++) {
+            System.out.println(Arrays.toString(v.get(i).toArray()));
+        }
+    }
+
+    public static void saveAsCSV(Dataset<Row> dm){
+
+        // zapis do pliku w formacie csv (po przecinku), bez headera
+        JavaRDD<String> rr = dm.toJavaRDD().map(value -> {
+            Vector vector = (Vector) value.get(0);
+            Integer s = (Integer) value.get(1);
+            Vector vector2 = new DenseVector(ArrayUtils.addAll(vector.toArray(),new double[]{s.doubleValue()}));
+            return Arrays.toString(vector2.toArray())
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replaceAll(" ", "");
+        });
+        System.out.println(rr.first());
+        rr.coalesce(1).saveAsTextFile("data/mllib/ok");
+    }
 
     // Transform JavaRDD<DataModel> -> Dataset<Row>
     public static Dataset<Row> createDataSet(JavaRDD<DataModel> x, SparkSession spark) {
@@ -216,13 +243,13 @@ public class Kmns {
             double[] distances = new double[centers.size()];
             for (int i = 0; i < centers.size(); i++) {
                 distances[i] = distanceEuclidean(row.toArray(), centers.get(i).toArray());
+                //distances[i] = distanceEuclidean2(row, centers.get(i));
             }
             DataModel dataModel = new DataModel(); // new DenseVector(distances);
             dataModel.setDistances(new DenseVector(distances));
             dataModel.setInputData(row);
             return dataModel;
         });
-
         return e;
     }
 
@@ -235,7 +262,6 @@ public class Kmns {
             dataModel.setDistances(row.getDistances());
             return dataModel;
         });
-
         return e;
     }
 
@@ -244,6 +270,15 @@ public class Kmns {
         double sum = 0;
         for (int i = 0; i < t1.length; i++) {
             sum += Math.pow((t1[i] - t2[i]), 2.0);
+        }
+        return Math.sqrt(sum);
+    }
+
+    public static double distanceEuclidean2(Vector t1, Vector t2) {
+
+        double sum = 0;
+        for (int i = 0; i < t1.size(); i++) {
+            sum += Math.pow((t1.apply(i) - t2.apply(i)), 2.0);
         }
         return Math.sqrt(sum);
     }
@@ -274,7 +309,6 @@ public class Kmns {
             double abs = Math.abs(t1[i] - t2[i]);
             if (abs > max) max = abs;
         }
-
         return max;
     }
 
@@ -297,26 +331,13 @@ public class Kmns {
         JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
         long count = filtered.count();
 
-//        double[] mm = list.filter(v1 -> v1.getCluster() == index)
-//                .map(v1 -> v1.getInputData().toArray())
-//                .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
-
         double[] mm = filtered
                 .map(v1 -> v1.getInputData().toArray())
                 .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
 
-        //System.out.println("MM: "+Arrays.toString(mm));
-
         for (int i = 0; i < mm.length; i++) {
-            mm[i] /= count;   // CHANGE
+            mm[i] /= count;
         }
-
-//        for (int i = 0; i < mm.length; i++) {
-//            mm[i] /= list.filter(v1 -> v1.getCluster() == index).count();   // it may be slow, NEED CHANGE
-//        }
-
-        //  System.out.println("CENTROID: " + index + ", :" + Arrays.toString(mm));
-
         return mm;
     }
 
@@ -358,17 +379,6 @@ public class Kmns {
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 //   System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
