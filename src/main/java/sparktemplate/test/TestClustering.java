@@ -36,22 +36,30 @@ public class TestClustering {
 //                .set("spark.driver.allowMultipleContexts", "true")
 //                .setMaster("local");
 
+//        SparkConf conf = new SparkConf()
+//                .setAppName("Spark_Default_Kmeans")
+//                .setMaster("spark://10.2.28.17:7077")
+//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+//                //.set("spark.executor.memory", "15g")
+//                .set("spark.default.parallelism", "12")
+//                .set("spark.driver.host", "10.2.28.31");
+
         SparkConf conf = new SparkConf()
                 .setAppName("Spark_Default_Kmeans")
-                .setMaster("spark://10.2.28.17:7077")
+                .setMaster("spark://192.168.100.4:7077")
                 .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
                 //.set("spark.executor.memory", "15g")
-                .set("spark.default.parallelism", "12")
-                .set("spark.driver.host", "10.2.28.31");
-
+                //.set("spark.default.parallelism", "12")
+                .set("spark.driver.host", "192.168.100.2");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
+        //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
         //String path = "data/mllib/iris.csv";
+        String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);

@@ -24,7 +24,7 @@ public class MainLoadData {
 //        Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Test_Load_Data")
+                .setAppName("Spark_Experiment_2_Nodes")
                 .setMaster("spark://10.2.28.17:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 //.set("spark.executor.memory", "15g")
@@ -42,7 +42,8 @@ public class MainLoadData {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
+        //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
+        String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
 
         // Load training data
         Dataset<Row> ds = sparkSession.read()
