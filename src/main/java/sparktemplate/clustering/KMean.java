@@ -89,6 +89,7 @@ public class KMean implements AClustering {
         // Trains a k-means model.
         KMeans kmeans = new KMeans().setK(cs.getK()).setSeed(cs.getSeed()).setFeaturesCol("features"); //normFeatures
         KMeansModel model = kmeans.fit(ds);
+        System.out.println("MAX ITERATIONS "+model.getMaxIter());
 
         // Make predictions
         Dataset<Row> predictions = model.transform(ds);

@@ -82,8 +82,8 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris.csv";
-        //String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/iris.csv";
+        String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
@@ -130,28 +130,36 @@ public class Kmns {
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
         ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, 2));
-
 //        ArrayList<Vector> clusterCenters = new ArrayList<>();
 //        clusterCenters.add(new DenseVector(new double[]{2.0,2.0}));
 //        clusterCenters.add(new DenseVector(new double[]{4.0,6.0}));
 
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
-
-        for (int m = 0; m < 1; m++) {
-
+        int max_iter = 5;
+        boolean bol = true;
+        int ii = 0;
+        do {
             // Compute distances
             JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
             // Predict Cluster
             JavaRDD<DataModel> x5 = predictCluster(x4);
 
-            //System.out.println("\nPREDICTION FIT");
-            //x5.foreach(vector -> System.out.println(vector.getCluster() + "  " + Arrays.toString(vector.getInputData().toArray())));
-
+            ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
             // Update centers
             for (int i = 0; i < clusterCenters.size(); i++) {
-                clusterCenters.set(i, new DenseVector(mean(x5, i)));
+                clusterCenters2.set(i, new DenseVector(mean(x5, i)));
             }
-        }
+
+            if (clusterCenters2.equals(clusterCenters) || ii == max_iter) {
+                //System.out.println(Arrays.toString(clusterCenters.toArray()));
+                //System.out.println(Arrays.toString(clusterCenters2.toArray()));
+                bol = false;
+            } else {
+                clusterCenters = clusterCenters2;
+                ii++;
+                System.out.println("ITERATION: " + ii);
+            }
+        } while (bol);
         System.out.println("Finish centers:" + Arrays.toString(clusterCenters.toArray()));
 
 
@@ -168,7 +176,7 @@ public class Kmns {
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("values");
         clusteringEvaluator.setPredictionCol("cluster");
-        System.out.println("EVAL: "+clusteringEvaluator.evaluate(dm));
+        System.out.println("EVAL: " + clusteringEvaluator.evaluate(dm));
 
         ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "cluster", "values", 2);
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
@@ -350,3 +358,34 @@ public class Kmns {
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+//   System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
+//
+//           for (int m = 0; m < 1; m++) {
+//
+//        // Compute distances
+//        JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
+//        // Predict Cluster
+//        JavaRDD<DataModel> x5 = predictCluster(x4);
+//
+//        //System.out.println("\nPREDICTION FIT");
+//        //x5.foreach(vector -> System.out.println(vector.getCluster() + "  " + Arrays.toString(vector.getInputData().toArray())));
+//
+//        // Update centers
+//        for (int i = 0; i < clusterCenters.size(); i++) {
+//        clusterCenters.set(i, new DenseVector(mean(x5, i)));
+//        }
+//        }
+//        System.out.println("Finish centers:" + Arrays.toString(clusterCenters.toArray()));
