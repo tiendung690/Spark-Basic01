@@ -87,7 +87,7 @@ public class KMean implements AClustering {
         ClusteringSettings cs = (ClusteringSettings) settings;
 
         // Trains a k-means model.
-        KMeans kmeans = new KMeans().setK(cs.getK()).setSeed(cs.getSeed()).setFeaturesCol("normFeatures");
+        KMeans kmeans = new KMeans().setK(cs.getK()).setSeed(cs.getSeed()).setFeaturesCol("features"); //normFeatures
         KMeansModel model = kmeans.fit(ds);
 
         // Make predictions

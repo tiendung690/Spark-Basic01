@@ -4,6 +4,8 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.ml.clustering.ClusteringSummary;
+import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -31,10 +33,14 @@ public class TestClustering {
         Logger.getLogger("akka").setLevel(Level.OFF);
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
-//        SparkConf conf = new SparkConf()
-//                .setAppName("SparkTemplateTest_Clustering")
-//                .set("spark.driver.allowMultipleContexts", "true")
-//                .setMaster("local");
+        SparkConf conf = new SparkConf()
+                .setAppName("Spark_Experiment_Implementation_Kmeans_PREPARED_DATASET")
+                .set("spark.driver.allowMultipleContexts", "true")
+                .set("spark.eventLog.dir", "file:///C:/logs")
+                .set("spark.eventLog.enabled", "true")
+                //.set("spark.driver.memory", "4g")
+                //.set("spark.executor.memory", "4g")
+                .setMaster("local[*]");
 
 //        SparkConf conf = new SparkConf()
 //                .setAppName("Spark_Default_Kmeans")
@@ -44,22 +50,23 @@ public class TestClustering {
 //                .set("spark.default.parallelism", "12")
 //                .set("spark.driver.host", "10.2.28.31");
 
-        SparkConf conf = new SparkConf()
-                .setAppName("Spark_Default_Kmeans")
-                .setMaster("spark://192.168.100.4:7077")
-                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-                //.set("spark.executor.memory", "15g")
-                //.set("spark.default.parallelism", "12")
-                .set("spark.driver.host", "192.168.100.2");
+//        SparkConf conf = new SparkConf()
+//                .setAppName("Spark_Default_Kmeans")
+//                .setMaster("spark://192.168.100.4:7077")
+//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+//                //.set("spark.executor.memory", "15g")
+//                //.set("spark.default.parallelism", "12")
+//                .set("spark.driver.host", "192.168.100.2");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
+        //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/iris.csv";
-        String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
+        String path = "data/mllib/iris.csv";
+        //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
@@ -76,6 +83,17 @@ public class TestClustering {
         kMean.buildClusterer(memDataSet, clusteringSettings);
         // show predicted clusters
         kMean.getPredictions().show(false);
+        kMean.getPredictions().printSchema();
+        System.out.println(Arrays.toString(kMean.getPredictions().schema().fields()));
+        //////////////////////
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
+        clusteringEvaluator.setFeaturesCol("features");
+        clusteringEvaluator.setPredictionCol("prediction");
+        System.out.println("EVAL: "+clusteringEvaluator.evaluate(kMean.getPredictions()));
+        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", 2);
+
+        /////////////////////////////////////
+
         System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4));
         System.out.println("get clusters no.: " + kMean.getNoCluster());
 
@@ -91,7 +109,8 @@ public class TestClustering {
         // load
         //kMean.loadClusterer("data/saved_data/Clusters");
 
-        new Scanner(System.in).nextLine();
+        //new Scanner(System.in).nextLine();
+        sparkSession.close();
 
     }
 }

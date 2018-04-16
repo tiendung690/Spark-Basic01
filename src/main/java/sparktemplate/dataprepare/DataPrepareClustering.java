@@ -157,13 +157,16 @@ public class DataPrepareClustering {
         //////////////////////////////////////////////////////////////////////////////////////////
 
 
-        // Normalize each Vector using $L^1$ norm.
-        Normalizer normalizer = new Normalizer()
-                .setInputCol("features")
-                .setOutputCol("normFeatures")
-                .setP(1.0);
+//        // Normalize each Vector using $L^1$ norm.
+//        Normalizer normalizer = new Normalizer()
+//                .setInputCol("features")
+//                .setOutputCol("normFeatures")
+//                .setP(1.0);
+//
+//        //l1NormData.show();
+//        return normalizer.transform(output);
 
-        //l1NormData.show();
-        return normalizer.transform(output);
+
+        return output;
     }
 }

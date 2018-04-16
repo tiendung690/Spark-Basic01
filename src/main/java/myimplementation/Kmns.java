@@ -6,10 +6,15 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.clustering.KMeans;
+import org.apache.spark.ml.clustering.KMeansSummary;
+import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.feature.LabeledPoint;
+import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.ml.linalg.VectorUDT;
 import org.apache.spark.mllib.util.MLUtils;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.*;
@@ -31,18 +36,18 @@ import java.util.Scanner;
 public class Kmns {
     public static void main(String[] args) {
         // INFO DISABLED
-//        Logger.getLogger("org").setLevel(Level.OFF);
-//        Logger.getLogger("akka").setLevel(Level.OFF);
-//        Logger.getLogger("INFO").setLevel(Level.OFF);
+        Logger.getLogger("org").setLevel(Level.OFF);
+        Logger.getLogger("akka").setLevel(Level.OFF);
+        Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_Experiment_Implementation_Kmeans")
+                .setAppName("KMeans_Implementation_Euclidean")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
                 //.set("spark.driver.memory", "4g")
                 //.set("spark.executor.memory", "4g")
-                .setMaster("local");
+                .setMaster("local[*]");
 
 //        SparkConf conf = new SparkConf()
 //                .setAppName("Spark_Experiment_Implementation_Kmeans")
@@ -70,14 +75,15 @@ public class Kmns {
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
-        String path = "data/mllib/kdd_10_proc.txt.gz";
+        //String path = "data/mllib/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        //String path = "data/mllib/iris.csv";
+        String path = "data/mllib/iris.csv";
+        //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
@@ -86,8 +92,16 @@ public class Kmns {
 
         DataPrepareClustering dpc = new DataPrepareClustering();
         Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false).select("features");
-        ds.show();
-        ds.printSchema();
+//        ds.show();
+//        ds.printSchema();
+
+        // SAVE TO JSON
+        //ds.write().mode(SaveMode.Overwrite).json("data/saved_data/Kmns");
+
+        // READ FROM JSON
+//        Dataset<Row> ds2 = spark.read().json("data/saved_data/Kmns");
+//        ds2.show();
+//        ds2.printSchema();
 
 
 //        JavaRDD<Row> x1 = ds.toJavaRDD();
@@ -147,10 +161,17 @@ public class Kmns {
         JavaRDD<DataModel> x5 = predictCluster(x4);
 //        System.out.println("\nPREDICTION TRANSOFORM");
 //        x5.foreach(vector -> System.out.println(vector.getCluster()+"  "+Arrays.toString(vector.getInputData().toArray())));
-        Dataset<Row> dm = createDataSet(x5, spark);
+        Dataset<Row> dm = createDataSetUDF(x5, spark);
         dm.show();
         dm.printSchema();
 
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
+        clusteringEvaluator.setFeaturesCol("values");
+        clusteringEvaluator.setPredictionCol("cluster");
+        System.out.println("EVAL: "+clusteringEvaluator.evaluate(dm));
+
+        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "cluster", "values", 2);
+        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         //new Scanner(System.in).nextLine();
         spark.close();
@@ -163,7 +184,19 @@ public class Kmns {
         // new StructType
         StructType schema = new StructType(new StructField[]{
                 new StructField("values", new ArrayType(DataTypes.DoubleType, true), false, Metadata.empty()),
-                new StructField("cluster", DataTypes.DoubleType, true, Metadata.empty())
+                new StructField("cluster", DataTypes.IntegerType, true, Metadata.empty())
+        });
+        Dataset<Row> dm = spark.createDataFrame(ss, schema);
+        return dm;
+    }
+
+    // Transform JavaRDD<DataModel> -> Dataset<Row>  (VectorUDF)
+    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark) {
+        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getInputData(), v1.getCluster()));
+        // new StructType
+        StructType schema = new StructType(new StructField[]{
+                new StructField("values", new VectorUDT(), false, Metadata.empty()),
+                new StructField("cluster", DataTypes.IntegerType, true, Metadata.empty())
         });
         Dataset<Row> dm = spark.createDataFrame(ss, schema);
         return dm;
@@ -174,7 +207,7 @@ public class Kmns {
         JavaRDD<DataModel> e = x.map(row -> {
             double[] distances = new double[centers.size()];
             for (int i = 0; i < centers.size(); i++) {
-                distances[i] = distanceChebyshev(row.toArray(), centers.get(i).toArray());
+                distances[i] = distanceEuclidean(row.toArray(), centers.get(i).toArray());
             }
             DataModel dataModel = new DataModel(); // new DenseVector(distances);
             dataModel.setDistances(new DenseVector(distances));
@@ -188,7 +221,6 @@ public class Kmns {
     public static JavaRDD<DataModel> predictCluster(JavaRDD<DataModel> x) {
 
         JavaRDD<DataModel> e = x.map(row -> {
-            //return new LabeledPoint(findLowerValIndex(row.toArray()), row);
             DataModel dataModel = new DataModel();
             dataModel.setCluster(findLowerValIndex(row.getDistances().toArray()));
             dataModel.setInputData(row.getInputData());
@@ -239,7 +271,7 @@ public class Kmns {
     }
 
 
-    public static double findLowerValIndex(double[] tab) {
+    public static int findLowerValIndex(double[] tab) {
 
         int index = 0;
         double min = tab[index];
@@ -249,7 +281,7 @@ public class Kmns {
                 index = i;
             }
         }
-        return (double) index;
+        return index;
     }
 
     public static double[] mean(JavaRDD<DataModel> list, int index) {
@@ -291,7 +323,7 @@ public class Kmns {
     public static class DataModel {
         private Vector inputData;
         private Vector distances;
-        private double cluster;
+        private int cluster;
 
         public Vector getInputData() {
             return inputData;
@@ -309,11 +341,11 @@ public class Kmns {
             this.distances = distances;
         }
 
-        public double getCluster() {
+        public int getCluster() {
             return cluster;
         }
 
-        public void setCluster(double cluster) {
+        public void setCluster(int cluster) {
             this.cluster = cluster;
         }
     }
