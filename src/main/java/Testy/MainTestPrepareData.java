@@ -55,7 +55,7 @@ public class MainTestPrepareData {
         memDataSet.getDs().cache();
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false);//.select("features");
+        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false, false);//.select("features");
 
         // lekko przyspiesza
         // ds.persist(new StorageLevel(false, true, false, true, 1));

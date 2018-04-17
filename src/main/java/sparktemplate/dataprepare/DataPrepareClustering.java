@@ -25,9 +25,9 @@ public class DataPrepareClustering {
         this.dataModelsClustering = new DataModelsClustering();
     }
 
-    private static final boolean removeStrings = false; // remove all columns with String type
+    //private static final boolean removeStrings = false; // remove all columns with String type
 
-    public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle) {
+    public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle, boolean removeStrings) {
 
         Dataset<Row> prepared;
 
@@ -91,7 +91,7 @@ public class DataPrepareClustering {
                     this.dataModelsClustering.setPipelineModel(pipelineModel);
                 }
                 Dataset<Row> indexed = pipelineModel.transform(df).drop(df3.columns());
-                //indexed.show();
+                indexed.show(50);
 
                 prepared = indexed.drop(otherArray);
             }
@@ -131,7 +131,9 @@ public class DataPrepareClustering {
 
         OneHotEncoderEstimator encoderHot = new OneHotEncoderEstimator()
                 .setInputCols(afterStringIndexer)
-                .setOutputCols(afterStringIndexer2);
+                .setOutputCols(afterStringIndexer2)
+                //.setHandleInvalid("keep") // keep invalid and assign extra value
+                .setDropLast(false);  // avoid removing last val
 
         /// MODEL
         OneHotEncoderModel oneHotEncoderModel;
@@ -144,7 +146,7 @@ public class DataPrepareClustering {
         }
 
         Dataset<Row> encoded = oneHotEncoderModel.transform(prepared).drop(afterStringIndexer);
-        //encoded.show();
+        encoded.show(50);
         //////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -153,7 +155,7 @@ public class DataPrepareClustering {
                 .setInputCols(encoded.columns())
                 .setOutputCol("features");
         Dataset<Row> output = assembler.transform(encoded).drop(encoded.columns());
-        //output.show();
+        output.show(false);
         //////////////////////////////////////////////////////////////////////////////////////////
 
 

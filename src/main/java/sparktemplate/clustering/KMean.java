@@ -40,20 +40,20 @@ public class KMean implements AClustering {
 
     @Override
     public void buildClusterer(MemDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false), settings);
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, false), settings);
     }
 
 
     @Override
     public void buildClusterer(DBDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false), settings);
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, false), settings);
     }
 
     @Override
     public int clusterRecord(DataRecord dataRecord) {
 
         Dataset<Row> single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataset(single,true);
+        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataset(single,true, false);
         Dataset<Row> prediction = model.transform(single_prepared);
         return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
     }

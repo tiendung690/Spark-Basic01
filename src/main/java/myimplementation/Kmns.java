@@ -95,7 +95,10 @@ public class Kmns {
         memDataSet.loadDataSet(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false).select("features");
+        Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, false);
+        ds1.show(false);
+        ds1.printSchema();
+        Dataset<Row> ds = ds1.select("features");
 //        ds.show();
 //        ds.printSchema();
 

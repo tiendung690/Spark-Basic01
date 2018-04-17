@@ -75,7 +75,7 @@ public class LoadFromJSON {
         memDataSet.loadDataSet(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false).select("features");
+        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false, false).select("features");
         ds.show();
         ds.printSchema();
 
