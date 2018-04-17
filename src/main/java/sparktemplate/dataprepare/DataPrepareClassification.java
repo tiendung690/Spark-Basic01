@@ -110,7 +110,10 @@ public class DataPrepareClassification {
 
             OneHotEncoderEstimator encoderHot = new OneHotEncoderEstimator()
                     .setInputCols(afterStringIndexer)
-                    .setOutputCols(afterOneHot);
+                    .setOutputCols(afterOneHot)
+                    //.setHandleInvalid("keep") // keep invalid and assign extra value
+                    .setDropLast(false);  // avoid removing last val
+
             /// MODEL
             OneHotEncoderModel oneHotEncoderModel = encoderHot.fit(dsPip);
 
