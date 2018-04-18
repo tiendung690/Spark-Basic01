@@ -91,7 +91,7 @@ public class DataPrepareClustering {
                     this.dataModelsClustering.setPipelineModel(pipelineModel);
                 }
                 Dataset<Row> indexed = pipelineModel.transform(df).drop(df3.columns());
-                indexed.show(50);
+                //indexed.show(50);
 
                 prepared = indexed.drop(otherArray);
             }
@@ -146,7 +146,7 @@ public class DataPrepareClustering {
         }
 
         Dataset<Row> encoded = oneHotEncoderModel.transform(prepared).drop(afterStringIndexer);
-        encoded.show(50);
+        //encoded.show(50);
         //////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -155,7 +155,7 @@ public class DataPrepareClustering {
                 .setInputCols(encoded.columns())
                 .setOutputCol("features");
         Dataset<Row> output = assembler.transform(encoded).drop(encoded.columns());
-        output.show(false);
+        //output.show(false);
         //////////////////////////////////////////////////////////////////////////////////////////
 
 

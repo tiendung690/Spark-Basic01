@@ -86,7 +86,7 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris.csv";
+        String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -95,85 +95,31 @@ public class Kmns {
         memDataSet.loadDataSet(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, false);
-        ds1.show(false);
-        ds1.printSchema();
+        Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, true);
         Dataset<Row> ds = ds1.select("features");
 //        ds.show();
 //        ds.printSchema();
 
-        // SAVE TO JSON
-        //ds.write().mode(SaveMode.Overwrite).json("data/saved_data/Kmns");
-
-        // READ FROM JSON
-//        Dataset<Row> ds2 = spark.read().json("data/saved_data/Kmns");
-//        ds2.show();
-//        ds2.printSchema();
-
-
-//        JavaRDD<Row> x1 = ds.toJavaRDD();
-//        JavaRDD<String> x2 = ds.toJavaRDD().map(value -> String.valueOf(value.get(0)));
-//        System.out.println(x2.take(5));
-
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Convert dataset to JavaRDD of Vectors
-        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> {
-            return (Vector) row.get(0);
-//            double[] array = new double[row.size()];
-//            for (int i = 0; i < row.size(); i++) {
-//                array[i] = row.getDouble(i);
-//            }
-//            return new DenseVector(array);
-        });
-
+        JavaRDD<Vector> x3 = convertToRDD(ds);
         //System.out.println("NUM PARTITIONS: " + x33.getNumPartitions());
         //JavaRDD<Vector> x3 = x33.repartition(4);
         x3.cache();
         //System.out.println("NUM PARTITIONS: " + x3.getNumPartitions());
-
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
         ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, 3, 20L));
         //ArrayList<Vector> clusterCenters = new ArrayList<>();
         //clusterCenters.add(new DenseVector(new double[]{4.8,3.0,1.4,0.3,0.0,1.0}));
         //clusterCenters.add(new DenseVector(new double[]{6.9,3.1,4.9,1.5,1.0,0.0}));
-
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
-        int max_iter = 20;
-        boolean bol = true;
-        int ii = 0;
-        do {
-            // Compute distances
-            JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
-            // Predict Cluster
-            JavaRDD<DataModel> x5 = predictCluster(x4);
 
-            ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
-            // Update centers
-            for (int i = 0; i < clusterCenters.size(); i++) {
-                clusterCenters2.set(i, new DenseVector(mean(x5, i)));
-            }
+        ArrayList<Vector> clusterCenters2 = computeCenters(x3, clusterCenters);
+        // Compute distances, Predict Cluster
+        JavaRDD<DataModel> x5 = computeDistancesAndPredictCluster(x3, clusterCenters2);
 
-            if (clusterCenters2.equals(clusterCenters) || ii == max_iter) {
-                //System.out.println(Arrays.toString(clusterCenters.toArray()));
-                //System.out.println(Arrays.toString(clusterCenters2.toArray()));
-                bol = false;
-            } else {
-                clusterCenters = clusterCenters2;
-                ii++;
-                System.out.println("ITERATION: " + ii);
-            }
-        } while (bol);
-        //System.out.println("Finish centers:" + Arrays.toString(clusterCenters.toArray()));
-
-
-        // Compute distances
-        JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
-        // Predict Cluster
-        JavaRDD<DataModel> x5 = predictCluster(x4);
-//        System.out.println("\nPREDICTION TRANSOFORM");
-//        x5.foreach(vector -> System.out.println(vector.getCluster()+"  "+Arrays.toString(vector.getInputData().toArray())));
         Dataset<Row> dm = createDataSetUDF(x5, spark);
         dm.show(false);
         dm.printSchema();
@@ -193,26 +139,70 @@ public class Kmns {
         spark.close();
     }
 
-    public static void printCenters(ArrayList<Vector> v){
+    public static ArrayList<Vector> computeCenters(JavaRDD<Vector> x3, ArrayList<Vector> cc) {
+
+        ArrayList<Vector> clusterCenters = new ArrayList<>(cc);
+
+        int max_iter = 20;
+        boolean bol = true;
+        int ii = 0;
+        do {
+            // Compute distances, Predict Cluste
+            JavaRDD<DataModel> x5 = computeDistancesAndPredictCluster(x3, clusterCenters);
+
+            ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
+            // Update center
+            for (int i = 0; i < clusterCenters.size(); i++) {
+                clusterCenters2.set(i, new DenseVector(mean(x5, i)));
+            }
+            if (clusterCenters2.equals(clusterCenters) || ii == max_iter) {
+                bol = false;
+            } else {
+                clusterCenters = clusterCenters2;
+                ii++;
+                System.out.println("ITERATION: " + ii + " " + Arrays.toString(clusterCenters2.toArray()));
+            }
+        } while (bol);
+
+        return clusterCenters;
+    }
+
+    public static JavaRDD<DataModel> computeDistancesAndPredictCluster(JavaRDD<Vector> x3, ArrayList<Vector> clusterCenters) {
+        // Compute distances
+        JavaRDD<DataModel> x4 = computeDistances(x3, clusterCenters);
+        // Predict Cluster
+        JavaRDD<DataModel> x5 = predictCluster(x4);
+        return x5;
+    }
+
+    public static JavaRDD<Vector> convertToRDD(Dataset<Row> ds) {
+        // Convert dataset to JavaRDD of Vectors
+        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> (Vector) row.get(0));
+        return x3;
+    }
+
+
+    public static void printCenters(ArrayList<Vector> v) {
         System.out.println("Centers:");
-        for (int i = 0; i < v.size() ; i++) {
+        for (int i = 0; i < v.size(); i++) {
             System.out.println(Arrays.toString(v.get(i).toArray()));
         }
     }
 
-    public static void saveAsCSV(Dataset<Row> dm){
+    public static void saveAsCSV(Dataset<Row> dm) {
 
         // zapis do pliku w formacie csv (po przecinku), bez headera
         JavaRDD<String> rr = dm.toJavaRDD().map(value -> {
             Vector vector = (Vector) value.get(0);
             Integer s = (Integer) value.get(1);
-            Vector vector2 = new DenseVector(ArrayUtils.addAll(vector.toArray(),new double[]{s.doubleValue()}));
+            Vector vector2 = new DenseVector(ArrayUtils.addAll(vector.toArray(), new double[]{s.doubleValue()}));
             return Arrays.toString(vector2.toArray())
                     .replace("[", "")
                     .replace("]", "")
                     .replaceAll(" ", "");
         });
         System.out.println(rr.first());
+        // brak mozliwosci nadpisania, lepiej zrobic dataframe i wtedy zapisywac z mode overwrite
         rr.coalesce(1).saveAsTextFile("data/mllib/ok");
     }
 
@@ -383,6 +373,19 @@ public class Kmns {
     }
 }
 
+
+//    public static JavaRDD<Vector> convertToRDD(Dataset<Row> ds) {
+//        // Convert dataset to JavaRDD of Vectors
+//        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> {
+//            return (Vector) row.get(0);
+////            double[] array = new double[row.size()];
+////            for (int i = 0; i < row.size(); i++) {
+////                array[i] = row.getDouble(i);
+////            }
+////            return new DenseVector(array);
+//        });
+//        return x3;
+//    }
 
 //   System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
 //
