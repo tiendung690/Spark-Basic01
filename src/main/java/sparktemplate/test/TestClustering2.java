@@ -69,7 +69,7 @@ public class TestClustering2 {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris.csv";
+        String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
@@ -81,20 +81,22 @@ public class TestClustering2 {
         // kmeans test
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings()
-                .setK(3)
-                .setSeed(10L);
+                .setK(26)
+                .setSeed(5L);
 
         kMean.buildClusterer(memDataSet, clusteringSettings);
         // show predicted clusters
         kMean.getPredictions().show();
 
+
         System.out.println(kMean.toString());
+
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("features");
         clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: "+clusteringEvaluator.evaluate(kMean.getPredictions()));
-        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", 3);
+        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         //Kmns.saveAsCSV(kMean.getPredictions());

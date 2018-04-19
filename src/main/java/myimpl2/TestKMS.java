@@ -1,5 +1,6 @@
 package myimpl2;
 
+import myimplementation.Kmns;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -53,14 +54,14 @@ public class TestKMS {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
+        String path = "data/mllib/kdd_10_proc.txt";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris.csv";
+        //String path = "data/mllib/iris.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -70,26 +71,25 @@ public class TestKMS {
 
         DataPrepareClustering dpc = new DataPrepareClustering();
         Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, true);
+        ds1.printSchema();
         //Dataset<Row> ds = ds1.select("features");
 
         //Kms kms = new Kms();
         //KmsModel kmsModel = kms.fit(ds1);
         //kmsModel.transform(memDataSet.getDs()).show();
-
 //        Dataset<Row> dd = kmsModel.transform(ds1);
 //        dd.show();
 //        dd.printSchema();
 
-//        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-//        clusteringEvaluator.setFeaturesCol("values");
-//        clusteringEvaluator.setPredictionCol("cluster");
-//        System.out.println("EVAL: " + clusteringEvaluator.evaluate(dd));
-//
-//        ClusteringSummary clusteringSummary = new ClusteringSummary(dd, "cluster", "values", 3);
-//        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
+
+        Kms kmsModel = new Kms()
+                .setFeaturesCol("features")
+                .setPredictionCol("prediction")
+                .setK(5)
+                .setMaxIter(20)
+                .setSeed(30L);
 
 
-        Kms kmsModel = new Kms();
         //Chain indexers and tree in a Pipeline.
         Pipeline pipeline = new Pipeline()
                 .setStages(new PipelineStage[]{kmsModel});
@@ -102,18 +102,15 @@ public class TestKMS {
         predictions.show();
         predictions.printSchema();
 
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
+        clusteringEvaluator.setFeaturesCol(kmsModel.getFeaturesCol());
+        clusteringEvaluator.setPredictionCol(kmsModel.getPredictionCol());
+        System.out.println("EVAL: " + clusteringEvaluator.evaluate(predictions));
 
+        ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kmsModel.getPredictionCol(), kmsModel.getFeaturesCol(), kmsModel.getK());
+        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
-
-
-
-
-
-
-
-
-
-
+       // Kmns.saveAsCSV(predictions);
 
     }
 }

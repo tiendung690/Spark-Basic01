@@ -28,6 +28,7 @@ import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -79,14 +80,15 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
+        String path = "data/mllib/kdd_10_proc.txt";
+        //String path = "data/mllib/kddFIX.txt";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris2.csv";
+        //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -110,7 +112,8 @@ public class Kmns {
         //System.out.println("NUM PARTITIONS: " + x3.getNumPartitions());
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
-        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, 3, 20L));
+        int k = 26;
+        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, k, 20L));
         //ArrayList<Vector> clusterCenters = new ArrayList<>();
         //clusterCenters.add(new DenseVector(new double[]{4.8,3.0,1.4,0.3,0.0,1.0}));
         //clusterCenters.add(new DenseVector(new double[]{6.9,3.1,4.9,1.5,1.0,0.0}));
@@ -120,18 +123,18 @@ public class Kmns {
         // Compute distances, Predict Cluster
         JavaRDD<DataModel> x5 = computeDistancesAndPredictCluster(x3, clusterCenters2);
 
-        Dataset<Row> dm = createDataSetUDF(x5, spark);
+        Dataset<Row> dm = createDataSetUDF(x5, spark, "features", "prediction");
         dm.show(false);
         dm.printSchema();
 
         printCenters(clusterCenters);
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-        clusteringEvaluator.setFeaturesCol("values");
-        clusteringEvaluator.setPredictionCol("cluster");
+        clusteringEvaluator.setFeaturesCol("features");
+        clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(dm));
 
-        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "cluster", "values", 3);
+        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "prediction", "features", k);
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         //saveAsCSV(dm);
@@ -153,9 +156,11 @@ public class Kmns {
             ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
             // Update center
             for (int i = 0; i < clusterCenters.size(); i++) {
-                clusterCenters2.set(i, new DenseVector(mean(x5, i)));
+                clusterCenters2.set(i, mean(x5, i, clusterCenters2.get(i)));
+                System.out.println(i + " ," + Arrays.toString(clusterCenters2.get(i).toArray()));
             }
             if (clusterCenters2.equals(clusterCenters) || ii == max_iter) {
+                System.out.println("END" + Arrays.toString(clusterCenters2.toArray()));
                 bol = false;
             } else {
                 clusterCenters = clusterCenters2;
@@ -203,28 +208,28 @@ public class Kmns {
         });
         System.out.println(rr.first());
         // brak mozliwosci nadpisania, lepiej zrobic dataframe i wtedy zapisywac z mode overwrite
-        rr.coalesce(1).saveAsTextFile("data/mllib/ok");
+        rr.coalesce(1).saveAsTextFile("data/ok");
     }
 
     // Transform JavaRDD<DataModel> -> Dataset<Row>
-    public static Dataset<Row> createDataSet(JavaRDD<DataModel> x, SparkSession spark) {
+    public static Dataset<Row> createDataSet(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
         JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getInputData().toArray(), v1.getCluster()));
         // new StructType
         StructType schema = new StructType(new StructField[]{
-                new StructField("values", new ArrayType(DataTypes.DoubleType, true), false, Metadata.empty()),
-                new StructField("cluster", DataTypes.IntegerType, true, Metadata.empty())
+                new StructField(featuresCol, new ArrayType(DataTypes.DoubleType, true), false, Metadata.empty()),
+                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
         });
         Dataset<Row> dm = spark.createDataFrame(ss, schema);
         return dm;
     }
 
     // Transform JavaRDD<DataModel> -> Dataset<Row>  (VectorUDF)
-    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark) {
+    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
         JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getInputData(), v1.getCluster()));
         // new StructType
         StructType schema = new StructType(new StructField[]{
-                new StructField("values", new VectorUDT(), false, Metadata.empty()),
-                new StructField("cluster", DataTypes.IntegerType, true, Metadata.empty())
+                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
+                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
         });
         Dataset<Row> dm = spark.createDataFrame(ss, schema);
         return dm;
@@ -319,22 +324,45 @@ public class Kmns {
         return index;
     }
 
-    public static double[] mean(JavaRDD<DataModel> list, int index) {
+    public static Vector mean(JavaRDD<DataModel> list, int index, Vector clusterCenter) {
 
         JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
         long count = filtered.count();
+        System.out.println("COUNT INDEX: " + index + " , =" + count);
+//        filtered
+//                .map(v1 -> v1.getInputData().toArray())
+//                .foreach(doubles -> System.out.println(Arrays.toString(doubles)));
 
-        double[] mm = filtered
-                .map(v1 -> v1.getInputData().toArray())
-                .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
+        //double[] mm = new double[clusterCenter.size()];
+        Vector mm;
+        if (count == 0) {
+            mm = new DenseVector(clusterCenter.toArray());
+        }
+//        else if (count == -1) {
+//            // Ten warunek mozna pominac, reduce dla 1 rekordu tez liczy dobrze
+//            //System.out.println(Arrays.toString(filtered.take(1).get(0).getInputData().toArray()));
+//            mm = new DenseVector(filtered.take(1).get(0).getInputData().toArray());
+//        }
+        else {
+//            if (count>0){
+//                for (int i = 0; i < count ; i++) {
+//                    System.out.println(Arrays.toString(filtered.take((int) count).get(i).getInputData().toArray()));
+//                }
+//            }
+            mm = filtered
+                    .map(v1 -> v1.getInputData())
+                    .reduce((v1, v2) -> sumArrayByColumn(v1, v2));
 
-        for (int i = 0; i < mm.length; i++) {
-            mm[i] /= count;
+            double[] mm2 = mm.toArray();
+            for (int i = 0; i < mm2.length; i++) {
+                mm2[i] /= count;
+            }
+            mm = new DenseVector(mm2);
         }
         return mm;
     }
 
-    public static double[] sumArrayByColumn(double[] t1, double[] t2) {
+    public static double[] sumArrayByColumnOld(double[] t1, double[] t2) {
         double[] tab = new double[t1.length];
         for (int i = 0; i < t1.length; i++) {
             tab[i] = t1[i] + t2[i];
@@ -342,7 +370,15 @@ public class Kmns {
         return tab;
     }
 
-    public static class DataModel {
+    public static Vector sumArrayByColumn(Vector t1, Vector t2) {
+        double[] tab = new double[t1.size()];
+        for (int i = 0; i < t1.size(); i++) {
+            tab[i] = t1.apply(i) + t2.apply(i);
+        }
+        return new DenseVector(tab);
+    }
+
+    public static class DataModel implements Serializable{
         private Vector inputData;
         private Vector distances;
         private int cluster;

@@ -15,6 +15,7 @@ public class Cluster {
     private Dataset<Row> ds;
     private SparkSession sparkSession;
     private DataPrepareClustering dataPrepareClustering;
+    private final boolean removeStrings = true;
 
     Cluster(SparkSession sparkSession, DataPrepareClustering dataPrepareClustering) {
         //Wstepna inicjacja skupienia
@@ -29,7 +30,7 @@ public class Cluster {
 
     public boolean checkRecord(DataRecord record) {
         //Ta metoda sprawdza, czy podany rekord znajduje się w skupieniu
-        Dataset<Row> single = this.dataPrepareClustering.prepareDataset(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, false);
+        Dataset<Row> single = this.dataPrepareClustering.prepareDataset(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, removeStrings);
         final Object obj = single.first().get(0);
         return ds.filter(value -> value.get(0).equals(obj)).count() > 0;
     }

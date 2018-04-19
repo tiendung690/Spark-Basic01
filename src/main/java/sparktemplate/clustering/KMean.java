@@ -28,6 +28,7 @@ public class KMean implements AClustering {
     public SparkSession sparkSession;
     private final String prediciton = "prediction";
     private DataPrepareClustering dataPrepareClustering;
+    private final boolean removeStrings = true;
 
     public KMean(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
@@ -40,20 +41,20 @@ public class KMean implements AClustering {
 
     @Override
     public void buildClusterer(MemDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, false), settings);
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
     }
 
 
     @Override
     public void buildClusterer(DBDataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, false), settings);
+        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
     }
 
     @Override
     public int clusterRecord(DataRecord dataRecord) {
 
         Dataset<Row> single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataset(single,true, false);
+        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataset(single,true, removeStrings);
         Dataset<Row> prediction = model.transform(single_prepared);
         return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
     }
@@ -87,9 +88,18 @@ public class KMean implements AClustering {
         ClusteringSettings cs = (ClusteringSettings) settings;
 
         // Trains a k-means model.
-        KMeans kmeans = new KMeans().setK(cs.getK()).setSeed(cs.getSeed()).setFeaturesCol("features"); //normFeatures
+        KMeans kmeans = new KMeans()
+                .setK(cs.getK())
+                .setSeed(cs.getSeed())
+                //.setInitSteps(1)
+                //.setTol(0.0)
+                //.setInitMode(org.apache.spark.mllib.clustering.KMeans.RANDOM())
+                .setFeaturesCol("features"); //normFeatures
+
+
         KMeansModel model = kmeans.fit(ds);
         System.out.println("MAX ITERATIONS "+model.getMaxIter());
+
 
         // Make predictions
         Dataset<Row> predictions = model.transform(ds);
