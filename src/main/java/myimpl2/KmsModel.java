@@ -55,10 +55,11 @@ public class KmsModel extends Model<KmsModel> {
 
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
-        JavaRDD<Vector> x3 = Kmns.convertToRDD((Dataset<Row>) dataset.select(this.featuresCol));
-        JavaRDD<Kmns.DataModel> x5 = Kmns.computeDistancesAndPredictCluster(x3, this.clusterCenters);
-        Dataset<Row> dm = Kmns.createDataSetUDF(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
-        return dm;
+//        JavaRDD<Vector> x3 = Kmns.convertToRDD((Dataset<Row>) dataset.select(this.featuresCol));
+//        JavaRDD<Kmns.DataModel> x5 = Kmns.computeDistancesAndPredictCluster(x3, this.clusterCenters);
+//        Dataset<Row> dm = Kmns.createDataSetUDF(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
+//        return dm;
+        return null;
     }
 
     @Override

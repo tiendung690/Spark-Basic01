@@ -42,8 +42,8 @@ public class TestKMS {
         SparkConf conf = new SparkConf()
                 .setAppName("KMeans_Implementation_Euclidean_normalArray")
                 .set("spark.driver.allowMultipleContexts", "true")
-                //.set("spark.eventLog.dir", "file:///C:/logs")
-                //.set("spark.eventLog.enabled", "true")
+                .set("spark.eventLog.dir", "file:///C:/logs")
+                .set("spark.eventLog.enabled", "true")
                 //.set("spark.driver.memory", "4g")
                 //.set("spark.executor.memory", "4g")
                 .setMaster("local[*]");
@@ -85,9 +85,9 @@ public class TestKMS {
         Kms kmsModel = new Kms()
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
-                .setK(5)
-                .setMaxIter(20)
-                .setSeed(30L);
+                .setK(6)
+                //.setMaxIter(5)
+                .setSeed(20L);
 
 
         //Chain indexers and tree in a Pipeline.
@@ -110,7 +110,7 @@ public class TestKMS {
         ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kmsModel.getPredictionCol(), kmsModel.getFeaturesCol(), kmsModel.getK());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
-       // Kmns.saveAsCSV(predictions);
+       //Kmns.saveAsCSV(predictions);
 
     }
 }

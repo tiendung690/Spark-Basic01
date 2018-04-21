@@ -72,19 +72,20 @@ public class Kms extends Estimator<KmsModel> {
 
     @Override
     public KmsModel fit(Dataset<?> dataset) {
-        this.transformSchema(dataset.schema());
-
-        JavaRDD<Vector> x3 = Kmns.convertToRDD((Dataset<Row>) dataset.select(this.featuresCol));
-        x3.cache();
-        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, this.k, this.seed));
-        ArrayList<Vector> clusterCenters2 = Kmns.computeCenters(x3, clusterCenters);
-        //String s = dataset.toJavaRDD().take(1).get(0).toString();
-        KmsModel kmsModel = new KmsModel()
-                .setClusterCenters(clusterCenters2)
-                .setPredictionCol(this.predictionCol)
-                .setFeaturesCol(this.featuresCol);
-
-        return kmsModel;
+//        this.transformSchema(dataset.schema());
+//
+//        JavaRDD<Vector> x3 = Kmns.convertToRDD((Dataset<Row>) dataset.select(this.featuresCol));
+//        x3.cache();
+//        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, this.k, this.seed));
+//        ArrayList<Vector> clusterCenters2 = Kmns.computeCenters(x3, clusterCenters);
+//        //String s = dataset.toJavaRDD().take(1).get(0).toString();
+//        KmsModel kmsModel = new KmsModel()
+//                .setClusterCenters(clusterCenters2)
+//                .setPredictionCol(this.predictionCol)
+//                .setFeaturesCol(this.featuresCol);
+//
+//        return kmsModel;
+        return null;
     }
 
     @Override
