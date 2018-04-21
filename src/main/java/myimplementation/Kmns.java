@@ -15,10 +15,8 @@ import org.apache.spark.ml.clustering.KMeansSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.feature.LabeledPoint;
 import org.apache.spark.ml.feature.VectorAssembler;
-import org.apache.spark.ml.linalg.DenseVector;
-import org.apache.spark.ml.linalg.SparseVector;
+import org.apache.spark.ml.linalg.*;
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.VectorUDT;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.util.MLUtils;
 import org.apache.spark.rdd.RDD;
@@ -27,15 +25,13 @@ import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.*;
 import org.apache.spark.storage.StorageLevel;
+import scala.Tuple2;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.atomic.LongAccumulator;
 
 /**
@@ -92,9 +88,9 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
-        //String path = "data/mllib/kmean.txt";
+        String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
         // load mem data
@@ -120,11 +116,12 @@ public class Kmns {
         //System.out.println("NUM PARTITIONS: " + x3.getNumPartitions());
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
-        int k = 26;
+        int k = 2;
         ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
         ArrayList<Vector> clusterCenters = new ArrayList<>();
         for (DataModel dm : cc) {
             clusterCenters.add(dm.getInputData());
+            //System.out.println(Arrays.toString(dm.getInputData().toArray()));
         }
 
 
@@ -142,7 +139,7 @@ public class Kmns {
         dm.show(false);
         dm.printSchema();
 
-        printCenters(clusterCenters);
+        printCenters(clusterCenters2);
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("features");
@@ -171,18 +168,29 @@ public class Kmns {
             //x3 = computeDistancesAndPredictCluster(x3, clusterCenters);
             x3.cache();
             ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
+
+            Map<Integer, Vector> xc = x3
+                    .mapToPair(v1 -> new Tuple2<>(v1.getCluster(), v1.getInputData()))
+                    .reduceByKey((v1, v2) -> sumArrayByColumn(v1, v2))
+                    .collectAsMap();
+
+            for (int i = 0; i < clusterCenters2.size() ; i++) {
+                System.out.println(Arrays.toString(xc.get(i).toArray())+" , CLUSTER: "+i);
+            }
+
             // Update center
             for (int i = 0; i < clusterCenters.size(); i++) {
                 clusterCenters2.set(i, mean(x3, i, clusterCenters2.get(i)));
                 //System.out.println(i + " ," + Arrays.toString(clusterCenters2.get(i).toArray()));
             }
+            x3.unpersist();
             if (clusterCenters2.equals(clusterCenters) || ii == max_iter) {
                 System.out.println("END" + Arrays.toString(clusterCenters2.toArray()));
                 bol = false;
             } else {
                 clusterCenters = clusterCenters2;
                 ii++;
-                //System.out.println("ITERATION: " + ii + " " + Arrays.toString(clusterCenters2.toArray()));
+                System.out.println("ITERATION: " + ii + " " + Arrays.toString(clusterCenters2.toArray()));
             }
         } while (bol);
 
@@ -307,7 +315,7 @@ public class Kmns {
                     double[] dd = new double[cc.size()];
                     for (int i = 0; i < cc.size(); i++) {
                         double d = distanceEuclidean2(v1.getInputData(), cc.get(i));
-                        dd[i]=d;
+                        dd[i] = d;
                     }
 
                     int index = findLowerValIndex(dd);
@@ -316,8 +324,10 @@ public class Kmns {
                     dataModel.setCluster(index);
                     dataModel.setInputData(v1.getInputData());
                     dataModel.setDistances(v1.getDistances());
+                    //System.out.println("in: "+Arrays.toString(dataModel.getInputData().toArray())+", c:"+dataModel.getCluster());
                     return dataModel;
                 });
+        //System.out.println("-------------");
         return e;
     }
 
@@ -333,6 +343,8 @@ public class Kmns {
 
     public static double distanceEuclidean2(Vector t1, Vector t2) {
 
+
+        //return org.apache.spark.ml.linalg.Vectors.sqdist(t1,t2);
         double sum = 0;
         for (int i = 0; i < t1.size(); i++) {
             sum += Math.pow((t1.apply(i) - t2.apply(i)), 2.0);
@@ -383,7 +395,7 @@ public class Kmns {
         return index;
     }
 
-    public static Vector mean(JavaRDD<DataModel> list, int index, Vector clusterCenter) {
+    public static Vector mean2(JavaRDD<DataModel> list, int index, Vector clusterCenter) {
 
 
         JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
@@ -392,27 +404,112 @@ public class Kmns {
         Vector mm;
         if (filtered.isEmpty()) {
             mm = new DenseVector(clusterCenter.toArray());
-        }
-        else {
+            //System.out.println(index+", EMPTY:  "+Arrays.toString(clusterCenter.toArray()));
+        } else {
             org.apache.spark.util.LongAccumulator costAccum = SparkContext.getOrCreate().longAccumulator();
 
-            double[] mmm = filtered
-                    .map(v1 -> v1.getInputData().toArray())
+            Vector mmm = filtered
+                    .map(v1 -> v1.getInputData())
                     .reduce((v1, v2) -> {
                         costAccum.add(1);
-                        if (v1==null || v2==null){
-                            return clusterCenter.toArray();
-                        }else{
-                            return sumArrayByColumnOld(v1, v2);
-                        }
+                        return sumArrayByColumn(v1, v2);
+//                        Vector vv = v2;
+//                        BLAS.axpy(1.0, v1, vv);
+//                        return vv;
                     });
 
-            double[] mm2 = mmm;//mm.toArray();
+            double[] mm2 = mmm.toArray();//mm.toArray();
             for (int i = 0; i < mm2.length; i++) {
                 mm2[i] /= costAccum.value();//count;
             }
             mm = new DenseVector(mm2);
             costAccum.reset();
+        }
+        return mm;
+    }
+
+    public static Vector mean3(JavaRDD<DataModel> list, int index, Vector clusterCenter) {
+
+
+        JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
+        //long count = filtered.count();
+        double[] dd = new double[clusterCenter.size()];
+        for (int i = 0; i < clusterCenter.size(); i++) {
+            dd[i] = 0.0;
+        }
+
+        final Vector defVec = new DenseVector(dd);
+        final Long defCount = 0L;
+
+        //Vector mmm = filtered
+        Tuple2<Vector, Long> mmm = filtered
+                .map(v1 -> v1.getInputData())
+                .zipWithIndex()
+                .fold(new Tuple2<>(defVec, defCount), (v1, v2) -> {
+
+                    return new Tuple2<>(sumArrayByColumn(v1._1(), v2._1()), v1._2() + v2._2());
+
+                    //return sumArrayByColumn(v1, v2);
+//                        Vector vv = v2;
+//                        BLAS.axpy(1.0, v1, vv);
+//                        return vv;
+                });
+
+        Vector mm;
+        if (mmm._2() == 0) {
+            mm = new DenseVector(clusterCenter.toArray());
+            //System.out.println(index+", EMPTY:  "+Arrays.toString(clusterCenter.toArray()));
+        } else {
+            double[] mm2 = mmm._1().toArray();//mm.toArray();
+            for (int i = 0; i < mm2.length; i++) {
+                mm2[i] /= mmm._2();//count;
+            }
+            mm = new DenseVector(mm2);
+        }
+        return mm;
+    }
+
+    public static Vector mean(JavaRDD<DataModel> list, int index, Vector clusterCenter) {
+
+
+        JavaRDD<DataModel> filtered = list.filter(v1 -> v1.getCluster() == index);
+        //long count = filtered.count();
+
+        double[] dd = new double[clusterCenter.size()];
+        for (int i = 0; i < clusterCenter.size(); i++) {
+            dd[i] = 0.0;
+        }
+
+        final Vector defVec = new DenseVector(dd);
+        final Long defCount = 0L;
+
+
+        //Vector mmm = filtered
+        Tuple2<Vector, Long> mmm = filtered
+                .map(v1 -> v1.getInputData())
+                .mapToPair(vector -> new Tuple2<>(vector, 1L))
+                .fold(new Tuple2<>(defVec, defCount), (v1, v2) -> {
+
+                    return new Tuple2<>(sumArrayByColumn(v1._1(), v2._1()), v1._2() + v2._2());
+
+                    //return sumArrayByColumn(v1, v2);
+//                        Vector vv = v2;
+//                        BLAS.axpy(1.0, v1, vv);
+//                        return vv;
+                });
+
+
+        Vector mm;
+        if (mmm._2() == 0L) {
+            mm = new DenseVector(clusterCenter.toArray());
+            //System.out.println(index+", EMPTY:  "+Arrays.toString(clusterCenter.toArray()));
+        } else {
+
+            double[] mm2 = mmm._1().toArray();//mm.toArray();
+            for (int i = 0; i < mm2.length; i++) {
+                mm2[i] /= mmm._2();//count;
+            }
+            mm = new DenseVector(mm2);
         }
         return mm;
     }
