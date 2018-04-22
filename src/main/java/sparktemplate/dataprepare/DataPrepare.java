@@ -62,8 +62,8 @@ public class DataPrepare {
             int colId = listNumIndex.get(i);
 
             // count values (without nulls)
-            long ss = ds.filter(value -> !value.isNullAt(colId))
-                    .map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
+            long ss = ds.filter(value -> !value.isNullAt(colId)).count();
+                   // .map(value -> 1, Encoders.INT()).reduce((v1, v2) -> v1+v2);
 
             // sum values
             Double sum = ds.filter(value -> !value.isNullAt(colId))
@@ -84,7 +84,7 @@ public class DataPrepare {
 
             Dataset<String> words = ds
                     .filter(value -> !value.isNullAt(colId))
-                    .flatMap(s -> Arrays.asList(s.get(colId).toString().toLowerCase().split(" ")).iterator(), Encoders.STRING())
+                    .flatMap(s -> Arrays.asList(s.get(colId).toString().split(" ")).iterator(), Encoders.STRING())
                     //.filter(s -> !s.isEmpty())
                     .coalesce(1); //one partition (parallelism level)
 

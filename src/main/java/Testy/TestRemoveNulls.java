@@ -14,6 +14,8 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;
+import sparktemplate.dataprepare.DataPrepare;
+import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
 import javax.xml.crypto.Data;
@@ -30,25 +32,28 @@ public class TestRemoveNulls {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_JDBC")
+                .setAppName("Spark_JDBC2")
                 .set("spark.driver.allowMultipleContexts", "true")
-                .setMaster("local");
+                .set("spark.eventLog.dir", "file:///C:/logs")
+                .set("spark.eventLog.enabled", "true")
+                .setMaster("local[*]");
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
-        JavaSparkContext javaSparkContext = new JavaSparkContext(conf);
+        //JavaSparkContext javaSparkContext = new JavaSparkContext(conf);
 
-        String path = "data/mllib/kdd_short2.txt"; //"data/mllib/iris.csv";
+        String path = "data/mllib/flights_low.csv"; //"data/mllib/iris.csv";
         System.out.println("// TEST MemDataSet");
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
         Dataset<Row> ds = memDataSet.getDs();
-        Dataset<Row> ds2 = memDataSet.getDs();
-
-
         ds.show();
         ds.printSchema();
-
-
+        ds.cache();
+        Dataset<Row> ds2 = DataPrepare.fillMissingValues(ds);
+        //ds2.show();
+        Dataset<Row> ds3 = new DataPrepareClustering().prepareDataset(ds2,false,false);
+        ds3.show();
+        ds3.printSchema();
 
 
 //        // find symbolical and numerical values in dataset

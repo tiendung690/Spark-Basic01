@@ -40,9 +40,12 @@ public class TestClustering2 {
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
+                .set("spark.driver.memory", "2g")
+                .set("spark.executor.memory", "2g")
                 //.set("spark.driver.memory", "4g")
                 //.set("spark.executor.memory", "4g")
-                .setMaster("local[*]");
+                //.set("spark.default.parallelism", "12")
+                .setMaster("local[1]");
 
 //        SparkConf conf = new SparkConf()
 //                .setAppName("Spark_Default_Kmeans")
@@ -67,17 +70,19 @@ public class TestClustering2 {
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
+        String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/creditcardBIG.csv";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
+
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
-        memDataSet.getDs().cache();
+        //memDataSet.getDs().cache();//.repartition(4);
 
         // kmeans test
         KMean kMean = new KMean(sparkSession);

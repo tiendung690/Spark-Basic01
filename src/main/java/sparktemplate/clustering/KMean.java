@@ -91,12 +91,14 @@ public class KMean implements AClustering {
         KMeans kmeans = new KMeans()
                 .setK(cs.getK())
                 .setSeed(cs.getSeed())
-                //.setMaxIter(5)
+                .setMaxIter(20)
+                .setTol(0)
                 //.setInitSteps(1)
                 //.setTol(0.0)
-                .setInitMode("random")
+                .setInitMode(org.apache.spark.mllib.clustering.KMeans.RANDOM())
                 .setFeaturesCol("features"); //normFeatures
 
+        kmeans.log();
 
         KMeansModel model = kmeans.fit(ds);
         System.out.println("MAX ITERATIONS "+model.getMaxIter());
