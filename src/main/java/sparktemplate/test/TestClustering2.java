@@ -36,7 +36,7 @@ public class TestClustering2 {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Default-Kmeans")
+                .setAppName("Default-Kmeans_kddcup_train_k100_iter4")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
@@ -102,8 +102,8 @@ public class TestClustering2 {
         clusteringEvaluator.setFeaturesCol("features");
         clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: "+clusteringEvaluator.evaluate(kMean.getPredictions()));
-        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
-        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
+        //ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
+        //System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
 
 

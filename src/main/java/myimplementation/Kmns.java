@@ -53,7 +53,7 @@ public class Kmns {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation_Minkowski")
+                .setAppName("KMeans_Implementation_kddcup_train_k100_iter4")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
@@ -93,12 +93,12 @@ public class Kmns {
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
-        String path = "data/mllib/kddcup_train.txt";
+        //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
-        //String path = "data/mllib/kmean.txt";
+        String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/creditcardBIG.csv";
@@ -136,14 +136,13 @@ public class Kmns {
         //System.out.println("NUM PARTITIONS: " + x3.getNumPartitions());
         // Take starting points
         //List<Vector> startingCenters = x3.takeSample(false, 2);
-        int k = 100;
+        int k = 2;
         //ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
         ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
         ArrayList<Vector> clusterCenters = new ArrayList<>();
         for (DataModel dm : cc) {
             clusterCenters.add(dm.getInputData());
         }
-        //x3.unpersist();
 
         //Broadcast<ArrayList<Vector>> broadcastVar = jsc.broadcast(clusterCenters)
         //ArrayList<Vector> clusterCenters = new ArrayList<>();
@@ -152,6 +151,10 @@ public class Kmns {
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
 
         ArrayList<Vector> clusterCenters2 = computeCenters(x3, clusterCenters);
+        x3.unpersist();
+
+
+
         // Compute distances, Predict Cluster
         JavaRDD<DataModel> x5 = predictAll(x3, clusterCenters2);
 
@@ -167,8 +170,8 @@ public class Kmns {
         clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(dm));
 
-        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "prediction", "features", k);
-        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
+        //ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "prediction", "features", k);
+        //System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         dm.unpersist();
 
         //saveAsCSV(dm);
@@ -178,16 +181,18 @@ public class Kmns {
 
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> x33, ArrayList<Vector> cc) {
 
+        //x33.persist(StorageLevel.MEMORY_AND_DISK());
         //x33.cache();
         //x33.persist(StorageLevel.MEMORY_AND_DISK());
         ArrayList<Vector> clusterCenters = new ArrayList<>(cc);
         //System.out.println("!!!!!!!!!!!!:  " + cc.size());
         //JavaRDD<DataModel> x3 =x33;
-        double epsilon = 0;//1e-4;
-        int max_iter = 2;
+        double epsilon = 1e-4;
+        int max_iter = 4;
         boolean bol = true;
         int ii = 0;
         do {
+            //x33.persist(StorageLevel.MEMORY_AND_DISK());
             // Compute distances, Predict Cluste
             //JavaRDD<DataModel> x3 = predictAll(x33, clusterCenters);
             //x3 = computeDistancesAndPredictCluster(x3, clusterCenters);
@@ -221,6 +226,7 @@ public class Kmns {
                         List<DataModel> list = new ArrayList<>();
                         while (vvv.hasNext()) {
                             DataModel v1 = vvv.next();
+                            //System.out.println(Arrays.toString(v1.getInputData().toArray()));
                             double[] dd = new double[ccc.value().size()];
                             for (int i = 0; i < ccc.value().size(); i++) {
                                 //double d = distanceEuclidean(v1.getInputData().toArray(), ccc.value().get(i).toArray());
@@ -241,22 +247,24 @@ public class Kmns {
                         List<Tuple2<Integer, Tuple2<Long, Vector>>> list = new ArrayList<>();
                         while (t.hasNext()) {
                             DataModel element = t.next();
+                            //System.out.println(element.getCluster()+"__"+Arrays.toString(element.getInputData().toArray()));
                             list.add(new Tuple2<>(element.getCluster(), new Tuple2<>(1L, element.getInputData())));
                         }
                         return list.iterator();
                     })
                     .reduceByKey((v1, v2) -> {
-                        Vector vv = v1._2().toDense();
-                        BLAS.axpy(1.0, v2._2().toDense(), vv);
-                        return new Tuple2<>(v1._1() + v2._1(), vv);
-                        //return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()));
+//                        final Vector vv = v1._2().toDense();
+//                        BLAS.axpy(1.0, v2._2().toDense(), vv);
+//                        return new Tuple2<>(v1._1() + v2._1(), vv);
+
+                        return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()));
                     }) // SparkContext.getOrCreate().defaultParallelism()*2
                     .mapValues(v1 -> {
-                        Vector v = v1._2();
-                        BLAS.scal(1.0 / v1._1(), v);
+//                        Vector v = v1._2();
+//                        BLAS.scal(1.0 / v1._1(), v);
+//                        return v;
+                        Vector v = divideArray(v1._2(), v1._1());
                         return v;
-                        //Vector v = divideArray(v1._2(), v1._1());
-                        //return v;
                     })
                     .collectAsMap();
 
@@ -278,8 +286,7 @@ public class Kmns {
             }
 
             centers_distance = centers_distance / clusterCenters.size();
-
-            System.out.println("CENTERS_DISTANCE: " + centers_distance);
+            //System.out.println("CENTERS_DISTANCE: " + centers_distance);
             // ok
             boolean coverage = false;
             //clusterCenters2.equals(clusterCenters);
@@ -291,8 +298,9 @@ public class Kmns {
                 //System.out.println("$$$$$$:  " + clusterCenters.size() + ",    2: " + clusterCenters2.size());
                 clusterCenters = new ArrayList<>(clusterCenters2);
                 ii++;
-                System.out.println("ITERATION: " + ii);///+ " " + Arrays.toString(clusterCenters2.toArray()));
+                System.out.println("ITERATION: " + ii+ " " + Arrays.toString(clusterCenters2.toArray()));
             }
+            //x33.unpersist();
         } while (bol);
 
         return clusterCenters;
