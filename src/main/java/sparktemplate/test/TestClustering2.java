@@ -70,7 +70,7 @@ public class TestClustering2 {
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        String path = "data/mllib/kdd_3_proc.txt";
+        String path = "data/mllib/kdd_10_proc.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
@@ -105,7 +105,9 @@ public class TestClustering2 {
         ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
-        //Kmns.saveAsCSV(kMean.getPredictions());
+
+
+        //mns.saveAsCSV(kMean.getPredictions());
         //new Scanner(System.in).nextLine();
         sparkSession.close();
 
