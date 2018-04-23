@@ -91,7 +91,7 @@ public class KMean implements AClustering {
         KMeans kmeans = new KMeans()
                 .setK(cs.getK())
                 .setSeed(cs.getSeed())
-                .setMaxIter(4)
+                .setMaxIter(20)
                 //.setTol(0)
                 //.setInitSteps(1)
                 //.setTol(0.0)
