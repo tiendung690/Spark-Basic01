@@ -1,6 +1,9 @@
 package myimplementation;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.math3.ml.distance.DistanceMeasure;
+import org.apache.commons.math3.ml.distance.EuclideanDistance;
+import org.apache.commons.math3.transform.FastCosineTransformer;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -9,12 +12,14 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.ml.ann.BreezeUtil;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.clustering.KMeansSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.feature.LabeledPoint;
 import org.apache.spark.ml.feature.VectorAssembler;
+import org.apache.spark.ml.feature.VectorSlicer;
 import org.apache.spark.ml.linalg.*;
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.DenseVector;
@@ -27,12 +32,14 @@ import org.apache.spark.mllib.linalg.*;
 import org.apache.spark.mllib.linalg.BLAS$;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.util.MLUtils;
+import org.apache.spark.mllib.util.MLUtils$;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.*;
 import org.apache.spark.storage.StorageLevel;
+import org.spark_project.dmg.pmml.Minkowski;
 import scala.Tuple2;
 import shapeless.Tuple;
 import sparktemplate.dataprepare.DataPrepare;
@@ -95,14 +102,14 @@ public class Kmns {
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
-        String path = "data/mllib/kddcup_train.txt";
+        //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        //String path = "data/mllib/creditcard.csv";
+        String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/creditcardBIG.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -189,7 +196,7 @@ public class Kmns {
         //System.out.println("!!!!!!!!!!!!:  " + cc.size());
         //JavaRDD<DataModel> x3 =x33;
         double epsilon = 1e-4;
-        int max_iter = 10;
+        int max_iter = 20;
         boolean bol = true;
         int ii = 0;
         do {
@@ -326,7 +333,7 @@ public class Kmns {
                     //System.out.println("elseeeee");
                     clusterCenters2.set(i, clusterCenters2.get(i));
                 }
-                centers_distance += distanceEuclidean2(clusterCenters.get(i), clusterCenters2.get(i));
+                centers_distance += org.apache.spark.ml.linalg.Vectors.sqdist(clusterCenters.get(i), clusterCenters2.get(i));//distanceEuclidean2(clusterCenters.get(i), clusterCenters2.get(i));
 //                centers_distance += KMeans$.MODULE$.fastSquaredDistance(new VectorWithNorm(Vectors.fromML(clusterCenters.get(i)), 2.0)
 //                        , new VectorWithNorm(Vectors.fromML(clusterCenters2.get(i)), 2.0));
             }
@@ -431,81 +438,84 @@ public class Kmns {
         return dm;
     }
 
-    public static JavaRDD<DataModel> predictAll(JavaRDD<DataModel> x, ArrayList<Vector> cc) {
-
-        JavaSparkContext jsc = new JavaSparkContext(x.context());
-        Broadcast<ArrayList<Vector>> ccc = jsc.broadcast(cc);
-
-        JavaRDD<DataModel> e = x
-                .mapPartitions(vvv -> {
-
-                    List<DataModel> list = new ArrayList<>();
-                    while (vvv.hasNext()) {
-                        DataModel v1 = vvv.next();
-                        //System.out.println(Arrays.toString(v1.getInputData().toArray()));
-                        double[] dd = new double[ccc.value().size()];
-                        for (int i = 0; i < ccc.value().size(); i++) {
-                            //double d = distanceEuclidean(v1.getInputData().toArray(), ccc.value().get(i).toArray());
-                            double d = KMeans$.MODULE$.fastSquaredDistance(new VectorWithNorm(Vectors.fromML(v1.getInputData()))
-                                    , new VectorWithNorm(Vectors.fromML(cc.get(i))));
-                            dd[i] = d;
-                        }
-
-                        // long startTime = System.nanoTime();
-
-                        int index = findLowerValIndex(dd);
-
-//                        long endTime   = System.nanoTime();
-//                        long totalTime = endTime - startTime;
-//                        System.out.println("******************"+totalTime);
-
-
-//                        DataModel dataModel = new DataModel();
-//                        dataModel.setCluster(index);
-//                        dataModel.setInputData(v1.getInputData());
-//                        list.add(dataModel);
-                        list.add(v1.setCluster(index));
-                    }
-                    return list.iterator();
-                });
-//                .map(v1 -> {
+//    public static JavaRDD<DataModel> predictAll(JavaRDD<DataModel> x, ArrayList<Vector> cc) {
 //
-//                    double[] dd = new double[cc.size()];
-//                    for (int i = 0; i < cc.size(); i++) {
-//                        double d = distanceEuclidean(v1.getInputData().toArray(), cc.get(i).toArray());
-//                        //double d = KMeans$.MODULE$.fastSquaredDistance(v1,cc.get(i));
-//                        dd[i] = d;
+//        JavaSparkContext jsc = new JavaSparkContext(x.context());
+//        Broadcast<ArrayList<Vector>> ccc = jsc.broadcast(cc);
+//
+//        JavaRDD<DataModel> e = x
+//                .mapPartitions(vvv -> {
+//
+//                    List<DataModel> list = new ArrayList<>();
+//                    while (vvv.hasNext()) {
+//                        DataModel v1 = vvv.next();
+//                        //System.out.println(Arrays.toString(v1.getInputData().toArray()));
+//                        double[] dd = new double[ccc.value().size()];
+//                        for (int i = 0; i < ccc.value().size(); i++) {
+//                            //double d = distanceEuclidean(v1.getInputData().toArray(), ccc.value().get(i).toArray());
+//                            double d = KMeans$.MODULE$.fastSquaredDistance(new VectorWithNorm(Vectors.fromML(v1.getInputData()))
+//                                    , new VectorWithNorm(Vectors.fromML(cc.get(i))));
+//                            dd[i] = d;
+//                        }
+//
+//                        // long startTime = System.nanoTime();
+//
+//                        int index = findLowerValIndex(dd);
+//
+////                        long endTime   = System.nanoTime();
+////                        long totalTime = endTime - startTime;
+////                        System.out.println("******************"+totalTime);
+//
+//
+////                        DataModel dataModel = new DataModel();
+////                        dataModel.setCluster(index);
+////                        dataModel.setInputData(v1.getInputData());
+////                        list.add(dataModel);
+//                        list.add(v1.setCluster(index));
 //                    }
-//
-//                    int index = findLowerValIndex(dd);
-//
-//                    DataModel dataModel = new DataModel();
-//                    dataModel.setCluster(index);
-//                    dataModel.setInputData(v1.getInputData());
-//                    //dataModel.setDistances(v1.getDistances());
-//                    //dataModel.setInputData(v1.vector().asML());
-//                    //System.out.println("in: "+Arrays.toString(dataModel.getInputData().toArray())+", c:"+dataModel.getCluster());
-//                    return dataModel;
+//                    return list.iterator();
 //                });
-        //System.out.println("-------------");
-        return e;
-    }
+////                .map(v1 -> {
+////
+////                    double[] dd = new double[cc.size()];
+////                    for (int i = 0; i < cc.size(); i++) {
+////                        double d = distanceEuclidean(v1.getInputData().toArray(), cc.get(i).toArray());
+////                        //double d = KMeans$.MODULE$.fastSquaredDistance(v1,cc.get(i));
+////                        dd[i] = d;
+////                    }
+////
+////                    int index = findLowerValIndex(dd);
+////
+////                    DataModel dataModel = new DataModel();
+////                    dataModel.setCluster(index);
+////                    dataModel.setInputData(v1.getInputData());
+////                    //dataModel.setDistances(v1.getDistances());
+////                    //dataModel.setInputData(v1.vector().asML());
+////                    //System.out.println("in: "+Arrays.toString(dataModel.getInputData().toArray())+", c:"+dataModel.getCluster());
+////                    return dataModel;
+////                });
+//        //System.out.println("-------------");
+//        return e;
+//    }
 
     public static JavaPairRDD<Integer, Vector> predictAll2(JavaPairRDD<Integer, Vector> x, ArrayList<Vector> cc) {
 
         JavaSparkContext jsc = new JavaSparkContext(x.context());
-        Broadcast<ArrayList<Vector>> ccc = jsc.broadcast(cc);
-        
+
+        ArrayList<VectorWithNorm> ww = new ArrayList<>();
+        for(Vector v : cc){
+            ww.add(new VectorWithNorm(Vectors.fromML(v)));
+        }
+
+        Broadcast<ArrayList<VectorWithNorm>> ccc = jsc.broadcast(ww);
+
+
         JavaPairRDD<Integer, Vector> e = x
                 .mapPartitionsToPair(vvv -> {
                     List<Tuple2<Integer, Vector>> list = new ArrayList<>();
                     while (vvv.hasNext()) {
                         Tuple2<Integer, Vector> v1 = vvv.next();
-                        double[] dd = new double[ccc.value().size()];
-                        for (int i = 0; i < ccc.value().size(); i++) {
-                            double d = distanceEuclidean(v1._2().toArray(), ccc.value().get(i).toArray());
-                            dd[i] = d;
-                        }
+                        double[] dd = computeDistance(ccc.value(), new VectorWithNorm(Vectors.fromML(v1._2())));
                         int index = findLowerValIndex(dd);
                         list.add(new Tuple2<>(index, v1._2()));
                     }
@@ -515,6 +525,24 @@ public class Kmns {
         return e;
     }
 
+    public static double[] computeDistance(ArrayList<VectorWithNorm> centers, VectorWithNorm point) {
+        double[] dd = new double[centers.size()];
+        for (int i = 0; i < centers.size(); i++) {
+            //double d = org.apache.spark.ml.linalg.Vectors.sqdist(v1._2(),ccc.value().get(i));
+            //double d = distanceEuclidean(v1._2().toArray(), ccc.value().get(i).toArray());
+            double d = MLUtils$.MODULE$.fastSquaredDistance(
+                    point.vector(), point.norm(),
+                    centers.get(i).vector(), centers.get(i).norm(),
+                    1e-6);
+            //double d = distanceEuclidean2(point, centers.get(i));
+            dd[i] = d;
+        }
+        return dd;
+    }
+
+    static double cosineDistance(Vector v1, Vector v2){
+       return 1 - BLAS.dot(v1, v2) / org.apache.spark.ml.linalg.Vectors.norm(v1,2.0) / org.apache.spark.ml.linalg.Vectors.norm(v2,2.0);
+    }
     static double squaredDistance(Vector a, Vector b) {
         double distance = 0.0;
         int size = a.size();
@@ -534,8 +562,17 @@ public class Kmns {
         return Math.sqrt(sum);
     }
 
-    public static double distanceEuclidean2(Vector t1, Vector t2) {
+    public static double distanceEuclideanSquaredFast(Vector t1, Vector t2) {
+        //System.out.println("########: "+t1.size()+",  "+t2.size());
+        //return org.apache.spark.ml.linalg.Vectors.sqdist(t1,t2);
+        double sum = 0;
+        for (int i = 0; i < t1.size(); i++) {
+            sum += Math.pow((t1.apply(i) - t2.apply(i)), 2.0);
+        }
+        return sum;
+    }
 
+    public static double distanceEuclidean2(Vector t1, Vector t2) {
         //System.out.println("########: "+t1.size()+",  "+t2.size());
         //return org.apache.spark.ml.linalg.Vectors.sqdist(t1,t2);
         double sum = 0;
@@ -582,6 +619,19 @@ public class Kmns {
         for (int i = 1; i < tab.length; i++) {
             if (tab[i] < min) {
                 min = tab[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    public static int findLowerValIndexNew(Vector tab) {
+
+        int index = 0;
+        double min = tab.apply(index);
+        for (int i = 1; i < tab.size(); i++) {
+            if (tab.apply(i) < min) {
+                min = tab.apply(i);
                 index = i;
             }
         }
