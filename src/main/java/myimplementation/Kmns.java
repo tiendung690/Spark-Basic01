@@ -41,6 +41,7 @@ import org.apache.spark.sql.types.*;
 import org.apache.spark.storage.StorageLevel;
 import org.spark_project.dmg.pmml.Minkowski;
 import scala.Tuple2;
+import scala.math.package$;
 import shapeless.Tuple;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
@@ -62,7 +63,7 @@ public class Kmns {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation_kddcup_10_k100_iter10")
+                .setAppName("KMeans_Implementation")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
@@ -98,7 +99,7 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt";
-        //String path = "data/mllib/kdd_5_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
@@ -109,7 +110,7 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/creditcardBIG.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -161,7 +162,7 @@ public class Kmns {
 
         Dataset<Row> dm = createDataSet2(x5, spark, "features", "prediction");
         dm.cache();
-        //dm.show();
+        dm.show();
         //dm.printSchema();
 
         printCenters(clusterCenters2);
@@ -171,8 +172,8 @@ public class Kmns {
         clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(dm));
 
-        //ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "prediction", "features", k);
-        //System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
+        ClusteringSummary clusteringSummary = new ClusteringSummary(dm, "prediction", "features", k);
+        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         dm.unpersist();
 
         //saveAsCSV(dm);
@@ -208,7 +209,7 @@ public class Kmns {
             //x3.foreach(f -> System.out.println(f.getCluster()+", "+Arrays.toString(f.getInputData().toArray())));
             ArrayList<Vector> clusterCenters2 = new ArrayList<>(clusterCenters);
             //System.out.println("#########:  " + clusterCenters.size() + ",    2: " + clusterCenters2.size());
-            Broadcast<ArrayList<Vector>> ccc = jsc.broadcast(clusterCenters2);
+            //Broadcast<ArrayList<Vector>> ccc = jsc.broadcast(clusterCenters2);
             //final Vector defVec = org.apache.spark.ml.linalg.Vectors.zeros(clusterCenters2.get(0).size());
             //final Long defCount = 0L;
             //Map<Integer, Tuple2<Long, Vector>> xc = x3
@@ -229,14 +230,14 @@ public class Kmns {
             });
             // 3
             JavaPairRDD<Integer, Tuple2<Long, Vector>> s3 = s2.reduceByKey((v1, v2) -> {
-//                final Vector vv = v1._2().toDense();
+//                Vector vv = new DenseVector(v1._2().toArray());
 //                BLAS.axpy(1.0, v2._2().toDense(), vv);
 //                return new Tuple2<>(v1._1() + v2._1(), vv);
                 return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()));
             });
             // 4
             JavaPairRDD<Integer, Vector> s4 = s3.mapValues(v1 -> {
-//                Vector v = v1._2();
+//                Vector v = new DenseVector(v1._2().toArray());
 //                BLAS.scal(1.0 / v1._1(), v);
 //                return v;
                 Vector v = divideArray(v1._2(), v1._1());
@@ -319,7 +320,7 @@ public class Kmns {
 //                    .collectAsMap();
 
 
-            ccc.destroy(false);
+            ///ccc.destroy(false);
 
 
             double centers_distance = 0.0;
@@ -534,10 +535,37 @@ public class Kmns {
                     point.vector(), point.norm(),
                     centers.get(i).vector(), centers.get(i).norm(),
                     1e-6);
-            //double d = distanceEuclidean2(point, centers.get(i));
+
+//            double d = fastSquaredDistance(point.vector(), point.norm(),
+//                    centers.get(i).vector(), centers.get(i).norm());
+
+
+//            double d = distanceEuclidean2(point.vector(), centers.get(i).vector());
             dd[i] = d;
         }
         return dd;
+    }
+
+    public static double fastSquaredDistance(org.apache.spark.mllib.linalg.Vector v1, double norm1, org.apache.spark.mllib.linalg.Vector v2, double norm2) {
+        double epsilon = 1e-1;
+        double precision = 1e-1;
+        double sumSquaredNorm = norm1 * norm1 + norm2 * norm2;
+        double normDiff = norm1 - norm2;
+        double sqDist = 0.0;
+        double precisionBound1 = 2.0D * epsilon * sumSquaredNorm / (normDiff * normDiff + epsilon);
+        if(precisionBound1 < precision) {
+            sqDist = sumSquaredNorm - 2.0D * org.apache.spark.mllib.linalg.BLAS$.MODULE$.dot(v1, v2);
+        } else if(!(v1 instanceof org.apache.spark.mllib.linalg.SparseVector) && !(v2 instanceof org.apache.spark.mllib.linalg.SparseVector)) {
+            sqDist = Vectors.sqdist(v1, v2);
+        } else {
+            double dotValue = org.apache.spark.mllib.linalg.BLAS$.MODULE$.dot(v1, v2);
+            sqDist = package$.MODULE$.max(sumSquaredNorm - 2.0D * dotValue, 0.0D);
+            double precisionBound2 = epsilon * (sumSquaredNorm + 2.0D * package$.MODULE$.abs(dotValue)) / (sqDist + epsilon);
+            if(precisionBound2 > precision) {
+                sqDist = Vectors.sqdist(v1, v2);
+            }
+        }
+        return sqDist;
     }
 
     static double cosineDistance(Vector v1, Vector v2){
@@ -573,6 +601,16 @@ public class Kmns {
     }
 
     public static double distanceEuclidean2(Vector t1, Vector t2) {
+        //System.out.println("########: "+t1.size()+",  "+t2.size());
+        //return org.apache.spark.ml.linalg.Vectors.sqdist(t1,t2);
+        double sum = 0;
+        for (int i = 0; i < t1.size(); i++) {
+            sum += Math.pow((t1.apply(i) - t2.apply(i)), 2.0);
+        }
+        return Math.sqrt(sum);
+    }
+
+    public static double distanceEuclidean2(org.apache.spark.mllib.linalg.Vector t1, org.apache.spark.mllib.linalg.Vector t2) {
         //System.out.println("########: "+t1.size()+",  "+t2.size());
         //return org.apache.spark.ml.linalg.Vectors.sqdist(t1,t2);
         double sum = 0;
