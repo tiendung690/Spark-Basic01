@@ -41,13 +41,13 @@ public class Testy {
                 //.limit(0);
 
         df.printSchema();
-        System.out.println(df.count());
-
-
-        StringIndexer stringIndexer = new StringIndexer();
-        stringIndexer.setInputCol("kolor").setOutputCol("kolor2");
-        stringIndexer.setHandleInvalid("keep");
-        stringIndexer.fit(df).transform(df).show();
+//        System.out.println(df.count());
+//
+//
+//        StringIndexer stringIndexer = new StringIndexer();
+//        stringIndexer.setInputCol("kolor").setOutputCol("kolor2");
+//        stringIndexer.setHandleInvalid("keep");
+//        stringIndexer.fit(df).transform(df).show();
 
 
 
@@ -72,16 +72,20 @@ public class Testy {
 //            System.out.println(o.toString());
 //        }
 
-//        df.write()
-//                .option("driver", "com.mysql.jdbc.Driver")
-//                .option("url", "jdbc:mysql://localhost:3306/rsds_data?rewriteBatchedStatements=true") // ?rewriteBatchedStatements=true
-//                .option("dbtable", "4slowa_kluczowe")
-//                .option("user", "root")
-//                .option("password", "")
-//                .option("inferSchema", true)
-//                .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
-//                .mode(SaveMode.Append)
-//                .save();
+        try {
+            df.write()
+                    .option("driver", "com.mysql.jdbc.Driver")
+                    .option("url", "jdbc:mysql://localhost:3306/rsds_data?rewriteBatchedStatements=true") // ?rewriteBatchedStatements=true
+                    .option("dbtable", "199999slowa_kluczowe")
+                    .option("user", "root")
+                    .option("password", "")
+                    .option("inferSchema", true)
+                    .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
+                    .mode(SaveMode.ErrorIfExists)
+                    .save();
+        }catch (Exception e){
+            System.err.println("exception: "+e);
+        }
 
 
 //        Dataset<Row> jdbcDF = sparkSession.read()

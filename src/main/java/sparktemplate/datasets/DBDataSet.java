@@ -1,10 +1,7 @@
 package sparktemplate.datasets;
 
 import org.apache.spark.rdd.JdbcRDD;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import sparktemplate.DataRecord;
 
 import java.sql.*;
@@ -48,18 +45,23 @@ public class DBDataSet {
         //oraz typem kolumn dla Sparka.
 
         // Spark
-        this.ds = sparkSession.read()
-                .option("driver", driver)
-                .option("url", url)
-                .option("dbtable", table)
-                .option("user", user)
-                .option("password", password)
-                .option("inferSchema", true)
-                .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
-                .load();
+        try {
+            this.ds = sparkSession.read()
+                    .option("driver", driver)
+                    .option("url", url)
+                    .option("dbtable", table)
+                    .option("user", user)
+                    .option("password", password)
+                    .option("inferSchema", true)
+                    .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
+                    .load();
+
+        } catch (Exception e) {
+            System.err.println("DB exception!!!");
+            System.err.println(e.getMessage());
+        }
 
         // JDBC
-
         try {
             Class.forName(driver);
             Connection conn = DriverManager.getConnection(url, user, password);
@@ -72,6 +74,23 @@ public class DBDataSet {
         }
 
 
+    }
+
+    public void save(Dataset<Row> dataset) {
+        try {
+            dataset.write()
+                    .option("driver", driver)
+                    .option("url", url + "?rewriteBatchedStatements=true")
+                    .option("dbtable", table)
+                    .option("user", user)
+                    .option("password", password)
+                    .option("inferSchema", true)
+                    .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
+                    .mode(SaveMode.Append)
+                    .save();
+        } catch (Exception e) {
+            System.err.println("DB exception: " + e);
+        }
     }
 
     //-------------

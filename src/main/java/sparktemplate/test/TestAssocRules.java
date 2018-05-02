@@ -32,7 +32,7 @@ public class TestAssocRules {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path = "data/mllib/koszyk.txt"; //"data/mllib/iris.csv";
+        String path = "data/mllib/kdd_3_proc.txt"; //"data/mllib/koszyk.txt"; //"data/mllib/iris.csv";
 
         System.out.println("// TEST MemDataSet");
         MemDataSet memDataSet = new MemDataSet(sparkSession);
@@ -47,9 +47,9 @@ public class TestAssocRules {
         // build
         fpG.buildAssociations(memDataSet, associationSettings);
         // save
-        fpG.saveAssociationRules("data/saved_data/AssocRules");
+        //fpG.saveAssociationRules("data/saved_data/AssocRules");
         // load
-        fpG.loadAssociationRules("data/saved_data/AssocRules");
+        //fpG.loadAssociationRules("data/saved_data/AssocRules");
 
 
 
