@@ -5,13 +5,12 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
-import org.apache.spark.ml.linalg.BLAS;
-import org.apache.spark.ml.linalg.BLAS$;
-import org.apache.spark.ml.linalg.DenseVector;
+import org.apache.spark.ml.linalg.*;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.mllib.clustering.VectorWithNorm;
 import org.apache.spark.mllib.linalg.Vectors;
@@ -47,7 +46,6 @@ public class Kmns {
                 .setMaster("local[*]");
 
 
-
 //        SparkConf conf = new SparkConf()
 //                .setAppName("Spark_MY_implementation")
 //                .setMaster("spark://10.2.28.17:7077")
@@ -70,8 +68,8 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt";
-        //String path = "data/mllib/kdd_5_proc.txt";
-        String path = "data/mllib/kdd_3_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
+        //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
         //String path = "data/mllib/kddcup_train.txt";
@@ -83,6 +81,12 @@ public class Kmns {
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
+
+        //String path = "data/mllib/serce.csv";
+        //String path = "data/mllib/rezygnacje.csv";
+        //String path = "data/mllib/rezygnacje.csv";
+        //String path = "data/mllib/sat.csv"; // PROBLEM Z FORMATEM DANYCH
+
         //String path = "data/mllib/creditcardBIG.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -97,6 +101,23 @@ public class Kmns {
         //ds.show(false);
 //        ds.printSchema();
 
+
+        JavaRDD<Row> filteredRDD = ds
+                .toJavaRDD()
+                .zipWithIndex()
+                // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
+                .filter((Tuple2<Row,Long> v1) -> v1._2==10 || v1._2==22)
+                .map(r -> r._1);
+
+
+        List<Vector> cx = filteredRDD.map(v -> (Vector)v.get(0)).collect();
+
+        ArrayList<Vector> newCenters = new ArrayList<>();
+        newCenters.addAll(cx);
+
+        System.out.println(newCenters.toString());
+
+        ArrayList<Vector> clusterCenters = newCenters;
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         // Convert dataset to JavaRDD of Vectors
@@ -112,17 +133,17 @@ public class Kmns {
         //x3.persist(StorageLevel.MEMORY_ONLY());
         System.out.println("XXXX12312312323:  " + x3.getStorageLevel().toString());
 
-        int k = 3;
-        //ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
-        ArrayList<Tuple2<Integer, Vector>> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
-        ArrayList<Vector> clusterCenters = new ArrayList<>();
-        for (Tuple2<Integer, Vector> dm : cc) {
-            clusterCenters.add(dm._2());
-        }
+        int k = 2;
+        //ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 1L));
+//        ArrayList<Tuple2<Integer, Vector>> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
+//        ArrayList<Vector> clusterCenters = new ArrayList<>();
+//        for (Tuple2<Integer, Vector> dm : cc) {
+//            clusterCenters.add(dm._2());
+//        }
 
-        //ArrayList<Vector> clusterCenters = new ArrayList<>();
-        //clusterCenters.add(new DenseVector(new double[]{4.8,3.0,1.4,0.3,0.0,1.0}));
-        //clusterCenters.add(new DenseVector(new double[]{6.9,3.1,4.9,1.5,1.0,0.0}));
+//        ArrayList<Vector> clusterCenters = new ArrayList<>();
+//        clusterCenters.add(new DenseVector(new double[]{5.1,3.5,1.4,0.2}));
+//        clusterCenters.add(new DenseVector(new double[]{5.7,3.8,1.7,0.3}));
         System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
 
         ArrayList<Vector> clusterCenters2 = computeCenters(x3, clusterCenters);
@@ -187,14 +208,20 @@ public class Kmns {
 
             // 3
             JavaPairRDD<Integer, Tuple2<Long, Vector>> s3 = s2.reduceByKey((v1, v2) -> {
-//                  BLAS$.MODULE$.axpy(1.0, v2._2().toDense(), v1._2().toDense());
-//                  return new Tuple2<>(v1._1() + v2._1(), v1._2());
-               return new Tuple2<>(v1._1() + v2._1(), Util.sumArrayByColumn(v1._2(), v2._2()));
+
+//                DenseVector dd = v1._2().toDense();//.copy();
+//                BLAS$.MODULE$.axpy(1.0, v2._2(), dd);
+//                return new Tuple2<>(v1._1() + v2._1(), dd);
+
+
+                //return new Tuple2<>(v1._1() + v2._1(), Util.sumArrayByColumn(v1._2(), v2._2()));
+
+                return new Tuple2<>(v1._1() + v2._1(), new FastAxpy().axpy(1.0, v2._2(), v1._2().toDense()));
             });
 
             // 4
             JavaPairRDD<Integer, Vector> s4 = s3.mapValues(v1 -> {
-//                Vector v = new DenseVector(v1._2().toArray());
+//                Vector v = v1._2();
 //                BLAS$.MODULE$.scal(1.0 / v1._1(), v);
 //                return v;
                 Vector v = Util.divideArray(v1._2(), v1._1());
@@ -229,7 +256,8 @@ public class Kmns {
                 } else {
                     clusterCenters2.set(i, clusterCenters2.get(i));
                 }
-                centers_distance += org.apache.spark.ml.linalg.Vectors.sqdist(clusterCenters.get(i), clusterCenters2.get(i));
+                //centers_distance += org.apache.spark.ml.linalg.Vectors.sqdist(clusterCenters.get(i), clusterCenters2.get(i));
+                centers_distance += Distances.squaredDistance(clusterCenters.get(i), clusterCenters2.get(i));
             }
             centers_distance = centers_distance / clusterCenters.size();
 
@@ -265,7 +293,7 @@ public class Kmns {
                         Tuple2<Integer, Vector> v1 = vvv.next();
                         double[] dd = computeDistance(ccc.value(), new VectorWithNorm(Vectors.fromML(v1._2())));
                         int index = Util.findLowerValIndex(dd);
-                       // System.out.println(index+", "+Arrays.toString(v1._2().toArray()));
+                        //System.out.println(index+", "+Arrays.toString(v1._2().toArray()));
                         list.add(new Tuple2<>(index, v1._2()));
                     }
                     return list.iterator();
@@ -284,10 +312,17 @@ public class Kmns {
 //                    centers.get(i).vector(), centers.get(i).norm(),
 //                    1e-6);
 
-            double d = Distances.fastSquaredDistance(point.vector(), point.norm(),
+//            double d = Distances.fastSquaredDistance(point.vector(), point.norm(),
+//                    centers.get(i).vector(), centers.get(i).norm());
+
+            double d = Distances.fastSquaredDistance_V2(point.vector(), point.norm(),
                     centers.get(i).vector(), centers.get(i).norm());
 
-            //double d = Distances.distanceEuclidean2(point.vector(), centers.get(i).vector());
+
+           //double d = Distances.distanceEuclidean2(point.vector(), centers.get(i).vector());
+           // double d = Vectors.sqdist(point.vector(), centers.get(i).vector());
+           // double d = Distances.fastDistanceXD(point.vector(), centers.get(i).vector());
+
             dd[i] = d;
         }
         return dd;

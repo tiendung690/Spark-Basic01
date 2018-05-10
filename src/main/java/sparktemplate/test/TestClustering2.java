@@ -70,7 +70,7 @@ public class TestClustering2 {
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
+        //String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
         String path = "data/mllib/creditcard.csv";
@@ -87,7 +87,7 @@ public class TestClustering2 {
         // kmeans test
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings()
-                .setK(100)
+                .setK(20)
                 .setSeed(20L);
 
         kMean.buildClusterer(memDataSet, clusteringSettings);

@@ -1,6 +1,5 @@
 package sparktemplate.association;
 
-import com.sun.nio.sctp.Association;
 import org.apache.spark.ml.fpm.FPGrowth;
 import org.apache.spark.ml.fpm.FPGrowthModel;
 import org.apache.spark.sql.Dataset;
