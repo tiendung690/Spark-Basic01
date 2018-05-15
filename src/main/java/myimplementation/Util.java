@@ -27,6 +27,10 @@ import java.util.HashSet;
  */
 public class Util {
 
+    public static void main(String[] args) {
+        double[] tab = new double[]{-20,1,2,3,4,6,-1};
+        System.out.println(findLowerValIndex(tab));
+    }
     public static JavaRDD<Kmns.DataModel> convertToRDDModel(Dataset<Row> ds) {
         // Convert dataset to JavaRDD of DataModel
         JavaRDD<Kmns.DataModel> x3 = ds.toJavaRDD().map(row -> {

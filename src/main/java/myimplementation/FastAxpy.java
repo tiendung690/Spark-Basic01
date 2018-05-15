@@ -5,6 +5,8 @@ import org.apache.spark.ml.linalg.DenseMatrix;
 import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.SparseVector;
 import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.mllib.clustering.VectorWithNorm;
+import org.apache.spark.mllib.linalg.Vectors;
 import scala.Serializable;
 import scala.StringContext;
 import scala.collection.immutable.VectorBuilder;
@@ -21,10 +23,12 @@ public class FastAxpy {
     public static void main(String[] args) {
         Vector d1 = new DenseVector(new double[]{1, 2, 3, 4, 5});
         Vector d2 = new DenseVector(new double[]{2, 2, 2, 2, 2});
-        FastAxpy fa = new FastAxpy();
-        fa.axpy(2.0, d1, d2);
-        System.out.println(Arrays.toString(d1.toArray()));
-        System.out.println(Arrays.toString(d2.toArray()));
+
+        System.out.println(new VectorWithNorm(Vectors.fromML(d1)).norm());
+//        FastAxpy fa = new FastAxpy();
+//        fa.axpy(2.0, d1, d2);
+//        System.out.println(Arrays.toString(d1.toArray()));
+//        System.out.println(Arrays.toString(d2.toArray()));
     }
 
     public Vector axpy(double a, Vector x, Vector y) {
