@@ -1,8 +1,12 @@
 package sparktemplate.classifiers;
 
 import java.io.IOException;
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import sparktemplate.ASettings;
 import sparktemplate.DataRecord;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -36,6 +40,14 @@ public interface AClassifier
      */
         
     void build(DBDataSet dataSet, ASettings settings);
+
+    void build(ADataSet dataSet, ASettings settings);
+
+
+
+    Dataset<Row> makePredictions(MemDataSet dbDataSet);
+    Dataset<Row> makePredictions(DBDataSet dbDataSet);
+    Dataset<Row> makePredictions(ADataSet dbDataSet);
     
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do klas decyzyjnych.

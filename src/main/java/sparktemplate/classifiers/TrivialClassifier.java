@@ -1,8 +1,12 @@
 package sparktemplate.classifiers;
 
 import java.io.IOException;
+
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import sparktemplate.ASettings;
 import sparktemplate.DataRecord;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -36,7 +40,27 @@ public class TrivialClassifier implements AClassifier
     {
         //Brak implementacji
     }
-        
+
+    @Override
+    public void build(ADataSet dataSet, ASettings settings) {
+
+    }
+
+    @Override
+    public Dataset<Row> makePredictions(MemDataSet dbDataSet) {
+        return null;
+    }
+
+    @Override
+    public Dataset<Row> makePredictions(DBDataSet dbDataSet) {
+        return null;
+    }
+
+    @Override
+    public Dataset<Row> makePredictions(ADataSet dbDataSet) {
+        return null;
+    }
+
     //Trywialna implementacja testowania klasyfikatora na obiekcie testowym
     public String classify(DataRecord dataRecord)
     {

@@ -12,6 +12,7 @@ import sparktemplate.ASettings;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -37,6 +38,11 @@ public class TrivialLogisticRegression implements AClassifier {
 
     @Override
     public void build(DBDataSet dataSet, ASettings settings) {
+        this.pipelineModel = buildPipelineModel(dataSet.getDs());
+    }
+
+    @Override
+    public void build(ADataSet dataSet, ASettings settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs());
     }
 
@@ -123,6 +129,15 @@ public class TrivialLogisticRegression implements AClassifier {
     }
 
     public Dataset<Row> makePredictions(DBDataSet dbDataSet){
+        // prepare data
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        // Make predictions
+        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
+        //predictions.show(5);
+        return predictions;
+    }
+
+    public Dataset<Row> makePredictions(ADataSet dbDataSet){
         // prepare data
         Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
         // Make predictions

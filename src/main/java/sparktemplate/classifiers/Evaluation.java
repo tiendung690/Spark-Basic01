@@ -5,6 +5,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -68,8 +69,9 @@ public class Evaluation {
         return this.evaluator.setMetricName("f1").evaluate(this.predictions);
     }
 
-    public double get_Precision() { return this.evaluator.setMetricName("weightedPrecision").evaluate(this.predictions); }
-
+    public double get_Precision() {
+        return this.evaluator.setMetricName("weightedPrecision").evaluate(this.predictions);
+    }
 
 
     /**
@@ -95,16 +97,19 @@ public class Evaluation {
      */
 
     void makeTrainAndTest(MemDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
-
+        trainTest(trainingDataSet, testingDataSet, classifierSettings);
     }  //Wykonywaniu testu
 
     void makeTrainAndTest(MemDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
+        trainTest(trainingDataSet, testingDataSet, classifierSettings);
     }  //Wykonywaniu testu
 
     void makeTrainAndTest(DBDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
+        trainTest(trainingDataSet, testingDataSet, classifierSettings);
     }  //Wykonywaniu testu
 
     void makeTrainAndTest(DBDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
+        trainTest(trainingDataSet, testingDataSet, classifierSettings);
     }  //Wykonywaniu testu
 
 
@@ -116,12 +121,11 @@ public class Evaluation {
     }
 
 
-    public void trainTest(MemDataSet memDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
+    public void trainTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings classifierSettings) {
 
         TrivialClassifierSettings trivialClassifierSettings = (TrivialClassifierSettings) classifierSettings;
 
         ClassifierName classificationType = trivialClassifierSettings.getClassificationAlgo();
-
 
 
         switch (classificationType) {
@@ -129,7 +133,7 @@ public class Evaluation {
 
                 System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
-                algo.build(memDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.makePredictions(testingDataSet);
 
                 break;
@@ -138,7 +142,7 @@ public class Evaluation {
 
                 System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
-                algo.build(memDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.makePredictions(testingDataSet);
 
                 break;
@@ -147,7 +151,7 @@ public class Evaluation {
 
                 System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
-                algo.build(memDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.makePredictions(testingDataSet);
 
                 break;
@@ -156,7 +160,7 @@ public class Evaluation {
 
                 System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
-                algo.build(memDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.makePredictions(testingDataSet);
 
                 break;
@@ -165,7 +169,7 @@ public class Evaluation {
 
                 System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
-                algo.build(memDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.makePredictions(testingDataSet);
 
                 break;

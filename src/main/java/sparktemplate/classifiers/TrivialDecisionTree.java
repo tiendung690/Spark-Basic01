@@ -12,6 +12,7 @@ import sparktemplate.ASettings;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -39,6 +40,12 @@ public class TrivialDecisionTree implements AClassifier {
     public void build(DBDataSet dataSet, ASettings settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs());
     }
+
+    @Override
+    public void build(ADataSet dataSet, ASettings settings) {
+        this.pipelineModel = buildPipelineModel(dataSet.getDs());
+    }
+
 
     @Override
     public String classify(DataRecord dataRecord) {
@@ -127,5 +134,13 @@ public class TrivialDecisionTree implements AClassifier {
         return predictions;
     }
 
+    public Dataset<Row> makePredictions(ADataSet dbDataSet) {
+        // prepare data
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        // Make predictions
+        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
+        //predictions.show(5);
+        return predictions;
+    }
 
 }
