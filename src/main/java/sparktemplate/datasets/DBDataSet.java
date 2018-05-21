@@ -14,7 +14,7 @@ import java.sql.*;
  * @version 1.0, luty 2018 roku
  */
 
-public class DBDataSet {
+public class DBDataSet implements ADataSet {
 
     //Typy atrybutow prosze samemu ustalic, ale polecam tak jak w API WEKA
 
@@ -26,6 +26,7 @@ public class DBDataSet {
     private ResultSet rs;
     public Statement st;
 
+    @Override
     public Dataset<Row> getDs() {
         return ds;
     }

@@ -18,21 +18,22 @@ import java.util.concurrent.atomic.AtomicLong;
  * @version 1.0, luty 2018 roku
  */
 
-public class MemDataSet{
+public class MemDataSet implements ADataSet {
 
-    
+
     //Typy atrybutow prosze samemu ustalic, ale polecam tak jak w API WEKA
     private SparkSession sparkSession;
     private Dataset<Row> ds;
 
-    public Dataset<Row> getDs() {
-        return ds;
+
+    public MemDataSet(SparkSession sparkSession) {
+        //Konstruktor przygotowuje struktuty do wczytania danych
+        this.sparkSession = sparkSession;
     }
 
-    public MemDataSet(SparkSession sparkSession)
-    {
-        //Konstruktor przygotowuje struktuty do wczytania danych
-        this.sparkSession=sparkSession;
+    @Override
+    public Dataset<Row> getDs() {
+        return ds;
     }
 
 
@@ -48,14 +49,14 @@ public class MemDataSet{
                 .option("inferSchema", true)
                 .load(csvFileName);
     }
-    
+
     //-------------
-    
+
     public int getNoAttr() //Mozliwość sprawdzenia ile jest atrybutow (kolumn) w tablicy
     {
         return (int) ds.count();
     }
-    
+
     public String getAttrName(int attributeIndex) //Mozliwość sprawdzenia nazwy atrybutu o podanym numerze
     {
         return ds.columns()[attributeIndex];
@@ -71,20 +72,20 @@ public class MemDataSet{
                 .toJavaRDD()
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
-                .filter((Tuple2<Row,Long> v1) -> v1._2==atIndex.get())
+                .filter((Tuple2<Row, Long> v1) -> v1._2 == atIndex.get())
                 .map(r -> r._1);
 
         //Dataset<Row> filtered = sparkSession.createDataFrame(filteredRDD, ds.schema());
         //filteredDataFrame.show();
-        System.err.println("getDataRecord at index: "+atIndex+", count:"+filteredRDD.count());
-        return new DataRecord(filteredRDD.first(),ds.schema());
+        System.err.println("getDataRecord at index: " + atIndex + ", count:" + filteredRDD.count());
+        return new DataRecord(filteredRDD.first(), ds.schema());
     }
-        
-    
+
+
     public int getNoRecord() //Mozliwość sprawdzenia ile jest wierszy w tablicy
     {
         return (int) ds.count();
     }
-   
+
 }
 
