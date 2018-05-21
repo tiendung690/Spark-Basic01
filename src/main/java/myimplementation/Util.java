@@ -51,6 +51,14 @@ public class Util {
         //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
     }
 
+    public static JavaRDD<Vector> convertToRDDModel4(Dataset<Row> ds) {
+        // Convert dataset to JavaRDD of DataModel
+        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> (Vector) row.get(0));
+        return x3;//.repartition(4);
+        //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
+    }
+
+
     public static JavaPairRDD<Integer, org.apache.spark.mllib.linalg.Vector> convertToRDDModel3(Dataset<Row> ds) {
         JavaPairRDD<Integer, org.apache.spark.mllib.linalg.Vector> x3 = ds.toJavaRDD().mapToPair(row -> {
             return new Tuple2<Integer, Vector>(0, (Vector) row.get(0));

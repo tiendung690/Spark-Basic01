@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
+import sparktemplate.classifiers.ClassifierName;
 import sparktemplate.classifiers.Evaluation;
 import sparktemplate.classifiers.TrivialClassifierSettings;
 import sparktemplate.datasets.MemDataSet;
@@ -36,7 +37,7 @@ public class TestClassifiers {
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: decisiontree, randomforests, logisticregression, naivebayes, linearsvm
             TrivialClassifierSettings classifierSettings = new TrivialClassifierSettings()
-                    .setClassificationAlgo("logisticregression")
+                    .setClassificationAlgo(ClassifierName.naivebayes)
                     .setMaxIter(10)
                     .setRegParam(0.2)
                     .setElasticNetParam(0.8);
@@ -51,7 +52,11 @@ public class TestClassifiers {
             //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
             evaluation.trainTest(dataSetTrain, dataSetTest, classifierSettings);
 
-            System.out.println("accuracy: " + evaluation.getAccuracy() + ", coverage: " + evaluation.getCoverage());
+            System.out.println("accuracy: " + evaluation.getAccuracy()
+                    + ", coverage: " + evaluation.getCoverage()
+                    + ", f1: "+evaluation.get_F1()
+                    + ", precison: "+evaluation.get_Precision());
+
             //  evaluation.printReport();
 
         } catch (Exception e) {

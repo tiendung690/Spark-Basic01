@@ -10,16 +10,16 @@ import java.util.Map;
 
 public class TrivialClassifierSettings implements ASettings
 {
-   private String classificationAlgo;
+   private ClassifierName classificationAlgo;
    private int maxIter;
    private double regParam;
    private double elasticNetParam;
 
-    public String getClassificationAlgo() {
+    public ClassifierName getClassificationAlgo() {
         return classificationAlgo;
     }
 
-    public TrivialClassifierSettings setClassificationAlgo(String classificationAlgo) {
+    public TrivialClassifierSettings setClassificationAlgo(ClassifierName classificationAlgo) {
         this.classificationAlgo = classificationAlgo;
         return this;
     }

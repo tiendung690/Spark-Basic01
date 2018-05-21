@@ -65,7 +65,7 @@ public class Kmns {
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
-        String path = "data/mllib/kdd_10_proc.txt";
+        //String path = "data/mllib/kdd_10_proc.txt";
         //String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
@@ -76,7 +76,7 @@ public class Kmns {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        //String path = "data/mllib/iris2.csv";
+        String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
 
         //String path = "data/mllib/serce.csv";
@@ -121,7 +121,9 @@ public class Kmns {
         // Convert dataset to JavaRDD of Vectors
         //JavaRDD<Vector> x3 = convertToRDD(ds);
         //JavaRDD<DataModel> x3 = convertToRDDModel(ds);
-        JavaPairRDD<Integer, Vector> x3 = Util.convertToRDDModel2(ds);
+
+        //JavaPairRDD<Integer, Vector> x3 = Util.convertToRDDModel2(ds);
+        JavaRDD<Vector> x3 = Util.convertToRDDModel4(ds);
         if (x3.getStorageLevel() == StorageLevel.NONE()) {
             System.out.println("NONE :::::::" + x3.getStorageLevel().toString());
         } else {
@@ -133,11 +135,14 @@ public class Kmns {
 
         int k = 4;
         //ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 1L));
-        ArrayList<Tuple2<Integer, Vector>> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
-        ArrayList<Vector> clusterCenters = new ArrayList<>();
-        for (Tuple2<Integer, Vector> dm : cc) {
-            clusterCenters.add(dm._2());
-        }
+//        ArrayList<Tuple2<Integer, Vector>> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
+//        ArrayList<Vector> clusterCenters = new ArrayList<>();
+//        for (Tuple2<Integer, Vector> dm : cc) {
+//            clusterCenters.add(dm._2());
+//        }
+
+        ArrayList<Vector> clusterCenters = new ArrayList<>(x3.takeSample(false, k, 20L));
+
 
 //        ArrayList<Vector> clusterCenters = new ArrayList<>();
 //        clusterCenters.add(new DenseVector(new double[]{5.1,3.5,1.4,0.2}));
@@ -173,7 +178,7 @@ public class Kmns {
         spark.close();
     }
 
-    public static ArrayList<Vector> computeCenters(JavaPairRDD<Integer, Vector> x33, ArrayList<Vector> cc) {
+    public static ArrayList<Vector> computeCenters(JavaRDD<Vector> x33, ArrayList<Vector> cc) {
 
         JavaSparkContext jsc = new JavaSparkContext(x33.context());
         org.apache.spark.util.LongAccumulator accum = jsc.sc().longAccumulator("Accumulator_1");
@@ -274,7 +279,7 @@ public class Kmns {
         return clusterCenters;
     }
 
-    public static JavaPairRDD<Integer, Vector> predictCluster(JavaPairRDD<Integer, Vector> x, ArrayList<Vector> cc) {
+    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<Vector> x, ArrayList<Vector> cc) {
 
         JavaSparkContext jsc = new JavaSparkContext(x.context());
 
@@ -284,10 +289,10 @@ public class Kmns {
                 .mapPartitionsToPair(vvv -> {
                     List<Tuple2<Integer, Vector>> list = new ArrayList<>();
                     while (vvv.hasNext()) {
-                        Tuple2<Integer, Vector> v1 = vvv.next();
-                        double[] dd = computeDistance(ccc.value(), v1._2());
+                        Vector v1 = vvv.next();
+                        double[] dd = computeDistance(ccc.value(), v1);
                         int index = Util.findLowerValIndex(dd);
-                        list.add(new Tuple2<>(index, v1._2()));
+                        list.add(new Tuple2<>(index, v1));
                     }
                     return list.iterator();
                 });

@@ -4,12 +4,9 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import scala.Option;
 import sparktemplate.ASettings;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
-
-import javax.xml.crypto.Data;
 
 
 /**
@@ -67,6 +64,13 @@ public class Evaluation {
         return this.evaluator.setMetricName("weightedRecall").evaluate(this.predictions);
     }
 
+    public double get_F1() {
+        return this.evaluator.setMetricName("f1").evaluate(this.predictions);
+    }
+
+    public double get_Precision() { return this.evaluator.setMetricName("weightedPrecision").evaluate(this.predictions); }
+
+
 
     /**
      * Metoda zwracajaca coverage dla podanej klasy decyzyjnej, przy czym
@@ -116,12 +120,12 @@ public class Evaluation {
 
         TrivialClassifierSettings trivialClassifierSettings = (TrivialClassifierSettings) classifierSettings;
 
-        String classificationType = trivialClassifierSettings.getClassificationAlgo();
+        ClassifierName classificationType = trivialClassifierSettings.getClassificationAlgo();
 
 
 
         switch (classificationType) {
-            case "linearsvm": {
+            case linearsvm: {
 
                 System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
@@ -130,7 +134,7 @@ public class Evaluation {
 
                 break;
             }
-            case "decisiontree": {
+            case decisiontree: {
 
                 System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
@@ -139,7 +143,7 @@ public class Evaluation {
 
                 break;
             }
-            case "randomforests": {
+            case randomforests: {
 
                 System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
@@ -148,7 +152,7 @@ public class Evaluation {
 
                 break;
             }
-            case "logisticregression": {
+            case logisticregression: {
 
                 System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
@@ -157,7 +161,7 @@ public class Evaluation {
 
                 break;
             }
-            case "naivebayes": {
+            case naivebayes: {
 
                 System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
