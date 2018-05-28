@@ -25,10 +25,14 @@ public class DBDataSet implements ADataSet {
     private final String driver2 = "com.mysql.jdbc.Driver";
     private ResultSet rs;
     public Statement st;
+    private boolean connected = false;
 
     @Override
     public Dataset<Row> getDs() {
-        return ds;
+        if(connected){return ds;} else {
+            System.err.println("You should call connect before this action.");
+            return null;
+        }
     }
 
     public DBDataSet(SparkSession sparkSession, String url, String user, String password, String table) {
@@ -74,7 +78,7 @@ public class DBDataSet implements ADataSet {
             System.err.println(e.getMessage());
         }
 
-
+        connected = true;
     }
 
     public void save(Dataset<Row> dataset) {
