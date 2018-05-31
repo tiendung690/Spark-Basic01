@@ -1,14 +1,11 @@
 package sparktemplate;
 
-import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.types.StructType;
 
 /**
- * Klasa <tt>DataRecord</tt> reprezentuje wartosci atrybutow w jednym rekordzie danych
- * <p>
- * To nie jest pełna implementacja, ale wymaga uzupełnienia
+ * Klasa reprezentuje wartosci atrybutow w jednym rekordzie danych
  *
  * @author Jan G. Bazan
  * @version 1.0, luty 2018 roku
@@ -16,34 +13,48 @@ import org.apache.spark.sql.types.StructType;
 
 public class DataRecord {
 
-    //Tutaj pozostaje do rozwiazania problem typow poszczegolnych atrybutow. Czy to będzie tutaj istotne?
-    //Wartosci mozna reprezentowac w postaci kolekcji String-ow, ale w ten sposob ni ebedzie informacji o typie wartosci, a czasem to jest potrzebne.
-
     private StructType structType;
     private Row row;
 
-    public StructType getStructType() {
-        return structType;
-    }
-
-
-    public Row getRow() {
-        return row;
-    }
-
-
+    /**
+     * Konstruktor inicjalizujacy obiekt DataRecord. Tworzy pojedynczy obiekt na podstawie skladowych struktury danych sparka - Dataset.
+     * W ten sposob mozna przechowywac pojedyncze wiersze z Dataset bez potrzeby tworzenia pojedynczego Dataset z jednym wierszem i uruchamiania mechanizmow sparka.
+     *
+     * @param row dane
+     * @param structType struktura
+     */
     public DataRecord(Row row, StructType structType) {
         //konstruktor przygotowuje wewnetrzna strukture danych
         this.structType = structType;
         this.row = row;
     }
 
+    /**
+     * Metoda zwracajaca strukture obiektu.
+     *
+     * @return struktura
+     */
+    public StructType getStructType() {
+        return structType;
+    }
 
-    //Zwraca liczbe wartosci w rekordzie (liczba kolumn w danych)
+    /**
+     * Metoda zwracajaca dane obiektu.
+     *
+     * @return dane, wartosci
+     */
+    public Row getRow() {
+        return row;
+    }
+
+    /**
+     * Metoda zwracajaca atrybutow w rekordzie (liczba kolumn w danych)
+     *
+     * @return liczba atrybutow
+     */
     public int getNoAttr() {
         return row.size();
     }
-
 
     /**
      * Metoda zwracajaca wartosc atrybutu w rekordzie o podanym numerze
@@ -51,21 +62,17 @@ public class DataRecord {
      * @param attributeIndex Numer atrybutu.
      * @return Wartosc atrybutu.
      */
-
     public String getAttributeValue(int attributeIndex) {
         return row.get(attributeIndex).toString();
-        //return "val";
     }
 
     /**
-     * Abstrakcyjna metoda ustawiajaca wartosc atrybutu w rekordzie o podanym
-     * numerze
+     * Metoda ustawiajaca wartosc atrybutu w rekordzie o podanym numerze
      *
-     * @param attributeIndex Numer atrybutu.
+     * @param attributeIndex numer atrybutu
      * @param value          Ustawiana wartosc.
      *                       zgodnosci typu wartosci).
      */
-
     public void setAttributeValue(int attributeIndex, String value) {
 
         // 1 wersja prosta
@@ -83,17 +90,16 @@ public class DataRecord {
         //obj2[attributeIndex]=value;
 
         this.row = RowFactory.create(obj);
-
     }
 
-
-    //Ponisza metoda jest problematyczna (moze nie beda potrzebne)
-
-
+    /**
+     * Metoda zwracajaca typ danych atrybutu.
+     *
+     * @param index numer atrybutu
+     * @return typ danych w formacie spark.sql.types.DataType
+     */
     public String getAttrType(int index) {
-        // pobiera typ zmapowany przez sparka DataType
         return structType.fields()[index].dataType().toString();
-
     }
 
 }
