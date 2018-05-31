@@ -105,7 +105,7 @@ public class KMean implements AClustering {
 
 
         // Make predictions
-        Dataset<Row> predictions = model.transform(ds);
+        Dataset<Row> predictions = model.transform(ds);//.drop("features");
 
         //predictions.show(false);
         //predictions.printSchema();

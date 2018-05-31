@@ -26,11 +26,16 @@ public class TestDBDataSet {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        //String url = "jdbc:postgresql://localhost:5432/postgres";
+//        String url = "jdbc:postgresql://10.2.28.17:5432/postgres";
+//        String user = "postgres";
+//        String password = "postgres";
+//        String table = "dane1";
+
+        // ODCZYT Z BAZY KLASTRA
         String url = "jdbc:postgresql://10.2.28.17:5432/postgres";
         String user = "postgres";
         String password = "postgres";
-        String table = "dane1";
+        String table = "dane2";
 
         DBDataSet dbDataSet = new DBDataSet(sparkSession, url, user, password, table);
         dbDataSet.connect();

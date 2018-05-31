@@ -16,25 +16,34 @@ import java.sql.*;
 
 public class DBDataSet implements ADataSet {
 
-    //Typy atrybutow prosze samemu ustalic, ale polecam tak jak w API WEKA
-
     public SparkSession sparkSession;
-    private Dataset<Row> ds;
-    private String url, user, password, table;
+    private Dataset<Row> ds; //zbior danych otrzymywany po wywolaniu metody connect()
+    private String url, user, password, table; //parametry bazy
     private final String driver = "org.postgresql.Driver";
     private final String driver2 = "com.mysql.jdbc.Driver";
     private ResultSet rs;
-    public Statement st;
+    private Statement st;
     private boolean connected = false;
 
     @Override
     public Dataset<Row> getDs() {
-        if(connected){return ds;} else {
+        if (connected) {
+            return ds;
+        } else {
             System.err.println("You should call connect before this action.");
             return null;
         }
     }
 
+    /**
+     * Konstruktor inicjalizujacy obiekt DBDataSet.
+     *
+     * @param sparkSession obiekt sparkSession
+     * @param url          sciezka do bazy danych
+     * @param user         nazwa uzytkownika
+     * @param password     haslo
+     * @param table        tabela w bazie
+     */
     public DBDataSet(SparkSession sparkSession, String url, String user, String password, String table) {
         this.sparkSession = sparkSession;
         this.url = url;
@@ -43,12 +52,11 @@ public class DBDataSet implements ADataSet {
         this.table = table;
     }
 
+    /**
+     * Metoda inicjalizujaca polaczenie z baza.
+     */
     public void connect() //Polaczenie z baza danych
     {
-        //Uwaga: Najlepiej, aby typ wartosci atrybutów był automatycznie rozpoznawany
-        //Jesli bedzie to trudne dla Was, to można zalozyc, że pomocniczo definiowany jest plik tekstowy, w którym opisane jest powiazanie typu w bazie SQL 
-        //oraz typem kolumn dla Sparka.
-
         // Spark
         try {
             this.ds = sparkSession.read()
@@ -62,7 +70,7 @@ public class DBDataSet implements ADataSet {
                     .load();
 
         } catch (Exception e) {
-            System.err.println("DB exception!!!");
+            System.err.println("DB exception!");
             System.err.println(e.getMessage());
         }
 
@@ -74,13 +82,18 @@ public class DBDataSet implements ADataSet {
             this.st = conn.createStatement();
             this.rs = st.executeQuery(query);
         } catch (Exception e) {
-            System.err.println("DB exception!!!");
+            System.err.println("DB exception!");
             System.err.println(e.getMessage());
         }
 
         connected = true;
     }
 
+    /**
+     * Metoda zapisujaca zbior danych do bazy.
+     *
+     * @param dataset dane do zapisania w bazie
+     */
     public void save(Dataset<Row> dataset) {
         try {
             dataset.write()
@@ -98,30 +111,43 @@ public class DBDataSet implements ADataSet {
         }
     }
 
-    //-------------
-
-    public int getNoAttr() //Mozliwość sprawdzenia ile jest atrybutow (kolumn) w tablicy
-    {
+    /**
+     * Metoda zwracajaca ilosc atrybutow (kolumn) w tablicy.
+     *
+     * @return
+     */
+    public int getNoAttr() {
         return ds.columns().length;
     }
 
-    public String getAttrName(int attributeIndex) //Mozliwość sprawdzenia nazwy atrybutu o podanym numerze
-    {
+    /**
+     * Metoda zwracajaca nazwe atrubutu.
+     *
+     * @param attributeIndex numer atrybutu (kolumny), (numeracja od 0)
+     * @return nazwa atrybutu
+     */
+    public String getAttrName(int attributeIndex) {
         return ds.columns()[0];
     }
 
-    //-----------------
-    //Ogladanie wierszy tabeli jest strumieniowe, tzn. zaczynamy od pierwszego wiersza, a poźniej kursor przenosi sie na kolejny wiersz, 
-    //który dostajemy metodą getNextRecord
-
-    public DataRecord getFirstRecord() //Zwrocenie informacji o pierwszym wierszu danych
-    {
+    /**
+     * Metoda zwracajaca pierwszy wiersz bezposrednio z bazy dzieki JDBC.
+     * Ogladanie wierszy tabeli jest strumieniowe, tzn. zaczynamy od pierwszego wiersza, a poźniej kursor przenosi sie na kolejny wiersz,
+     * który dostajemy metodą getNextRecord.
+     *
+     * @return pojedynczy wiersz jako obiekt DataRecord
+     */
+    public DataRecord getFirstRecord() {
         return new DataRecord(ds.first(), ds.schema());
     }
 
-    public DataRecord getNextRecord() //Zwrocenie informacji o nastepnym wierszu danych
-    {
-        //Uwaga: Jeśli juz nie ma nastepnego powinien zwrocic null
+    /**
+     * Metoda zwracajaca kolejne wiersze danych. Moze zostac uzyta do otrzymania pierwszego wiersza.
+     * Jeśli juz nie ma nastepnego zwraca null.
+     *
+     * @return pojedynczy wiersz jako obiekt DataRecord
+     */
+    public DataRecord getNextRecord() {
 
         try {
             if (rs.next()) {
@@ -136,9 +162,12 @@ public class DBDataSet implements ADataSet {
         return null;
     }
 
-
-    public int getNoRecord() //Mozliwość sprawdzenia ile jest wierszy w tablicy
-    {
+    /**
+     * Metoda sprawdzajaca ile jest wierszy w tablicy
+     *
+     * @return liczba wierszy w tablicy (Za pomoca metody sparka .count())
+     */
+    public int getNoRecord() {
         return (int) ds.count();
     }
 
