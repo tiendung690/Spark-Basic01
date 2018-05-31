@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Klasa zawierajaca metody przygotowujace dane do grupowania.
+ *
  * Created by as on 12.03.2018.
  */
 public class DataPrepareClustering {
@@ -25,8 +27,14 @@ public class DataPrepareClustering {
         this.dataModelsClustering = new DataModelsClustering();
     }
 
-    //private static final boolean removeStrings = false; // remove all columns with String type
-
+    /**
+     * Metoda przygotowuje dane do grupowania.
+     *
+     * @param df dane
+     * @param isSingle dane zawieraja tylko jeden wiersz (wyznaczenie skupiska dla pojedynczego obiektu)
+     * @param removeStrings usuwanie kolumn z typem String
+     * @return przygotowane dane
+     */
     public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle, boolean removeStrings) {
 
         Dataset<Row> prepared;

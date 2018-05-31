@@ -19,49 +19,33 @@ import sparktemplate.datasets.MemDataSet;
  * @version 1.0, luty 2018 roku
  */
 
-public interface AClassifier
-{
+public interface AClassifier {
 
-    /**
-     * Abstrakcyjna metoda budujaca klasyfikator w oparciu o dane z obiektu klasy MemDataSet.
-     *
-     * @param dataSet - zbior danych dla ktorego budowany jest klasyfikator
-     * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)    
-     */
-        
-    void build(MemDataSet dataSet, ASettings settings);
-       
-    
     /**
      * Abstrakcyjna metoda budujaca klasyfikator w oparciu o dane z obiektu klasy DBDataSet.
      *
-     * @param dataSet - zbior danych dla ktorego budowany jest klasyfikator
-     * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)    
+     * @param dataSet  - zbior danych dla ktorego budowany jest klasyfikator
+     * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)
      */
-        
-    void build(DBDataSet dataSet, ASettings settings);
-
     void build(ADataSet dataSet, ASettings settings);
 
 
-
-    Dataset<Row> makePredictions(MemDataSet dbDataSet);
-    Dataset<Row> makePredictions(DBDataSet dbDataSet);
     Dataset<Row> makePredictions(ADataSet dbDataSet);
-    
+
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do klas decyzyjnych.
-     *     * 
+     * *
+     *
      * @param dataRecord - rekord testowy
-     * @return nazwa klasy decyzyjne, do ktorej rekord zostal sklasyfikowany (wartośc typu String)     
+     * @return nazwa klasy decyzyjne, do ktorej rekord zostal sklasyfikowany (wartośc typu String)
      */
 
     String classify(DataRecord dataRecord);
-    
-    
+
 
     /**
      * Zapis klasyfikatora do pliku tekstowego o podanej nazwie
+     *
      * @param fileName nazwa pliku
      * @throws IOException
      */
@@ -71,11 +55,12 @@ public interface AClassifier
 
     /**
      * Odczyt klasyfikatora z pliku tekstowego o podanej nazwie
+     *
      * @param fileName nazwa pliku
      * @throws IOException
      */
 
     void loadClassifier(String fileName) throws IOException;
-    
-    
+
+
 }

@@ -15,6 +15,8 @@ import org.apache.spark.sql.types.StructType;
 import java.util.*;
 
 /**
+ * Klasa zawierajaca metody przygotowujace dane do klasyfikacji.
+ *
  * Created by as on 19.03.2018.
  */
 public class DataPrepareClassification {

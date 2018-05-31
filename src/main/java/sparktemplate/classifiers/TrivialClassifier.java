@@ -47,16 +47,6 @@ public class TrivialClassifier implements AClassifier
     }
 
     @Override
-    public Dataset<Row> makePredictions(MemDataSet dbDataSet) {
-        return null;
-    }
-
-    @Override
-    public Dataset<Row> makePredictions(DBDataSet dbDataSet) {
-        return null;
-    }
-
-    @Override
     public Dataset<Row> makePredictions(ADataSet dbDataSet) {
         return null;
     }

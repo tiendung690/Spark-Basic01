@@ -88,29 +88,29 @@ public class Evaluation {
     }
 
 
-    /**
-     * Cztery warianty metodTraiAndTest dla zbiorów danych
-     *
-     * @param trainingDataSet - zbior danych treningowych
-     * @param testingDataSet  - zbior danych testowych
-     * @param settings        - obiekt parametrow
-     */
+//    /**
+//     * Cztery warianty metodTraiAndTest dla zbiorów danych
+//     *
+//     * @param trainingDataSet - zbior danych treningowych
+//     * @param testingDataSet  - zbior danych testowych
+//     * @param settings        - obiekt parametrow
+//     */
 
-    void makeTrainAndTest(MemDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
-        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-    }  //Wykonywaniu testu
-
-    void makeTrainAndTest(MemDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
-        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-    }  //Wykonywaniu testu
-
-    void makeTrainAndTest(DBDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
-        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-    }  //Wykonywaniu testu
-
-    void makeTrainAndTest(DBDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
-        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-    }  //Wykonywaniu testu
+//    void makeTrainAndTest(MemDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
+//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
+//    }  //Wykonywaniu testu
+//
+//    void makeTrainAndTest(MemDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
+//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
+//    }  //Wykonywaniu testu
+//
+//    void makeTrainAndTest(DBDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
+//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
+//    }  //Wykonywaniu testu
+//
+//    void makeTrainAndTest(DBDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
+//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
+//    }  //Wykonywaniu testu
 
 
     /**

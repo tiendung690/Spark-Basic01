@@ -32,36 +32,13 @@ public class TrivialLogisticRegression implements AClassifier {
     }
 
     @Override
-    public void build(MemDataSet dataSet, ASettings settings) {
-        this.pipelineModel = buildPipelineModel(dataSet.getDs());
-    }
-
-    @Override
-    public void build(DBDataSet dataSet, ASettings settings) {
-        this.pipelineModel = buildPipelineModel(dataSet.getDs());
-    }
-
-    @Override
     public void build(ADataSet dataSet, ASettings settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs());
     }
 
     @Override
     public String classify(DataRecord dataRecord) {
-
-        // create dataset
-        Dataset<Row> singleRecord = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), this.sparkSession);
-
-        // prepare dataset
-        Dataset<Row> singleRecordPrepared = DataPrepareClassification.prepareLabeledPoint(singleRecord);
-
-        // make prediction
-        Dataset<Row> prediction = this.pipelineModel.transform(singleRecordPrepared);
-        //prediction.show();
-
-        // find predicted label
-        String predictedLabel = prediction.select(prediction.col("predictedLabel")).first().toString();
-        return predictedLabel;
+        return ClassifierHelper.classify(dataRecord, this.sparkSession, this.pipelineModel);
     }
 
     @Override
@@ -74,6 +51,15 @@ public class TrivialLogisticRegression implements AClassifier {
         this.pipelineModel = PipelineModel.read().load(fileName);
     }
 
+    @Override
+    public Dataset<Row> makePredictions(ADataSet dbDataSet){
+        // prepare data
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        // Make predictions
+        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
+        //predictions.show(5);
+        return predictions;
+    }
 
     private PipelineModel buildPipelineModel(Dataset<Row> trainingData) {
 
@@ -118,32 +104,5 @@ public class TrivialLogisticRegression implements AClassifier {
         return model;
     }
 
-    public Dataset<Row> makePredictions(MemDataSet memDataSet){
-
-        // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(memDataSet.getDs()));
-        // make predictions
-        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
-        //predictions.show(5);
-        return predictions;
-    }
-
-    public Dataset<Row> makePredictions(DBDataSet dbDataSet){
-        // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
-        // Make predictions
-        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
-        //predictions.show(5);
-        return predictions;
-    }
-
-    public Dataset<Row> makePredictions(ADataSet dbDataSet){
-        // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
-        // Make predictions
-        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
-        //predictions.show(5);
-        return predictions;
-    }
 
 }
