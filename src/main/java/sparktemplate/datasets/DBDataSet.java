@@ -3,7 +3,6 @@ package sparktemplate.datasets;
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
 import sparktemplate.DataRecord;
-
 import java.sql.*;
 
 
@@ -16,7 +15,7 @@ import java.sql.*;
 
 public class DBDataSet implements ADataSet {
 
-    public SparkSession sparkSession;
+    private SparkSession sparkSession;
     private Dataset<Row> ds; //zbior danych otrzymywany po wywolaniu metody connect()
     private String url, user, password, table; //parametry bazy
     private final String driver = "org.postgresql.Driver";
@@ -24,16 +23,6 @@ public class DBDataSet implements ADataSet {
     private ResultSet rs;
     private Statement st;
     private boolean connected = false;
-
-    @Override
-    public Dataset<Row> getDs() {
-        if (connected) {
-            return ds;
-        } else {
-            System.err.println("You should call connect before this action.");
-            return null;
-        }
-    }
 
     /**
      * Konstruktor inicjalizujacy obiekt DBDataSet.
@@ -50,6 +39,16 @@ public class DBDataSet implements ADataSet {
         this.user = user;
         this.password = password;
         this.table = table;
+    }
+
+    @Override
+    public Dataset<Row> getDs() {
+        if (connected) {
+            return ds;
+        } else {
+            System.err.println("You should call connect before this action.");
+            return null;
+        }
     }
 
     /**

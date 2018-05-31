@@ -3,7 +3,6 @@ package sparktemplate.datasets;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SparkSession;
 import scala.Tuple2;
 import sparktemplate.DataRecord;
@@ -20,12 +19,14 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class MemDataSet implements ADataSet {
 
-
-    //Typy atrybutow prosze samemu ustalic, ale polecam tak jak w API WEKA
     private SparkSession sparkSession;
     private Dataset<Row> ds;
 
-
+    /**
+     * Konstruktor inicjalizujacy obiekt MemDataSet.
+     *
+     * @param sparkSession obiekt sparkSession
+     */
     public MemDataSet(SparkSession sparkSession) {
         //Konstruktor przygotowuje struktuty do wczytania danych
         this.sparkSession = sparkSession;
@@ -36,13 +37,12 @@ public class MemDataSet implements ADataSet {
         return ds;
     }
 
-
-    public void loadDataSet(String csvFileName) //Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
-    {
-        //Uwaga: Najlepiej, aby typ wartosci atrybutów był automatycznie rozpoznawany
-        //Jesli bedzie to trudne dla Was, to można uzyc formatu z API WEKA (arff). Tam są zakodowane typy. 
-        //Mozecie nawet uzyc struktury danych z WEKA (klasa Instances), ktora pozwala reprezentowac w pamieci dane
-
+    /**
+     * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
+     *
+     * @param csvFileName sciezka do pliku
+     */
+    public void loadDataSet(String csvFileName) {
         this.ds = sparkSession.read()
                 .format("com.databricks.spark.csv")
                 .option("header", true)
@@ -50,22 +50,32 @@ public class MemDataSet implements ADataSet {
                 .load(csvFileName);
     }
 
-    //-------------
-
-    public int getNoAttr() //Mozliwość sprawdzenia ile jest atrybutow (kolumn) w tablicy
-    {
+    /**
+     * Metoda zwracajaca ilosc atrybutow (kolumn) w tablicy
+     *
+     * @return liczba atrybutow
+     */
+    public int getNoAttr() {
         return (int) ds.count();
     }
 
-    public String getAttrName(int attributeIndex) //Mozliwość sprawdzenia nazwy atrybutu o podanym numerze
-    {
+    /**
+     * Metoda sprawdzajaca nazwe atrybutu o podanym numerze
+     *
+     * @param attributeIndex
+     * @return
+     */
+    public String getAttrName(int attributeIndex) {
         return ds.columns()[attributeIndex];
     }
 
-
-    // indeks wiekszy od size() ???
-    public DataRecord getDataRecord(int index) //Zwrocenie informacji o wierszu danych o podanym numerze
-    {
+    /**
+     * Metoda zwracajaca wiersz o podanym numerze.
+     *
+     * @param index numer wiersza
+     * @return pojedynczy wiersz jako obiekt DataRecord
+     */
+    public DataRecord getDataRecord(int index) {
         AtomicLong atIndex = new AtomicLong(index);
 
         JavaRDD<Row> filteredRDD = this.ds
@@ -81,7 +91,11 @@ public class MemDataSet implements ADataSet {
         return new DataRecord(filteredRDD.first(), ds.schema());
     }
 
-
+    /**
+     * Metoda sprawdzajaca ile jest wierszy w tablicy
+     *
+     * @return liczba wierszy w tablicy (Za pomoca metody sparka .count())
+     */
     public int getNoRecord() //Mozliwość sprawdzenia ile jest wierszy w tablicy
     {
         return (int) ds.count();
