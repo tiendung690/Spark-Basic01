@@ -75,6 +75,13 @@ public class DataPrepareAssociations {
         }
     }
 
+    /**
+     * Metoda przygotowujaca dane w odpowiednim formacie
+     *
+     * @param dfX
+     * @param sparkSession obiekt SparkSession
+     * @return
+     */
     private static Dataset<Row> prepareArray(Dataset<Row> dfX, SparkSession sparkSession) {
 
         Dataset<String> ds1;
@@ -105,6 +112,12 @@ public class DataPrepareAssociations {
         return prepared;
     }
 
+    /**
+     * Metoda usuwajaca puste kolumny w kazdym wierszu
+     *
+     * @param dfX dane
+     * @return przygotowane dane
+     */
     private static Dataset<String> removeNullCols(Dataset<Row> dfX) {
 
         Dataset<String> removedNull = dfX.map(value -> {

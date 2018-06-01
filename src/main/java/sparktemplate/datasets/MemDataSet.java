@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Klasa  <tt>MemDataSet</tt> opisuje podstawowe funkcjonalnosci zbioru danych
- * reprezentowanego w pamięci
+ * reprezentowanego w pamieci
  *
  * @author Jan G. Bazan
  * @version 1.0, luty 2018 roku
