@@ -84,7 +84,7 @@ public class TestClustering2 {
         memDataSet.loadDataSet(path);
         //memDataSet.getDs().cache();//.repartition(4);
 
-        // kmeans test
+        // KMEANS test
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setKMeans()

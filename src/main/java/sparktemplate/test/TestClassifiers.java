@@ -36,11 +36,11 @@ public class TestClassifiers {
             dataSetTrain.loadDataSet(fNameTabTrain); //Wczytanie danych treningowych
 
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
-            // param2 values: decisiontree, randomforests, logisticregression, naivebayes, linearsvm
+            // param2 values: DECISIONTREE, RANDOMFORESTS, LOGISTICREGRESSION, NAIVEBAYES, LINEARSVM
             ClassifierSettings classifierSettings = new ClassifierSettings();
             classifierSettings
-                    .setDecisionTree()
-                    .setMaxBins(5);
+                    .setRandomForest();
+
 
 
 

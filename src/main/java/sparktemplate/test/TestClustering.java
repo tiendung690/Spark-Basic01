@@ -74,7 +74,7 @@ public class TestClustering {
         // get single record at index
         DataRecord dataRecord4 = memDataSet.getDataRecord(0);
 
-        // kmeans test
+        // KMEANS test
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setKMeans()

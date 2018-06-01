@@ -4,7 +4,6 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.ASettings;
 import sparktemplate.ASettings2;
 import sparktemplate.datasets.ADataSet;
 
@@ -127,7 +126,7 @@ public class Evaluation {
 
 
         switch (classificationType) {
-            case linearsvm: {
+            case LINEARSVM: {
 
                 System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
@@ -136,7 +135,7 @@ public class Evaluation {
 
                 break;
             }
-            case decisiontree: {
+            case DECISIONTREE: {
 
                 System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
@@ -145,7 +144,7 @@ public class Evaluation {
 
                 break;
             }
-            case randomforests: {
+            case RANDOMFORESTS: {
 
                 System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
@@ -154,7 +153,7 @@ public class Evaluation {
 
                 break;
             }
-            case logisticregression: {
+            case LOGISTICREGRESSION: {
 
                 System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
@@ -163,7 +162,7 @@ public class Evaluation {
 
                 break;
             }
-            case naivebayes: {
+            case NAIVEBAYES: {
 
                 System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);

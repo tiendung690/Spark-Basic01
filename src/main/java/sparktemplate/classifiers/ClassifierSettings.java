@@ -26,7 +26,7 @@ public class ClassifierSettings implements ASettings2 {
     public class ClassifierNaiveBayes extends NaiveBayes {}
 
     public ClassifierDecisionTree setDecisionTree() {
-        classificationAlgo = ClassifierName.decisiontree;
+        classificationAlgo = ClassifierName.DECISIONTREE;
         //ClassifierDecisionTree cc = new ClassifierDecisionTree();
         //decisionTreeClassifier = cc;
         //return cc;
@@ -35,25 +35,25 @@ public class ClassifierSettings implements ASettings2 {
     }
 
     public ClassifierRandomForest setRandomForest() {
-        classificationAlgo = ClassifierName.randomforests;
+        classificationAlgo = ClassifierName.RANDOMFORESTS;
         randomForestClassifier = new ClassifierRandomForest();
         return (ClassifierRandomForest) randomForestClassifier;
     }
 
     public ClassifierLinearSVC setLinearRegression() {
-        classificationAlgo = ClassifierName.linearsvm;
+        classificationAlgo = ClassifierName.LINEARSVM;
         linearSVC = new ClassifierLinearSVC();
         return (ClassifierLinearSVC) linearSVC;
     }
 
     public ClassifierLogisticRegression setLogisticRegression() {
-        classificationAlgo = ClassifierName.logisticregression;
+        classificationAlgo = ClassifierName.LOGISTICREGRESSION;
         logisticRegression = new ClassifierLogisticRegression();
         return (ClassifierLogisticRegression) logisticRegression;
     }
 
     public ClassifierNaiveBayes setNaiveBayes() {
-        classificationAlgo = ClassifierName.naivebayes;
+        classificationAlgo = ClassifierName.NAIVEBAYES;
         naiveBayes = new ClassifierNaiveBayes();
         return (ClassifierNaiveBayes) naiveBayes;
     }
@@ -69,19 +69,19 @@ public class ClassifierSettings implements ASettings2 {
     public Object getModel() {
 
         switch (classificationAlgo) {
-            case linearsvm: {
+            case LINEARSVM: {
                 return linearSVC;
             }
-            case decisiontree: {
+            case DECISIONTREE: {
                 return decisionTreeClassifier;
             }
-            case randomforests: {
+            case RANDOMFORESTS: {
                 return randomForestClassifier;
             }
-            case logisticregression: {
+            case LOGISTICREGRESSION: {
                 return logisticRegression;
             }
-            case naivebayes: {
+            case NAIVEBAYES: {
                 return naiveBayes;
             }
             default:

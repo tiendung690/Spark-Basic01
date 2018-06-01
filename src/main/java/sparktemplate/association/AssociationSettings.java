@@ -1,13 +1,7 @@
 package sparktemplate.association;
 
 import org.apache.spark.ml.fpm.FPGrowth;
-import sparktemplate.ASettings;
 import sparktemplate.ASettings2;
-import sparktemplate.classifiers.ClassifierName;
-import sparktemplate.classifiers.ClassifierSettings;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by as on 15.03.2018.
@@ -21,7 +15,7 @@ public class AssociationSettings implements ASettings2 {
     public class AssociationFP extends FPGrowth{}
 
     public AssociationFP setFPGrowth() {
-        associationAlgo = AssociationName.fpgrowth;
+        associationAlgo = AssociationName.FPGROWTH;
         fpGrowth = new AssociationFP();
         return (AssociationFP) fpGrowth;
     }
@@ -34,7 +28,7 @@ public class AssociationSettings implements ASettings2 {
     @Override
     public Object getModel() {
         switch (associationAlgo) {
-            case fpgrowth: {
+            case FPGROWTH: {
                 return fpGrowth;
             }
             default:

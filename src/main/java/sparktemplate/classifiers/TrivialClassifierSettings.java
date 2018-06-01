@@ -50,7 +50,7 @@ public class TrivialClassifierSettings implements ASettings
     }
 
     public DecisionTree setDecisionTree() {
-        this.classificationAlgo = ClassifierName.decisiontree;
+        this.classificationAlgo = ClassifierName.DECISIONTREE;
         return new DecisionTree();
     }
 

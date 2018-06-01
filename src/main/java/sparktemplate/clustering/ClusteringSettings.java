@@ -1,11 +1,7 @@
 package sparktemplate.clustering;
 
 import org.apache.spark.ml.clustering.KMeans;
-import sparktemplate.ASettings;
 import sparktemplate.ASettings2;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by as on 21.03.2018.
@@ -18,7 +14,7 @@ public class ClusteringSettings implements ASettings2 {
     public class ClusteringKMeans extends KMeans{}
 
     public ClusteringKMeans setKMeans() {
-        clusteringAlgo = ClusteringName.kmeans;
+        clusteringAlgo = ClusteringName.KMEANS;
         kMeans = new ClusteringKMeans();
         return (ClusteringKMeans) kMeans;
     }
@@ -31,7 +27,7 @@ public class ClusteringSettings implements ASettings2 {
     @Override
     public Object getModel() {
         switch (clusteringAlgo) {
-            case kmeans: {
+            case KMEANS: {
                 return kMeans;
             }
             default:
