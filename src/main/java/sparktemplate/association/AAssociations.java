@@ -2,6 +2,7 @@ package sparktemplate.association;
 
 import java.io.IOException;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -18,7 +19,7 @@ interface AAssociations {
      * @param settings ustawienia 
      */
         
-    void buildAssociations(MemDataSet dataSet, ASettings settings);
+    void buildAssociations(MemDataSet dataSet, ASettings2 settings);
     //void buildAssociations(MemDataSet dataSet);
     
     /**
@@ -28,7 +29,7 @@ interface AAssociations {
      * @param settings ustawienia 
      */
         
-    void buildAssociations(DBDataSet dataSet, ASettings settings);
+    void buildAssociations(DBDataSet dataSet, ASettings2 settings);
     //void buildAssociations(DBDataSet dataSet);
     /**
      * Zapis do pliku tekstowego o podanej nazwie

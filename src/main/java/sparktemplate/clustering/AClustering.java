@@ -2,6 +2,7 @@ package sparktemplate.clustering;
 
 import java.io.IOException;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
@@ -20,7 +21,7 @@ interface AClustering {
      * @param settings ustawienia 
      */
         
-    void buildClusterer(MemDataSet dataSet, ASettings settings);
+    void buildClusterer(MemDataSet dataSet, ASettings2 settings);
     //void buildClusterer(MemDataSet dataSet);
     
     /**
@@ -30,7 +31,7 @@ interface AClustering {
      * @param settings ustawienia 
      */
         
-    void buildClusterer(DBDataSet dataSet, ASettings settings);
+    void buildClusterer(DBDataSet dataSet, ASettings2 settings);
     //void buildClusterer(DBDataSet dataSet);
     
     /**

@@ -41,7 +41,8 @@ public class TestAssocRules {
         memDs.show();
         System.out.println("// TEST AssocRules");
         FpG fpG = new FpG(sparkSession);
-        AssociationSettings associationSettings = new AssociationSettings()
+        AssociationSettings associationSettings = new AssociationSettings();
+        associationSettings.setFPGrowth()
                 .setMinSupport(0.01)
                 .setMinConfidence(0.4);
         // build
