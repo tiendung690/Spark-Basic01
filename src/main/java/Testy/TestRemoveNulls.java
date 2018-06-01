@@ -4,22 +4,10 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.ml.feature.Imputer;
-import org.apache.spark.ml.feature.ImputerModel;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.util.LongAccumulator;
-import scala.Tuple2;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
-
-import javax.xml.crypto.Data;
-import java.util.*;
 
 /**
  * Created by as on 19.03.2018.
@@ -51,7 +39,7 @@ public class TestRemoveNulls {
         ds.cache();
         Dataset<Row> ds2 = DataPrepare.fillMissingValues(ds);
         //ds2.show();
-        Dataset<Row> ds3 = new DataPrepareClustering().prepareDataset(ds2,false,false);
+        Dataset<Row> ds3 = new DataPrepareClustering().prepareDataSet(ds2,false,false);
         ds3.show();
         ds3.printSchema();
 

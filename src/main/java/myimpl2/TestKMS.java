@@ -1,31 +1,21 @@
 package myimpl2;
 
-import myimplementation.Kmns;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.ml.Model;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.clustering.ClusteringSummary;
-import org.apache.spark.ml.clustering.KMeans;
-import org.apache.spark.ml.clustering.KMeansModel;
-import org.apache.spark.ml.clustering.KMeansParams;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
-import org.apache.spark.ml.feature.IndexToString;
-import org.apache.spark.ml.util.DefaultParamsReader;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.Metadata;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
 import java.util.Arrays;
-
-import static org.apache.spark.sql.functions.lit;
 
 /**
  * Created by as on 18.04.2018.
@@ -70,7 +60,7 @@ public class TestKMS {
         memDataSet.loadDataSet(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, true);
+        Dataset<Row> ds1 = dpc.prepareDataSet(memDataSet.getDs(), false, true);
         ds1.printSchema();
         //Dataset<Row> ds = ds1.select("features");
 

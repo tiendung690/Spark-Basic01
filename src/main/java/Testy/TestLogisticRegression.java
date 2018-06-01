@@ -42,7 +42,7 @@ public class TestLogisticRegression {
         Dataset<Row> ds = memDataSet.getDs();
         ds.show();
 
-        Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(ds));
+        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(ds));
         data.show();
 
 

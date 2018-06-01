@@ -9,13 +9,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 import java.io.IOException;
 
@@ -33,7 +30,7 @@ public class TrivialDecisionTree implements AClassifier {
 
 
     @Override
-    public void build(ADataSet dataSet, ASettings2 settings) {
+    public void build(ADataSet dataSet, ASettings settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
@@ -57,9 +54,9 @@ public class TrivialDecisionTree implements AClassifier {
         this.pipelineModel = PipelineModel.read().load(fileName);
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings2 settings) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
-        Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
+        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData));
         //data.show();
 
         // Index labels, adding metadata to the label column.

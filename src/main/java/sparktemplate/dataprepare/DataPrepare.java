@@ -8,10 +8,20 @@ import org.apache.spark.sql.types.StructType;
 import java.util.*;
 
 /**
+ * Klasa zawierajaca metody przygotowujace wstepnie dane.
+ *
  * Created by as on 21.03.2018.
  */
 public class DataPrepare {
 
+    /**
+     * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
+     *
+     * @param row dane
+     * @param structType struktura
+     * @param sparkSession obiekt SparkSession
+     * @return zbior danych
+     */
     public static Dataset<Row> createDataSet(Row row, StructType structType, SparkSession sparkSession) {
         List<Row> rows = new ArrayList<>();
         rows.add(row);
@@ -21,6 +31,12 @@ public class DataPrepare {
     }
 
 
+    /**
+     * Metoda wypelniajaca brakujace dane.
+     *
+     * @param ds zbior danych z brakujacymi danymi
+     * @return wypelniony zbior danych
+     */
     public static Dataset<Row> fillMissingValues(Dataset<Row> ds) {
 
         // find symbolical and numerical values in dataset

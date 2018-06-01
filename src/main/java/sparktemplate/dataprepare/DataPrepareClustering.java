@@ -35,7 +35,7 @@ public class DataPrepareClustering {
      * @param removeStrings usuwanie kolumn z typem String
      * @return przygotowane dane
      */
-    public Dataset<Row> prepareDataset(Dataset<Row> df, boolean isSingle, boolean removeStrings) {
+    public Dataset<Row> prepareDataSet(Dataset<Row> df, boolean isSingle, boolean removeStrings) {
 
         Dataset<Row> prepared;
 

@@ -45,7 +45,7 @@ public class TestMLTree {
 
 
         // Load the data stored in LIBSVM format as a DataFrame.
-        Dataset<Row> data =  DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(ds)); //spark.read().format("libsvm").load("data/mllib/sample_libsvm_data.txt");
+        Dataset<Row> data =  DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(ds)); //spark.read().format("libsvm").load("data/mllib/sample_libsvm_data.txt");
         data.show();
 
 // Index labels, adding metadata to the label column.

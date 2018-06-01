@@ -23,7 +23,13 @@ public class DataPrepareClassification {
 
     private static final boolean removeStrings = false;
 
-    public static Dataset<Row> prepareLabeledPoint(Dataset<Row> ds) {
+    /**
+     * Metoda przygotowuje dane do klasyfikacji.
+     *
+     * @param ds dane
+     * @return przygotowane dane
+     */
+    public static Dataset<Row> prepareDataSet(Dataset<Row> ds) {
 
 
         // without label

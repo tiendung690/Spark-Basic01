@@ -8,12 +8,10 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
+import sparktemplate.datasets.ADataSet;
 
 import java.io.IOException;
 
@@ -21,7 +19,6 @@ import java.io.IOException;
  * Created by as on 12.03.2018.
  */
 public class KMean implements AClustering {
-
 
     private KMeans kmeans;
     private KMeansModel model;
@@ -41,21 +38,15 @@ public class KMean implements AClustering {
     }
 
     @Override
-    public void buildClusterer(MemDataSet dataSet, ASettings2 settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
-    }
-
-
-    @Override
-    public void buildClusterer(DBDataSet dataSet, ASettings2 settings) {
-        buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
+    public void buildClusterer(ADataSet dataSet, ASettings settings) {
+        buildCluster(dataPrepareClustering.prepareDataSet(dataSet.getDs(), false, removeStrings), settings);
     }
 
     @Override
     public int clusterRecord(DataRecord dataRecord) {
 
         Dataset<Row> single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataset(single,true, removeStrings);
+        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataSet(single,true, removeStrings);
         Dataset<Row> prediction = model.transform(single_prepared);
         return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
     }
@@ -84,7 +75,7 @@ public class KMean implements AClustering {
         System.out.println("loadClusterer: "+fileName);
     }
 
-    private void buildCluster(Dataset<Row> ds, ASettings2 settings) {
+    private void buildCluster(Dataset<Row> ds, ASettings settings) {
 
         ClusteringSettings cs = (ClusteringSettings) settings;
 

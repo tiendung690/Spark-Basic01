@@ -7,8 +7,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.dataprepare.DataPrepareAssociations;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -21,19 +21,14 @@ public class FpG implements AAssociations {
 
     private FPGrowthModel fpGrowthModel;
     private Dataset<Row> assocRules;
-    public SparkSession sparkSession;
+    private SparkSession sparkSession;
 
     public FpG(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
     }
 
     @Override
-    public void buildAssociations(MemDataSet dataSet, ASettings2 settings) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
-    }
-
-    @Override
-    public void buildAssociations(DBDataSet dataSet, ASettings2 settings) {
+    public void buildAssociations(ADataSet dataSet, ASettings settings) {
         buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
     }
 
@@ -49,7 +44,7 @@ public class FpG implements AAssociations {
         System.out.println("loadAssociationRules: " + fileName);
     }
 
-    private void buildAssociations(Dataset<Row> dataset, ASettings2 settings) {
+    private void buildAssociations(Dataset<Row> dataset, ASettings settings) {
 
         AssociationSettings as = (AssociationSettings) settings;
 

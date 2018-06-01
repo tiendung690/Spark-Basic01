@@ -4,6 +4,8 @@ import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.feature.OneHotEncoderModel;
 
 /**
+ * Klasa pomocnicza.
+ *
  * Created by as on 19.03.2018.
  */
 

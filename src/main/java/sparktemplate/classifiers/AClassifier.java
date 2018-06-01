@@ -5,11 +5,8 @@ import java.io.IOException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 
 /**
@@ -28,7 +25,7 @@ public interface AClassifier {
      * @param dataSet  - zbior danych dla ktorego budowany jest klasyfikator
      * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)
      */
-    void build(ADataSet dataSet, ASettings2 settings);
+    void build(ADataSet dataSet, ASettings settings);
 
 
     Dataset<Row> classify(ADataSet dbDataSet);

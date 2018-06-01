@@ -5,7 +5,6 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.storage.StorageLevel;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
@@ -55,7 +54,7 @@ public class MainTestPrepareData {
         memDataSet.getDs().cache();
 
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds = dpc.prepareDataset(memDataSet.getDs(), false, false);//.select("features");
+        Dataset<Row> ds = dpc.prepareDataSet(memDataSet.getDs(), false, false);//.select("features");
 
         // lekko przyspiesza
         // ds.persist(new StorageLevel(false, true, false, true, 1));

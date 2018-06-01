@@ -1,13 +1,13 @@
 package sparktemplate.association;
 
 import org.apache.spark.ml.fpm.FPGrowth;
-import sparktemplate.ASettings2;
+import sparktemplate.ASettings;
 
 /**
  * Created by as on 15.03.2018.
  */
 
-public class AssociationSettings implements ASettings2 {
+public class AssociationSettings implements ASettings {
 
     private FPGrowth fpGrowth;
     private AssociationName associationAlgo; //wybrany algorytm
@@ -32,13 +32,8 @@ public class AssociationSettings implements ASettings2 {
                 return fpGrowth;
             }
             default:
-                System.out.println("Wrong classification type! " + associationAlgo);
+                System.out.println("Wrong type! " + associationAlgo);
                 return null;
         }
-    }
-
-    public static void main(String[] args) {
-        AssociationSettings as = new AssociationSettings();
-        FPGrowth ff = (FPGrowth) as.getModel();
     }
 }

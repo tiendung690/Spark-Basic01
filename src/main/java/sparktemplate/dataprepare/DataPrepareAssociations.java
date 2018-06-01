@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Klasa zawierajaca metody przygotowujace dane do wyznaczania regul asocjacyjnych.
+ *
  * Created by as on 13.03.2018.
  */
 public class DataPrepareAssociations {
@@ -20,6 +22,13 @@ public class DataPrepareAssociations {
     private static final boolean removeNumerics = true; // remove all columns with numeric values
     private static final boolean removeNull = true; // remove all null columns in row
 
+    /**
+     * Metoda przygotowuje dane do wyznaczania regul asocjacyjnych.
+     *
+     * @param df dane
+     * @param sparkSession obiekt SparkSession
+     * @return przygotowane dane
+     */
     public static Dataset<Row> prepareDataSet(Dataset<Row> df, SparkSession sparkSession) {
 
         // find columns with StringType from dataset

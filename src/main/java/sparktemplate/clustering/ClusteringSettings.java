@@ -1,12 +1,12 @@
 package sparktemplate.clustering;
 
 import org.apache.spark.ml.clustering.KMeans;
-import sparktemplate.ASettings2;
+import sparktemplate.ASettings;
 
 /**
  * Created by as on 21.03.2018.
  */
-public class ClusteringSettings implements ASettings2 {
+public class ClusteringSettings implements ASettings {
 
     private KMeans kMeans;
     private ClusteringName clusteringAlgo; //wybrany algorytm
@@ -31,7 +31,7 @@ public class ClusteringSettings implements ASettings2 {
                 return kMeans;
             }
             default:
-                System.out.println("Wrong classification type! " + clusteringAlgo);
+                System.out.println("Wrong type! " + clusteringAlgo);
                 return null;
         }
     }

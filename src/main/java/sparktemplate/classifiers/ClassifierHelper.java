@@ -30,7 +30,7 @@ public class ClassifierHelper {
         Dataset<Row> singleRecord = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
 
         // prepare dataset
-        Dataset<Row> singleRecordPrepared = DataPrepareClassification.prepareLabeledPoint(singleRecord);
+        Dataset<Row> singleRecordPrepared = DataPrepareClassification.prepareDataSet(singleRecord);
 
         // make prediction
         Dataset<Row> prediction = pipelineModel.transform(singleRecordPrepared);
@@ -50,7 +50,7 @@ public class ClassifierHelper {
      */
     public static Dataset<Row> classify(ADataSet dbDataSet, PipelineModel pipelineModel) {
         // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        Dataset<Row> prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()));
         // Make predictions
         Dataset<Row> predictions = pipelineModel.transform(prepTest);
         //predictions.show(5);

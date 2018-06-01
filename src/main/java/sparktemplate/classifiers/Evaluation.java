@@ -4,7 +4,7 @@ import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.ASettings2;
+import sparktemplate.ASettings;
 import sparktemplate.datasets.ADataSet;
 
 
@@ -18,11 +18,15 @@ import sparktemplate.datasets.ADataSet;
 
 public class Evaluation {
 
-
     private SparkSession sparkSession;
     private Dataset<Row> predictions;
     private MulticlassClassificationEvaluator evaluator;
 
+    /**
+     * Konstruktor inicjalizujacy obiekt Evaluation
+     *
+     * @param sparkSession obiekt SparkSession
+     */
     public Evaluation(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
         this.evaluator = new MulticlassClassificationEvaluator()
@@ -53,20 +57,29 @@ public class Evaluation {
         return this.evaluator.setMetricName("accuracy").evaluate(predictionsSelected);
     }
 
-
     /**
      * Metoda zwracajaca coverage wykonanego wczesniej eksperymentu
      *
-     * @return Wartosc coverage
+     * @return coverage
      */
     public double getCoverage() {
         return this.evaluator.setMetricName("weightedRecall").evaluate(this.predictions);
     }
 
+    /**
+     * Metoda zwracajaca F1 wykonanego wczesniej eksperymentu
+     *
+     * @return f1
+     */
     public double get_F1() {
         return this.evaluator.setMetricName("f1").evaluate(this.predictions);
     }
 
+    /**
+     * Metoda zwracajaca precision wykonanego wczesniej eksperymentu
+     *
+     * @return precision
+     */
     public double get_Precision() {
         return this.evaluator.setMetricName("weightedPrecision").evaluate(this.predictions);
     }
@@ -86,31 +99,6 @@ public class Evaluation {
     }
 
 
-//    /**
-//     * Cztery warianty metodTraiAndTest dla zbiorów danych
-//     *
-//     * @param trainingDataSet - zbior danych treningowych
-//     * @param testingDataSet  - zbior danych testowych
-//     * @param settings        - obiekt parametrow
-//     */
-
-//    void makeTrainAndTest(MemDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
-//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-//    }  //Wykonywaniu testu
-//
-//    void makeTrainAndTest(MemDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
-//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-//    }  //Wykonywaniu testu
-//
-//    void makeTrainAndTest(DBDataSet trainingDataSet, DBDataSet testingDataSet, ASettings classifierSettings) {
-//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-//    }  //Wykonywaniu testu
-//
-//    void makeTrainAndTest(DBDataSet trainingDataSet, MemDataSet testingDataSet, ASettings classifierSettings) {
-//        trainTest(trainingDataSet, testingDataSet, classifierSettings);
-//    }  //Wykonywaniu testu
-
-
     /**
      * Metoda wypisuje na ekran tekst opisujacy wyniki ekperymentu
      */
@@ -119,7 +107,14 @@ public class Evaluation {
     }
 
 
-    public void trainTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings2 classifierSettings) {
+    /**
+     * Metoda budujaca model na podstawie danych treningowych oraz klasyfikujaca dane testowe.
+     *
+     * @param trainingDataSet - zbior danych treningowych
+     * @param testingDataSet  - zbior danych testowych
+     * @param classifierSettings        - obiekt parametrow
+     */
+    public void trainAndTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings classifierSettings) {
 
 
         ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());

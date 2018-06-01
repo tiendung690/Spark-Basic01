@@ -1,9 +1,10 @@
 package sparktemplate.clustering;
 
 import java.io.IOException;
+
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -12,28 +13,16 @@ import sparktemplate.datasets.MemDataSet;
 
 interface AClustering {
     
-   
-    
      /**
-     * Abstrakcyjna metoda szukajaca skupien w oparciu o dane z obiektu klasy MemDataSet.
+     * Abstrakcyjna metoda szukajaca skupien w oparciu o dane.
      *
      * @param dataSet - zbior danych 
      * @param settings ustawienia 
      */
         
-    void buildClusterer(MemDataSet dataSet, ASettings2 settings);
-    //void buildClusterer(MemDataSet dataSet);
-    
-    /**
-     * Abstrakcyjna metoda szukajaca skupien w oparciu o dane z obiektu klasy DBDataSet.
-     *
-     * @param dataSet - zbior danych
-     * @param settings ustawienia 
-     */
-        
-    void buildClusterer(DBDataSet dataSet, ASettings2 settings);
-    //void buildClusterer(DBDataSet dataSet);
-    
+    void buildClusterer(ADataSet dataSet, ASettings settings);
+
+
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do skupienia
      * 
@@ -42,13 +31,22 @@ interface AClustering {
      */
 
     int clusterRecord(DataRecord dataRecord);
-        
-    
-    //Pobiera skupienie o podanym numerze
-    Cluster getCluster(int index); 
-    
-    
-    //udostepnia liczbe skupien
+
+
+    /**
+     * Metoda zwracajaca skupienie o podanym numerze
+     *
+     * @param index numer skupienia
+     * @return skupienie, klaster
+     */
+    Cluster getCluster(int index);
+
+
+    /**
+     * Metoda zwracajaca liczbe skupien
+     *
+     * @return
+     */
     int getNoCluster(); 
     
 

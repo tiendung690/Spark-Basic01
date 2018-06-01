@@ -1,12 +1,12 @@
 package sparktemplate.classifiers;
 
 import org.apache.spark.ml.classification.*;
-import sparktemplate.ASettings2;
+import sparktemplate.ASettings;
 
 /**
  * Created by as on 01.06.2018.
  */
-public class ClassifierSettings implements ASettings2 {
+public class ClassifierSettings implements ASettings {
 
     private DecisionTreeClassifier decisionTreeClassifier;
     private RandomForestClassifier randomForestClassifier;
@@ -85,7 +85,7 @@ public class ClassifierSettings implements ASettings2 {
                 return naiveBayes;
             }
             default:
-                System.out.println("Wrong classification type! " + classificationAlgo);
+                System.out.println("Wrong type! " + classificationAlgo);
                 return null;
         }
     }

@@ -93,7 +93,7 @@ public class Kmns {
         //memDataSet.getDs().cache();
         ///Dataset<Row> ds2 = memDataSet.getDs();//DataPrepare.fillMissingValues(memDataSet.getDs()); //memDataSet.getDs();
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> ds1 = dpc.prepareDataset(memDataSet.getDs(), false, true);
+        Dataset<Row> ds1 = dpc.prepareDataSet(memDataSet.getDs(), false, true);
         Dataset<Row> ds = ds1.select("features"); //normFeatures //features
         //ds.show(false);
 //        ds.printSchema();

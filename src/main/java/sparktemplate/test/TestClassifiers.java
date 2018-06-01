@@ -5,10 +5,8 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.classifiers.ClassifierName;
 import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.classifiers.Evaluation;
-import sparktemplate.classifiers.TrivialClassifierSettings;
 import sparktemplate.datasets.MemDataSet;
 
 /**
@@ -52,7 +50,7 @@ public class TestClassifiers {
 
             //Wywolanie metody testujacej metoda Train&Test
             //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
-            evaluation.trainTest(dataSetTrain, dataSetTest, classifierSettings);
+            evaluation.trainAndTest(dataSetTrain, dataSetTest, classifierSettings);
 
             System.out.println("accuracy: " + evaluation.getAccuracy()
                     + ", coverage: " + evaluation.getCoverage()

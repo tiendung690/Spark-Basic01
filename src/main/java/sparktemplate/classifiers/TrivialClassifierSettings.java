@@ -1,13 +1,11 @@
 package sparktemplate.classifiers;
 
 import org.apache.spark.ml.classification.DecisionTreeClassifier;
-import sparktemplate.ASettings;
 
 
 //Implementacja zbioru ustawien (opcji) dla klasyfikatora TrivialClassifier
 
-public class TrivialClassifierSettings implements ASettings
-{
+public class TrivialClassifierSettings {
    private ClassifierName classificationAlgo;
    private int maxIter;
    private double regParam;

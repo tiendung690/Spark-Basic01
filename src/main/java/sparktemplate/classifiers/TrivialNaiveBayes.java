@@ -9,13 +9,10 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 import java.io.IOException;
 
@@ -32,7 +29,7 @@ public class TrivialNaiveBayes implements AClassifier {
     }
 
     @Override
-    public void build(ADataSet dataSet, ASettings2 settings) {
+    public void build(ADataSet dataSet, ASettings settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
@@ -54,16 +51,16 @@ public class TrivialNaiveBayes implements AClassifier {
     @Override
     public Dataset<Row> classify(ADataSet dbDataSet){
         // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        Dataset<Row> prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()));
         // Make predictions
         Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
         //predictions.show(5);
         return predictions;
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings2 settings) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
-        Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
+        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData));
         //data.show();
 
         // Index labels, adding metadata to the label column.

@@ -7,11 +7,12 @@ import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 
-//Klasa pokazujaca jak implementuje sie skupienia
 
+/**
+ * Klasa pokazujaca jak implementuje sie skupienia
+ */
 public class Cluster {
 
-    //Tutaj struktury danych reprezentujace skupienie
     private Dataset<Row> ds;
     private SparkSession sparkSession;
     private DataPrepareClustering dataPrepareClustering;
@@ -23,21 +24,35 @@ public class Cluster {
         this.dataPrepareClustering = dataPrepareClustering;
     }
 
+    /**
+     * Metoda wypelniajaca skupienia do prywantego pola.
+     *
+     * @param ds skupienia
+     */
     void initCluster(Dataset<Row> ds) {
-        //Tutaj tworzy sie struktura skupienia
         this.ds = ds;
     }
 
+    /**
+     * Metoda sprawdza obecnosc rekordu w skupieniu
+     *
+     * @param record rekord danych
+     * @return obecnosc
+     */
     public boolean checkRecord(DataRecord record) {
-        //Ta metoda sprawdza, czy podany rekord znajduje się w skupieniu
-        Dataset<Row> single = this.dataPrepareClustering.prepareDataset(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, removeStrings);
+        Dataset<Row> single = this.dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, removeStrings);
         final Object obj = single.first().get(0);
         return ds.filter(value -> value.get(0).equals(obj)).count() > 0;
     }
 
+    /**
+     * Metoda zwracajaca informacje tekstowe o skupieniu w celu np. zapisu na dysk lub do bazy danych
+     *
+     * @return informacje
+     */
     public String toString() {
         return "opis";
-    } //Pobranie pełnej informacji tekstowej o skupieniu w celu np. zapisu na dysk lub do bazy danych
+    }
 
 
 }

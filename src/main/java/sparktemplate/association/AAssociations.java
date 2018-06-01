@@ -1,8 +1,9 @@
 package sparktemplate.association;
 
 import java.io.IOException;
+
 import sparktemplate.ASettings;
-import sparktemplate.ASettings2;
+import sparktemplate.datasets.ADataSet;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
@@ -13,36 +14,27 @@ interface AAssociations {
     
     
     /**
-     * Abstrakcyjna metoda szukajaca reguł asocjacyjnych w oparciu o dane z obiektu klasy MemDataSet.
+     * Abstrakcyjna metoda szukajaca reguł asocjacyjnych w oparciu o dane.
      *
      * @param dataSet - zbior danych 
      * @param settings ustawienia 
      */
         
-    void buildAssociations(MemDataSet dataSet, ASettings2 settings);
-    //void buildAssociations(MemDataSet dataSet);
-    
+    void buildAssociations(ADataSet dataSet, ASettings settings);
+
+
     /**
-     * Abstrakcyjna metoda szukajaca regul asocjacyjnych  w oparciu o dane z obiektu klasy DBDataSet.
+     * Metoda zapisujaca skupienia do pliku.
      *
-     * @param dataSet - zbior danych 
-     * @param settings ustawienia 
-     */
-        
-    void buildAssociations(DBDataSet dataSet, ASettings2 settings);
-    //void buildAssociations(DBDataSet dataSet);
-    /**
-     * Zapis do pliku tekstowego o podanej nazwie
-     * @param fileName nazwa pliku
+     * @param fileName sciezka pliku
      * @throws IOException
      */
-
     void saveAssociationRules(String fileName) throws IOException;
 
 
     /**
-     * Odczyt z pliku tekstowego o podanej nazwie
-     * @param fileName nazwa pliku
+     * Metoda zapisujaca skupienia z pliku.
+     * @param fileName sciezka pliku
      * @throws IOException
      */
 
