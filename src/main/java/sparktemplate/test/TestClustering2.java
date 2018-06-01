@@ -86,7 +86,8 @@ public class TestClustering2 {
 
         // kmeans test
         KMean kMean = new KMean(sparkSession);
-        ClusteringSettings clusteringSettings = new ClusteringSettings()
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+        clusteringSettings.setKMeans()
                 .setK(20)
                 .setSeed(20L);
 

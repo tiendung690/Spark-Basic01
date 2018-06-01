@@ -64,7 +64,8 @@ public class SaveToExternalDB {
 
         // OBLICZANIE KLASTROW
         KMean kMean = new KMean(sparkSession);
-        ClusteringSettings clusteringSettings = new ClusteringSettings()
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+        clusteringSettings.setKMeans()
                 .setK(4)
                 .setSeed(10L);
         kMean.buildClusterer(dbDataSet, clusteringSettings);

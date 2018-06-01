@@ -8,6 +8,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
@@ -40,13 +41,13 @@ public class KMean implements AClustering {
     }
 
     @Override
-    public void buildClusterer(MemDataSet dataSet, ASettings settings) {
+    public void buildClusterer(MemDataSet dataSet, ASettings2 settings) {
         buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
     }
 
 
     @Override
-    public void buildClusterer(DBDataSet dataSet, ASettings settings) {
+    public void buildClusterer(DBDataSet dataSet, ASettings2 settings) {
         buildCluster(dataPrepareClustering.prepareDataset(dataSet.getDs(), false, removeStrings), settings);
     }
 
@@ -83,15 +84,14 @@ public class KMean implements AClustering {
         System.out.println("loadClusterer: "+fileName);
     }
 
-    private void buildCluster(Dataset<Row> ds, ASettings settings) {
+    private void buildCluster(Dataset<Row> ds, ASettings2 settings) {
 
         ClusteringSettings cs = (ClusteringSettings) settings;
 
         // Trains a k-means model.
-        KMeans kmeans = new KMeans()
-                .setK(cs.getK())
-                .setSeed(cs.getSeed())
-                .setMaxIter(20)
+        KMeans km = (KMeans) settings.getModel();
+
+        KMeans kmeans = km
                 //.setTol(0)
                 //.setInitSteps(1)
                 //.setTol(0.0)

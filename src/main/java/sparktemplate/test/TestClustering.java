@@ -76,9 +76,12 @@ public class TestClustering {
 
         // kmeans test
         KMean kMean = new KMean(sparkSession);
-        ClusteringSettings clusteringSettings = new ClusteringSettings()
-                .setK(2)
-                .setSeed(10L);
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+        clusteringSettings.setKMeans()
+                .setK(4)
+                .setSeed(10L)
+                .setMaxIter(20);
+
 
         kMean.buildClusterer(memDataSet, clusteringSettings);
         // show predicted clusters
