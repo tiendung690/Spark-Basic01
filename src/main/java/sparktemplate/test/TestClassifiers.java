@@ -6,6 +6,7 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.classifiers.ClassifierName;
+import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.classifiers.Evaluation;
 import sparktemplate.classifiers.TrivialClassifierSettings;
 import sparktemplate.datasets.MemDataSet;
@@ -36,11 +37,12 @@ public class TestClassifiers {
 
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: decisiontree, randomforests, logisticregression, naivebayes, linearsvm
-            TrivialClassifierSettings classifierSettings = new TrivialClassifierSettings()
-                    .setClassificationAlgo(ClassifierName.linearsvm)
-                    .setMaxIter(10)
-                    .setRegParam(0.2)
-                    .setElasticNetParam(0.8);
+            ClassifierSettings classifierSettings = new ClassifierSettings();
+            classifierSettings
+                    .setDecisionTree()
+                    .setMaxBins(5);
+
+
 
             MemDataSet dataSetTest = new MemDataSet(spark); //Utworzenie obiektu na dane testowe
             dataSetTest.loadDataSet(fNameTabTest); //Wczytanie danych testowych

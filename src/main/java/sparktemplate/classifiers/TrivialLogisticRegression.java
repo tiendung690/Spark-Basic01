@@ -9,6 +9,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
@@ -31,7 +32,7 @@ public class TrivialLogisticRegression implements AClassifier {
     }
 
     @Override
-    public void build(ADataSet dataSet, ASettings settings) {
+    public void build(ADataSet dataSet, ASettings2 settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
@@ -60,7 +61,7 @@ public class TrivialLogisticRegression implements AClassifier {
         return predictions;
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings2 settings) {
 
         Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();
@@ -80,13 +81,15 @@ public class TrivialLogisticRegression implements AClassifier {
                 .fit(data);
 
         // Classification
-        LogisticRegression lr = new LogisticRegression()
-                .setMaxIter(10)
-                .setRegParam(0.3)
-                .setElasticNetParam(0.8)
+        LogisticRegression lr1 = (LogisticRegression) settings.getModel();
+
+        LogisticRegression lr = lr1
+//                .setMaxIter(10)
+//                .setRegParam(0.3)
+//                .setElasticNetParam(0.8)
+//                .setFamily("multinomial")
                 .setLabelCol("indexedLabel")
-                .setFeaturesCol("indexedFeatures")
-                .setFamily("multinomial");
+                .setFeaturesCol("indexedFeatures");
 
         // Convert indexed labels back to original labels.
         IndexToString labelConverter = new IndexToString()

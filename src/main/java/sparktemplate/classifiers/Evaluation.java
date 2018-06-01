@@ -5,6 +5,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.datasets.ADataSet;
 
 
@@ -119,11 +120,10 @@ public class Evaluation {
     }
 
 
-    public void trainTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings classifierSettings) {
+    public void trainTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings2 classifierSettings) {
 
-        TrivialClassifierSettings trivialClassifierSettings = (TrivialClassifierSettings) classifierSettings;
 
-        ClassifierName classificationType = trivialClassifierSettings.getClassificationAlgo();
+        ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());
 
 
         switch (classificationType) {

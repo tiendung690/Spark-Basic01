@@ -9,6 +9,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
@@ -32,7 +33,7 @@ public class TrivialDecisionTree implements AClassifier {
 
 
     @Override
-    public void build(ADataSet dataSet, ASettings settings) {
+    public void build(ADataSet dataSet, ASettings2 settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
@@ -56,7 +57,7 @@ public class TrivialDecisionTree implements AClassifier {
         this.pipelineModel = PipelineModel.read().load(fileName);
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings2 settings) {
 
         Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();
@@ -76,7 +77,9 @@ public class TrivialDecisionTree implements AClassifier {
                 .fit(data);
 
         // Classification
-        DecisionTreeClassifier dt = new DecisionTreeClassifier()
+        DecisionTreeClassifier dt1 = (DecisionTreeClassifier) settings.getModel();
+
+        DecisionTreeClassifier dt = dt1
                 .setLabelCol("indexedLabel")
                 .setFeaturesCol("indexedFeatures");
 

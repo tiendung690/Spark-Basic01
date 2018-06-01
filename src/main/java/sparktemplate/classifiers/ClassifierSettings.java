@@ -89,13 +89,4 @@ public class ClassifierSettings implements ASettings2 {
                 return null;
         }
     }
-
-
-    public static void main(String[] args) {
-        ClassifierSettings cs = new ClassifierSettings();
-        cs.setDecisionTree().setLabelCol("cena");
-
-        DecisionTreeClassifier nb = (DecisionTreeClassifier) cs.getModel();
-        System.out.println(nb.getLabelCol());
-    }
 }

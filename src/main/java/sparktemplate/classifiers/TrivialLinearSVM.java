@@ -9,6 +9,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
+import sparktemplate.ASettings2;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
@@ -31,7 +32,7 @@ public class TrivialLinearSVM implements AClassifier {
     }
 
     @Override
-    public void build(ADataSet dataSet, ASettings settings) {
+    public void build(ADataSet dataSet, ASettings2 settings) {
         this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
@@ -60,7 +61,7 @@ public class TrivialLinearSVM implements AClassifier {
         return predictions;
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings2 settings) {
 
         Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();
@@ -80,7 +81,9 @@ public class TrivialLinearSVM implements AClassifier {
                 .fit(data);
 
         // Classification
-        LinearSVC lsvc = new LinearSVC()
+        LinearSVC lsvc1 = (LinearSVC) settings.getModel();
+
+        LinearSVC lsvc = lsvc1
                 .setLabelCol("indexedLabel")
                 .setFeaturesCol("indexedFeatures")
                 .setMaxIter(10)
