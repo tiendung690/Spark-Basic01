@@ -7,6 +7,7 @@ import org.apache.spark.sql.SparkSession;
 import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
+import sparktemplate.datasets.ADataSet;
 
 /**
  * Klasa zawierajaca metody pomocne w klasyfikacji.
@@ -39,4 +40,21 @@ public class ClassifierHelper {
         String predictedLabel = prediction.select(prediction.col("predictedLabel")).first().toString();
         return predictedLabel;
     }
+
+    /**
+     * Metoda klasyfikujaca zbior danych.
+     *
+     * @param dbDataSet dane
+     * @param pipelineModel obiekt PipelineModel na podstawie ktorego wyznaczana jest klasa decyzyjna
+     * @return dane zaklasyfikowane
+     */
+    public static Dataset<Row> classify(ADataSet dbDataSet, PipelineModel pipelineModel) {
+        // prepare data
+        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
+        // Make predictions
+        Dataset<Row> predictions = pipelineModel.transform(prepTest);
+        //predictions.show(5);
+        return predictions;
+    }
+
 }

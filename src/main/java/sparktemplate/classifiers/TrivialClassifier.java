@@ -47,7 +47,7 @@ public class TrivialClassifier implements AClassifier
     }
 
     @Override
-    public Dataset<Row> makePredictions(ADataSet dbDataSet) {
+    public Dataset<Row> classify(ADataSet dbDataSet) {
         return null;
     }
 

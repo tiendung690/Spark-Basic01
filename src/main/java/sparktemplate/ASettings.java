@@ -1,6 +1,8 @@
 package sparktemplate;
 
-import java.util.Map;
+import org.apache.spark.ml.classification.*;
+import sparktemplate.classifiers.ClassifierName;
+
 
 /**
  * Intefejs reprezentuje abstrakcyjne funkcjonalnosci obiektow z parametrami do metod eksploracji danych

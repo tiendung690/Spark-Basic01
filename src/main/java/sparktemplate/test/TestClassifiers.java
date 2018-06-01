@@ -37,7 +37,7 @@ public class TestClassifiers {
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: decisiontree, randomforests, logisticregression, naivebayes, linearsvm
             TrivialClassifierSettings classifierSettings = new TrivialClassifierSettings()
-                    .setClassificationAlgo(ClassifierName.decisiontree)
+                    .setClassificationAlgo(ClassifierName.linearsvm)
                     .setMaxIter(10)
                     .setRegParam(0.2)
                     .setElasticNetParam(0.8);

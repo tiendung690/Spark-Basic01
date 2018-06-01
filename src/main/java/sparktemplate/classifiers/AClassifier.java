@@ -30,7 +30,7 @@ public interface AClassifier {
     void build(ADataSet dataSet, ASettings settings);
 
 
-    Dataset<Row> makePredictions(ADataSet dbDataSet);
+    Dataset<Row> classify(ADataSet dbDataSet);
 
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do klas decyzyjnych.
@@ -41,6 +41,8 @@ public interface AClassifier {
      */
 
     String classify(DataRecord dataRecord);
+
+
 
 
     /**

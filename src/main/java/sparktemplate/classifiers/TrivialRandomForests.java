@@ -23,7 +23,6 @@ import java.io.IOException;
  */
 public class TrivialRandomForests implements AClassifier {
 
-    //private Dataset<Row> predictions;
     private PipelineModel pipelineModel;
     private SparkSession sparkSession;
 
@@ -34,7 +33,7 @@ public class TrivialRandomForests implements AClassifier {
 
     @Override
     public void build(ADataSet dataSet, ASettings settings) {
-        this.pipelineModel = buildPipelineModel(dataSet.getDs());
+        this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
     @Override
@@ -53,7 +52,7 @@ public class TrivialRandomForests implements AClassifier {
     }
 
     @Override
-    public Dataset<Row> makePredictions(ADataSet dbDataSet){
+    public Dataset<Row> classify(ADataSet dbDataSet) {
         // prepare data
         Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
         // Make predictions
@@ -62,7 +61,7 @@ public class TrivialRandomForests implements AClassifier {
         return predictions;
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
         Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();

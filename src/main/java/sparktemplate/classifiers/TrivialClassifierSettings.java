@@ -1,9 +1,7 @@
 package sparktemplate.classifiers;
 
+import org.apache.spark.ml.classification.DecisionTreeClassifier;
 import sparktemplate.ASettings;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 //Implementacja zbioru ustawien (opcji) dla klasyfikatora TrivialClassifier
@@ -50,4 +48,28 @@ public class TrivialClassifierSettings implements ASettings
         this.elasticNetParam = elasticNetParam;
         return this;
     }
+
+    public DecisionTree setDecisionTree() {
+        this.classificationAlgo = ClassifierName.decisiontree;
+        return new DecisionTree();
+    }
+
+    public class DecisionTree extends DecisionTreeClassifier {
+
+        @Override
+        public DecisionTreeClassifier setMaxDepth(int value) {
+            return super.setMaxDepth(value);
+        }
+
+        @Override
+        public DecisionTreeClassifier setMaxBins(int value) {
+            return super.setMaxBins(value);
+        }
+
+        public DecisionTree setOK(int iter) {
+           maxIter = iter;
+           return this;
+        }
+    }
 }
+

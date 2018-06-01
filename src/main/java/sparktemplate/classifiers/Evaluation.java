@@ -6,8 +6,6 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 
 /**
@@ -134,7 +132,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.makePredictions(testingDataSet);
+                this.predictions = algo.classify(testingDataSet);
 
                 break;
             }
@@ -143,7 +141,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.makePredictions(testingDataSet);
+                this.predictions = algo.classify(testingDataSet);
 
                 break;
             }
@@ -152,7 +150,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.makePredictions(testingDataSet);
+                this.predictions = algo.classify(testingDataSet);
 
                 break;
             }
@@ -161,7 +159,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.makePredictions(testingDataSet);
+                this.predictions = algo.classify(testingDataSet);
 
                 break;
             }
@@ -170,7 +168,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.makePredictions(testingDataSet);
+                this.predictions = algo.classify(testingDataSet);
 
                 break;
             }

@@ -23,7 +23,6 @@ import java.io.IOException;
  */
 public class TrivialDecisionTree implements AClassifier {
 
-    //private Dataset<Row> predictions;
     private PipelineModel pipelineModel;
     private SparkSession sparkSession;
 
@@ -34,12 +33,17 @@ public class TrivialDecisionTree implements AClassifier {
 
     @Override
     public void build(ADataSet dataSet, ASettings settings) {
-        this.pipelineModel = buildPipelineModel(dataSet.getDs());
+        this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
     }
 
     @Override
     public String classify(DataRecord dataRecord) {
         return ClassifierHelper.classify(dataRecord, this.sparkSession, this.pipelineModel);
+    }
+
+    @Override
+    public Dataset<Row> classify(ADataSet dbDataSet) {
+        return ClassifierHelper.classify(dbDataSet, this.pipelineModel);
     }
 
     @Override
@@ -52,17 +56,7 @@ public class TrivialDecisionTree implements AClassifier {
         this.pipelineModel = PipelineModel.read().load(fileName);
     }
 
-    @Override
-    public Dataset<Row> makePredictions(ADataSet dbDataSet) {
-        // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(dbDataSet.getDs()));
-        // Make predictions
-        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
-        //predictions.show(5);
-        return predictions;
-    }
-
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
         Dataset<Row> data = DataPrepareClassification.prepareLabeledPoint(DataPrepare.fillMissingValues(trainingData));
         //data.show();
