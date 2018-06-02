@@ -20,7 +20,6 @@ import scala.Tuple2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 
 /**
  * Created by as on 26.04.2018.
@@ -31,12 +30,12 @@ public class Util {
         double[] tab = new double[]{-20,1,2,3,4,6,-1};
         System.out.println(findLowerValIndex(tab));
     }
-    public static JavaRDD<Kmns.DataModel> convertToRDDModel(Dataset<Row> ds) {
+    public static JavaRDD<DataModel> convertToRDDModel(Dataset<Row> ds) {
         // Convert dataset to JavaRDD of DataModel
-        JavaRDD<Kmns.DataModel> x3 = ds.toJavaRDD().map(row -> {
-            Kmns.DataModel dataModel = new Kmns.DataModel();
-            dataModel.setInputData((Vector) row.get(0));
-            return dataModel;
+        JavaRDD<DataModel> x3 = ds.toJavaRDD().map(row -> {
+            KMeansModel KMeansModel = new KMeansModel();
+            KMeansModel.setData((Vector) row.get(0));
+            return KMeansModel;
         });
         return x3;//.repartition(4);
         //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
@@ -187,8 +186,8 @@ public class Util {
     }
 
     // Transform JavaRDD<DataModel> -> Dataset<Row>  (VectorUDF)
-    public static Dataset<Row> createDataSetUDF(JavaRDD<Kmns.DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
-        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getInputData(), v1.getCluster()));
+    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
+        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getData(), v1.getCluster()));
         // new StructType
         StructType schema = new StructType(new StructField[]{
                 new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
