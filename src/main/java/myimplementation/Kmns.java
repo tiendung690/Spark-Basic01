@@ -25,6 +25,7 @@ import java.util.*;
  * Created by as on 09.04.2018.
  */
 public class Kmns {
+
     public static void main(String[] args) {
 
         // INFO DISABLED
@@ -318,59 +319,6 @@ public class Kmns {
         return e;
     }
 
-//    public static JavaPairRDD<Integer, Vector> predictClusterWithNorm(JavaPairRDD<Integer, Vector> x, ArrayList<Vector> cc) {
-//
-//        JavaSparkContext jsc = new JavaSparkContext(x.context());
-//
-//        ArrayList<VectorWithNorm> ww = new ArrayList<>();
-//        for (Vector v : cc) {
-//            ww.add(new VectorWithNorm(Vectors.fromML(v)));
-//        }
-//
-//        Broadcast<ArrayList<VectorWithNorm>> ccc = jsc.broadcast(ww);
-//
-//        JavaPairRDD<Integer, Vector> e = x
-//                .mapPartitionsToPair(vvv -> {
-//                    List<Tuple2<Integer, Vector>> list = new ArrayList<>();
-//                    while (vvv.hasNext()) {
-//                        Tuple2<Integer, Vector> v1 = vvv.next();
-//                        double[] dd = computeDistanceWithNorm(ccc.value(), new VectorWithNorm(Vectors.fromML(v1._2()),2.0));
-//                        int index = Util.findLowerValIndex(dd);
-//                        //System.out.println(index+", "+Arrays.toString(v1._2().toArray()));
-//                        list.add(new Tuple2<>(index, v1._2()));
-//                    }
-//                    return list.iterator();
-//                });
-//
-//        ccc.unpersist(false);
-//        return e;
-//    }
-
-//    public static double[] computeDistanceWithNorm(ArrayList<VectorWithNorm> centers, VectorWithNorm point) {
-//        double[] dd = new double[centers.size()];
-//        for (int i = 0; i < centers.size(); i++) {
-//
-//            double d = MLUtils$.MODULE$.fastSquaredDistance(
-//                    point.vector(), point.norm(),
-//                    centers.get(i).vector(), centers.get(i).norm(),
-//                    1e-6);
-//
-////            double d = Distances.fastSquaredDistance(point.vector(), point.norm(),
-////                    centers.get(i).vector(), centers.get(i).norm());
-//
-////            double d = Distances.fastSquaredDistance_V2(point.vector(), point.norm(),
-////                    centers.get(i).vector(), centers.get(i).norm());
-//
-//
-//           //double d = Distances.distanceEuclidean2(point.vector(), centers.get(i).vector());
-//           // double d = Vectors.sqdist(point.vector(), centers.get(i).vector());
-//           // double d = Distances.fastDistanceXD(point.vector(), centers.get(i).vector());
-//
-//            dd[i] = d;
-//        }
-//        return dd;
-//    }
-
     private static double[] computeDistance(ArrayList<Vector> centers, Vector point) {
         double[] dd = new double[centers.size()];
         for (int i = 0; i < centers.size(); i++) {
@@ -403,6 +351,5 @@ public class Kmns {
         }
         return dd;
     }
-
 
 }
