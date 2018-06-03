@@ -1,7 +1,10 @@
 package myimpl2;
 
 
+import myimplementation.DataModel;
 import myimplementation.Kmns;
+import myimplementation.Util;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.Model;
 import org.apache.spark.ml.Transformer;
@@ -55,11 +58,11 @@ public class KmsModel extends Model<KmsModel> {
 
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
-//        JavaRDD<Vector> x3 = Kmns.convertToRDD((Dataset<Row>) dataset.select(this.featuresCol));
-//        JavaRDD<Kmns.DataModel> x5 = Kmns.computeDistancesAndPredictCluster(x3, this.clusterCenters);
-//        Dataset<Row> dm = Kmns.createDataSetUDF(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
-//        return dm;
-        return null;
+
+        JavaRDD<DataModel> x3 = Util.convertToRDDModel(dataset.select(this.featuresCol));
+        JavaPairRDD<Integer, Vector> x5 = Kmns.predictCluster(x3, this.clusterCenters);
+        Dataset<Row> dm = Util.createDataSet2(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
+        return dm;
     }
 
     @Override

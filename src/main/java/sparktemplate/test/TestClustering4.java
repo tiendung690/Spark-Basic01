@@ -73,10 +73,10 @@ public class TestClustering4 {
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        String path = "data/mllib/creditcard.csv";
+        //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/creditcardBIG.csv";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
@@ -95,7 +95,7 @@ public class TestClustering4 {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row,Long> v1) ->
-                        v1._2==1 || v1._2==2 || v1._2==22 || v1._2==100 || v1._2==222 || v1._2==2000 || v1._2==7000 || v1._2==5000 || v1._2==3000 || v1._2==666)
+                        v1._2==1 || v1._2==2 || v1._2==22 || v1._2==100 || v1._2==222)
                 .map(r -> r._1);
 
 
@@ -116,8 +116,8 @@ public class TestClustering4 {
 
 
         org.apache.spark.mllib.clustering.KMeans kMeans = new org.apache.spark.mllib.clustering.KMeans()
-                .setK(10)
-                .setSeed(1L)
+                .setK(5)
+                .setSeed(20L)
                 .setMaxIterations(20)
                 .setInitialModel(new org.apache.spark.mllib.clustering.KMeansModel(vek))
                 .setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());

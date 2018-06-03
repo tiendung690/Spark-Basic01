@@ -4,18 +4,23 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
+import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import scala.Tuple2;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by as on 18.04.2018.
@@ -44,14 +49,14 @@ public class TestKMS {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
-        String path = "data/mllib/kdd_10_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        //String path = "data/mllib/iris.csv";
+        //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
 
@@ -72,25 +77,46 @@ public class TestKMS {
 //        dd.printSchema();
 
 
+        ///////////////////////////////////////////////////////////////////
+        JavaRDD<Row> filteredRDD = ds1
+                .toJavaRDD()
+                .zipWithIndex()
+                // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
+                .filter((Tuple2<Row,Long> v1) ->
+                        v1._2==1 || v1._2==2 || v1._2==22 || v1._2==100 || v1._2==222)
+                .map(r -> r._1);
+
+
+        List<Vector> cx = filteredRDD.map(v -> (Vector)v.get(0)).collect();
+
+        ArrayList<Vector> newCenters = new ArrayList<>();
+        newCenters.addAll(cx);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
         Kms kmsModel = new Kms()
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
-                .setK(6)
-                //.setMaxIter(5)
+                .setK(5)
+                .setInitialCenters(newCenters)
+                //.setMaxIterations(5)
                 .setSeed(20L);
 
 
         //Chain indexers and tree in a Pipeline.
-        Pipeline pipeline = new Pipeline()
-                .setStages(new PipelineStage[]{kmsModel});
+        //Pipeline pipeline = new Pipeline()
+        //        .setStages(new PipelineStage[]{kmsModel});
 
         // Train model. This also runs the indexers.
-        PipelineModel model = pipeline.fit(ds1);
+        //PipelineModel model = pipeline.fit(ds1);
+
 
         // Make predictions.
-        Dataset<Row> predictions = model.transform(ds1);
-        predictions.show();
-        predictions.printSchema();
+        Dataset<Row> predictions = kmsModel.fit(ds1).transform(ds1);// model.transform(ds1);
+        //predictions.show();
+        //predictions.printSchema();
+        //System.out.println(Arrays.toString(kmsModel.getInitialCenters().toArray()));
+
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol(kmsModel.getFeaturesCol());

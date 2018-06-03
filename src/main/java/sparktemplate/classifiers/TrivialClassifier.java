@@ -30,7 +30,7 @@
 //        //Odczytanie parametrow
 //        TrivialClassifierSettings  locSettings = (TrivialClassifierSettings)settings;
 //        System.out.println("Pierwszy parametr="+locSettings.getClassificationAlgo());
-//        System.out.println("Drugi parametr="+locSettings.getMaxIter());
+//        System.out.println("Drugi parametr="+locSettings.getMaxIterations());
 //
 //        //Tutaj tworzenie klasyfikatora
 //

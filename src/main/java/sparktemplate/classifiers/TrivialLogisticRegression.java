@@ -81,7 +81,7 @@ public class TrivialLogisticRegression implements AClassifier {
         LogisticRegression lr1 = (LogisticRegression) settings.getModel();
 
         LogisticRegression lr = lr1
-//                .setMaxIter(10)
+//                .setMaxIterations(10)
 //                .setRegParam(0.3)
 //                .setElasticNetParam(0.8)
 //                .setFamily("multinomial")

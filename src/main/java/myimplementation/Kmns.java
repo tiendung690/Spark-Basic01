@@ -153,7 +153,7 @@ public class Kmns {
         //        System.out.println("Starting centers:" + Arrays.toString(clusterCenters.toArray()));
         //
 
-        ArrayList<Vector> cc = initializeCenters(x3,k);
+        ArrayList<Vector> cc = initializeCenters(x3, k);
 
         ArrayList<Vector> clusterCenters2 = computeCenters(x3, cc, 1e-4, 20);
         //        x3.unpersist();
@@ -186,7 +186,7 @@ public class Kmns {
         spark.close();
     }
 
-    private static ArrayList<Vector> initializeCenters(JavaRDD<DataModel> x3, int k) {
+    public static ArrayList<Vector> initializeCenters(JavaRDD<DataModel> x3, int k) {
         ArrayList<DataModel> cc = new ArrayList<>(x3.takeSample(false, k, 20L));
         ArrayList<Vector> clusterCenters = new ArrayList<>();
         for (DataModel dm : cc) {
@@ -195,7 +195,7 @@ public class Kmns {
         return clusterCenters;
     }
 
-    private static ArrayList<Vector> computeCenters(JavaRDD<DataModel> x33, ArrayList<Vector> cc, double epsilon, int max_iter) {
+    public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> x33, ArrayList<Vector> cc, double epsilon, int max_iter) {
 
         JavaSparkContext jsc = new JavaSparkContext(x33.context());
         org.apache.spark.util.LongAccumulator accum = jsc.sc().longAccumulator("Accumulator_1");
@@ -288,15 +288,15 @@ public class Kmns {
             } else {
                 clusterCenters = new ArrayList<>(clusterCenters2);
                 ii++;
-                System.out.println("ITERATION: " + ii);
+                //System.out.println("ITERATION: " + ii);
+                System.out.println("ITERATION: " + ii + ", ACCUMULATOR: " + accum.value() + " ms");
             }
-            System.out.println("ACCUMULATOR: " + accum.value());
         } while (bol);
 
         return clusterCenters;
     }
 
-    private static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> x, ArrayList<Vector> cc) {
+    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> x, ArrayList<Vector> cc) {
 
         JavaSparkContext jsc = new JavaSparkContext(x.context());
 
