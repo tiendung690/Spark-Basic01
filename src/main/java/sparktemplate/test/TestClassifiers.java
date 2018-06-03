@@ -7,6 +7,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.classifiers.Evaluation;
+import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.MemDataSet;
 
 /**
@@ -27,19 +28,20 @@ public class TestClassifiers {
         SparkSession spark = new SparkSession(context);
 
         try {
-            String fNameTabTrain = "data/mllib/kdd_short.txt";//"C:/DANE/train_data.csv"; //Okreslenie lokalizacji pliku z danymi treningowymi
-            String fNameTabTest = "data/mllib/kdd_short.txt";//"C:/DANE/test_data.csv"; //Okreslenie lokalizacji pliku z danymi testowymi
+            String fNameTabTrain = "data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/train_data.csv"; //Okreslenie lokalizacji pliku z danymi treningowymi
+            String fNameTabTest = "data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/test_data.csv"; //Okreslenie lokalizacji pliku z danymi testowymi
 
             MemDataSet dataSetTrain = new MemDataSet(spark); //Utworzenie obiektu na dane treningowe
             dataSetTrain.loadDataSet(fNameTabTrain); //Wczytanie danych treningowych
+
+           // DataPrepareClassification.prepareDataSet(dataSetTrain.getDs(), "class").show(2);
 
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: DECISIONTREE, RANDOMFORESTS, LOGISTICREGRESSION, NAIVEBAYES, LINEARSVM
             ClassifierSettings classifierSettings = new ClassifierSettings();
             classifierSettings
+                    .setLabelName("species")
                     .setRandomForest();
-
-
 
 
             MemDataSet dataSetTest = new MemDataSet(spark); //Utworzenie obiektu na dane testowe
@@ -52,12 +54,14 @@ public class TestClassifiers {
             //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
             evaluation.trainAndTest(dataSetTrain, dataSetTest, classifierSettings);
 
-            System.out.println("accuracy: " + evaluation.getAccuracy()
-                    + ", coverage: " + evaluation.getCoverage()
-                    + ", f1: "+evaluation.get_F1()
-                    + ", precison: "+evaluation.get_Precision());
+//            System.out.println("accuracy: " + evaluation.getAccuracy()
+//                    + ", coverage: " + evaluation.getCoverage()
+//                    + ", f1: "+evaluation.get_F1()
+//                    + ", precison: "+evaluation.get_Precision());
 
-            //  evaluation.printReport();
+            evaluation.printReport();
+            System.out.println(evaluation.getMetricByClass("setosa", "f1"));
+            //System.out.println(evaluation.getAccuracy("smurf."));
 
         } catch (Exception e) {
             e.printStackTrace();

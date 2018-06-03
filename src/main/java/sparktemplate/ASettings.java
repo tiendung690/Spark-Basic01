@@ -14,4 +14,8 @@ public interface ASettings {
     String getAlgo();
 
     Object getModel();
+
+    Object setLabelName(String labelName);
+
+    String getLabelName();
 }

@@ -14,6 +14,11 @@ public class ClassifierSettings implements ASettings {
     private LogisticRegression logisticRegression;
     private NaiveBayes naiveBayes;
     private ClassifierName classificationAlgo; //wybrany algorytm
+    private String labelName; // nazwa kolumny klasy decyzyjnej
+
+    public ClassifierSettings setLabelName(String labelName) {this.labelName = labelName; return this;}
+
+    public String getLabelName() {return labelName;}
 
     public class ClassifierDecisionTree extends DecisionTreeClassifier {}
 

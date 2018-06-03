@@ -10,7 +10,6 @@ import java.io.Serializable;
 public class KMeansModel implements Serializable, DataModel {
 
     private Vector data;
-    private int cluster;
 
     public Vector getData() {
         return data;
@@ -20,11 +19,4 @@ public class KMeansModel implements Serializable, DataModel {
         this.data = data;
     }
 
-    public int getCluster() {
-        return cluster;
-    }
-
-    public void setCluster(int cluster) {
-        this.cluster = cluster;
-    }
 }

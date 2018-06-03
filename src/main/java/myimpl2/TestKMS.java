@@ -1,5 +1,7 @@
 package myimpl2;
 
+import myimplementation.Kmns;
+import myimplementation.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -98,9 +100,9 @@ public class TestKMS {
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
                 .setK(5)
-                .setInitialCenters(newCenters)
+               // .setInitialCenters(newCenters)
                 //.setMaxIterations(5)
-                .setSeed(20L);
+                .setSeed(1L);
 
 
         //Chain indexers and tree in a Pipeline.
@@ -126,7 +128,7 @@ public class TestKMS {
         ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kmsModel.getPredictionCol(), kmsModel.getFeaturesCol(), kmsModel.getK());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
-       //Kmns.saveAsCSV(predictions);
+        //Util.saveAsCSV(predictions);
 
     }
 }

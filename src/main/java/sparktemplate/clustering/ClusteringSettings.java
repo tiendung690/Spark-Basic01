@@ -36,4 +36,14 @@ public class ClusteringSettings implements ASettings {
         }
     }
 
+    @Override
+    public Object setLabelName(String labelName) {
+        return null;
+    }
+
+    @Override
+    public String getLabelName() {
+        return null;
+    }
+
 }

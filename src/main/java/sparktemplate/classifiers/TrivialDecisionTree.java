@@ -35,13 +35,13 @@ public class TrivialDecisionTree implements AClassifier {
     }
 
     @Override
-    public String classify(DataRecord dataRecord) {
-        return ClassifierHelper.classify(dataRecord, this.sparkSession, this.pipelineModel);
+    public String classify(DataRecord dataRecord, ASettings settings) {
+        return ClassifierHelper.classify(dataRecord, settings, this.sparkSession, this.pipelineModel);
     }
 
     @Override
-    public Dataset<Row> classify(ADataSet dbDataSet) {
-        return ClassifierHelper.classify(dbDataSet, this.pipelineModel);
+    public Dataset<Row> classify(ADataSet dbDataSet, ASettings settings) {
+        return ClassifierHelper.classify(dbDataSet, settings, this.pipelineModel);
     }
 
     @Override
@@ -56,7 +56,7 @@ public class TrivialDecisionTree implements AClassifier {
 
     private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
-        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData));
+        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName());
         //data.show();
 
         // Index labels, adding metadata to the label column.

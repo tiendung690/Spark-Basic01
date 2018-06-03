@@ -28,6 +28,7 @@ public class Kms extends Estimator<KmsModel> {
     private int k;
 
     public Kms() {
+        this.initialCenters = new ArrayList<>();
         this.seed = 20L;
         this.epsilon =1e-4;
         this.maxIterations = 20;

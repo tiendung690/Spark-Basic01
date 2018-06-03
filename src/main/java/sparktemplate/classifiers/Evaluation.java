@@ -34,27 +34,28 @@ public class Evaluation {
                 .setPredictionCol("prediction");
     }
 
+
+    /**
+     * Metoda zwracajaca wybrana ocene dla podanej klasy decyzyjnej.
+     *
+     * @param decValue klasa decyzyjna
+     * @param metricName nazwa metryki (accuracy, weightedRecall, f1, precision)
+     * @return wynik wybranej metryki
+     */
+    public double getMetricByClass(String decValue, String metricName) {
+        int labelIndex = (int) predictions.schema().getFieldIndex("label").get();
+        Dataset<Row> predictionsSelected = this.predictions.filter(value -> value.get(labelIndex).toString().equals(decValue));
+        return this.evaluator.setMetricName(metricName).evaluate(predictionsSelected);
+    }
+
+
     /**
      * Metoda zwracajaca accuracy wykonanego wczesniej eksperymentu
      *
      * @return Wartosc accuracy
      */
-
     public double getAccuracy() {
         return this.evaluator.setMetricName("accuracy").evaluate(this.predictions);
-    }
-
-    /**
-     * Metoda zwracajaca accuracy dla podanej klasy decyzyjnej, przy czym
-     * wartosc decyzji podana jest w formie tekstowej
-     *
-     * @param decValue Klasa decyzyjna w formie tekstowej
-     * @return Wartosc accuracy dla podanej klasy decyzyjnej
-     */
-    public double getAccuracy(String decValue) {
-        int labelIndex = (int) predictions.schema().getFieldIndex("label").get();
-        Dataset<Row> predictionsSelected = this.predictions.filter(value -> value.get(labelIndex).toString().equals(decValue));
-        return this.evaluator.setMetricName("accuracy").evaluate(predictionsSelected);
     }
 
     /**
@@ -84,35 +85,25 @@ public class Evaluation {
         return this.evaluator.setMetricName("weightedPrecision").evaluate(this.predictions);
     }
 
-
-    /**
-     * Metoda zwracajaca coverage dla podanej klasy decyzyjnej, przy czym
-     * wartosc decyzji podana jest w formie tekstowej
-     *
-     * @param decValue Klasa decyzyjna w formie tekstowej
-     * @return Wartosc coverage dla podanej klasy decyzyjnej
-     */
-    double getCoverage(String decValue) {
-        int labelIndex = (int) predictions.schema().getFieldIndex("label").get();
-        Dataset<Row> predictionsSelected = this.predictions.filter(value -> value.get(labelIndex).toString().equals(decValue));
-        return this.evaluator.setMetricName("weightedRecall").evaluate(predictionsSelected);
-    }
-
-
     /**
      * Metoda wypisuje na ekran tekst opisujacy wyniki ekperymentu
      */
     public void printReport() {
-        System.out.println("Wyniki:");
+        System.out.println("---------------------" +
+                "\nAccuracy: " + getAccuracy() +
+                "\nPrecision: " + get_Precision() +
+                "\nCoverage: " + getCoverage() +
+                "\nF1: " + get_F1() +
+                "\n---------------------");
     }
 
 
     /**
      * Metoda budujaca model na podstawie danych treningowych oraz klasyfikujaca dane testowe.
      *
-     * @param trainingDataSet - zbior danych treningowych
-     * @param testingDataSet  - zbior danych testowych
-     * @param classifierSettings        - obiekt parametrow
+     * @param trainingDataSet    - zbior danych treningowych
+     * @param testingDataSet     - zbior danych testowych
+     * @param classifierSettings - obiekt parametrow
      */
     public void trainAndTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings classifierSettings) {
 
@@ -126,7 +117,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet);
+                this.predictions = algo.classify(testingDataSet, classifierSettings);
 
                 break;
             }
@@ -135,7 +126,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet);
+                this.predictions = algo.classify(testingDataSet, classifierSettings);
 
                 break;
             }
@@ -144,7 +135,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet);
+                this.predictions = algo.classify(testingDataSet, classifierSettings);
 
                 break;
             }
@@ -153,7 +144,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet);
+                this.predictions = algo.classify(testingDataSet, classifierSettings);
 
                 break;
             }
@@ -162,7 +153,7 @@ public class Evaluation {
                 System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet);
+                this.predictions = algo.classify(testingDataSet, classifierSettings);
 
                 break;
             }

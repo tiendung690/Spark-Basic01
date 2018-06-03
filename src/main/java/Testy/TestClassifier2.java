@@ -42,7 +42,7 @@ public class TestClassifier2 {
         Dataset<Row> ds = memDataSet.getDs();
         ds.show();
 
-        Dataset<Row> dataFrame = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(ds));
+        Dataset<Row> dataFrame = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(ds), "class");
         dataFrame.show();
 
         String labelColumn = dataFrame.columns()[0];

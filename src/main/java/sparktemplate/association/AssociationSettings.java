@@ -36,4 +36,14 @@ public class AssociationSettings implements ASettings {
                 return null;
         }
     }
+
+    @Override
+    public Object setLabelName(String labelName) {
+        return null;
+    }
+
+    @Override
+    public String getLabelName() {
+        return null;
+    }
 }

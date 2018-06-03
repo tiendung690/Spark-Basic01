@@ -186,16 +186,16 @@ public class Util {
     }
 
     // Transform JavaRDD<DataModel> -> Dataset<Row>  (VectorUDF)
-    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
-        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getData(), v1.getCluster()));
-        // new StructType
-        StructType schema = new StructType(new StructField[]{
-                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
-                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
-        });
-        Dataset<Row> dm = spark.createDataFrame(ss, schema);
-        return dm;
-    }
+//    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
+//        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getData(), v1.getCluster()));
+//        // new StructType
+//        StructType schema = new StructType(new StructField[]{
+//                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
+//                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
+//        });
+//        Dataset<Row> dm = spark.createDataFrame(ss, schema);
+//        return dm;
+//    }
 
     // Transform JavaPairRDD<DataModel> -> Dataset<Row>  (VectorUDF)
     public static Dataset<Row> createDataSet2(JavaPairRDD<Integer, Vector> x, SparkSession spark, String featuresCol, String predictionCol) {

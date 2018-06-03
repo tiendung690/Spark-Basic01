@@ -34,8 +34,13 @@ public class TrivialLinearSVM implements AClassifier {
     }
 
     @Override
-    public String classify(DataRecord dataRecord) {
-        return ClassifierHelper.classify(dataRecord, this.sparkSession, this.pipelineModel);
+    public String classify(DataRecord dataRecord, ASettings settings) {
+        return ClassifierHelper.classify(dataRecord, settings, this.sparkSession, this.pipelineModel);
+    }
+
+    @Override
+    public Dataset<Row> classify(ADataSet aDataSet, ASettings settings) {
+        return ClassifierHelper.classify(aDataSet, settings, this.pipelineModel);
     }
 
     @Override
@@ -48,19 +53,9 @@ public class TrivialLinearSVM implements AClassifier {
         this.pipelineModel = PipelineModel.read().load(fileName);
     }
 
-    @Override
-    public Dataset<Row> classify(ADataSet dbDataSet){
-        // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()));
-        // Make predictions
-        Dataset<Row> predictions = this.pipelineModel.transform(prepTest);
-        //predictions.show(5);
-        return predictions;
-    }
-
     private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
 
-        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData));
+        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName());
         //data.show();
 
         // Index labels, adding metadata to the label column.

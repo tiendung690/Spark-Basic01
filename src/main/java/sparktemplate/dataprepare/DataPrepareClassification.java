@@ -29,7 +29,7 @@ public class DataPrepareClassification {
      * @param ds dane
      * @return przygotowane dane
      */
-    public static Dataset<Row> prepareDataSet(Dataset<Row> ds) {
+    public static Dataset<Row> prepareDataSet(Dataset<Row> ds, String label) {
 
 
         // without label
@@ -76,7 +76,7 @@ public class DataPrepareClassification {
 
             Dataset<Row> vectorNum = assembler2.transform(ds).drop(numNoLabel);//.drop(dsNum.columns());
             //vectorNum.show();
-            data = vectorNum.withColumnRenamed("class", "label");
+            data = vectorNum.withColumnRenamed(label, "label");
 
         } else {
 
@@ -146,7 +146,7 @@ public class DataPrepareClassification {
                 Dataset<Row> dsFeaturesLabel = vectorOHE.drop(colsForDelete);
                 //dsFeaturesLabel.show();
                 data = dsFeaturesLabel
-                        .withColumnRenamed("class", "label")
+                        .withColumnRenamed(label, "label")
                         .withColumnRenamed("featuresOHE", "features");
 
             } else { // MIXED SYMBOLICAL AND NUMERICAL
@@ -172,7 +172,7 @@ public class DataPrepareClassification {
                 Dataset<Row> dsFeaturesLabel = vectorAll.drop(colsForDelete);
                 //dsFeaturesLabel.show();
 
-                data = dsFeaturesLabel.withColumnRenamed("class", "label");
+                data = dsFeaturesLabel.withColumnRenamed(label, "label");
             }
         }
         return data;

@@ -11,8 +11,4 @@ public interface DataModel {
 
     void setData(Vector data);
 
-    int getCluster();
-
-    void setCluster(int cluster);
-
 }
