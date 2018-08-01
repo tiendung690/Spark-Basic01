@@ -1,11 +1,13 @@
 package sparktemplate.test;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
+import org.apache.spark.rdd.NewHadoopPartition;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -29,15 +31,16 @@ import java.util.Scanner;
 public class TestClustering {
     public static void main(String[] args) throws IOException {
         // INFO DISABLED
-        Logger.getLogger("org").setLevel(Level.OFF);
-        Logger.getLogger("akka").setLevel(Level.OFF);
-        Logger.getLogger("INFO").setLevel(Level.OFF);
+        //Logger.getLogger("org").setLevel(Level.OFF);
+        //Logger.getLogger("akka").setLevel(Level.OFF);
+        //Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
                 .setAppName("Spark_Experiment_Implementation_Kmeans_PREPARED_DATASET")
                 .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
+                //.set("spark.submit.deployMode", "cluster")
                 //.set("spark.driver.memory", "4g")
                 //.set("spark.executor.memory", "4g")
                 .setMaster("local[*]");
@@ -61,8 +64,7 @@ public class TestClustering {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-
-        //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
+        //String path = "hdfs://10.2.28.17:9000/user/kdd_10_proc.txt";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "data/mllib/kdd_10_proc.txt.gz";
         String path = "data/mllib/iris.csv";
@@ -92,7 +94,7 @@ public class TestClustering {
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("features");
         clusteringEvaluator.setPredictionCol("prediction");
-        System.out.println("EVAL: "+clusteringEvaluator.evaluate(kMean.getPredictions()));
+        System.out.println("EVAL: " + clusteringEvaluator.evaluate(kMean.getPredictions()));
         ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", 2);
 
         /////////////////////////////////////

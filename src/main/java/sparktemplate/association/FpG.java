@@ -9,8 +9,6 @@ import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
 import sparktemplate.dataprepare.DataPrepareAssociations;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 import java.io.IOException;
 
@@ -22,9 +20,16 @@ public class FpG implements AAssociations {
     private FPGrowthModel fpGrowthModel;
     private Dataset<Row> assocRules;
     private SparkSession sparkSession;
+    private StringBuilder stringBuilder;
 
-    public FpG(SparkSession sparkSession) {
+    public FpG(SparkSession sparkSession)
+    {
         this.sparkSession = sparkSession;
+        stringBuilder = new StringBuilder();
+    }
+
+    public StringBuilder getStringBuilder() {
+        return stringBuilder;
     }
 
     @Override
@@ -55,13 +60,18 @@ public class FpG implements AAssociations {
                 .fit(dataset);
 
         // Display frequent itemsets.
-        model.freqItemsets().show(false);
+        //model.freqItemsets().show(false);
+        stringBuilder = stringBuilder.append(model.freqItemsets().showString(20,0,false));
+
         // Display generated association rules.
         Dataset<Row> assocRules = model.associationRules();
-        assocRules.show(false);
+        //assocRules.show(false);
+        stringBuilder = stringBuilder.append(assocRules.showString(20,0,false));
+
         // transform examines the input items against all the association rules and summarize the
         // consequents as prediction
-        model.transform(dataset).show(false);
+        //model.transform(dataset).show(false);
+        stringBuilder = stringBuilder.append(model.transform(dataset).showString(20,0,false));
 
         this.assocRules = assocRules;
         this.fpGrowthModel = model;

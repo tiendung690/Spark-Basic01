@@ -7,17 +7,20 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import scala.Predef;
 import sparktemplate.association.AssociationSettings;
 import sparktemplate.association.FpG;
 import sparktemplate.datasets.MemDataSet;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 
 /**
  * Created by as on 14.03.2018.
  */
 public class TestAssocRules {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
@@ -38,13 +41,15 @@ public class TestAssocRules {
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
         Dataset<Row> memDs = memDataSet.getDs();
-        memDs.show();
+        //memDs.show();
         System.out.println("// TEST AssocRules");
         FpG fpG = new FpG(sparkSession);
         AssociationSettings associationSettings = new AssociationSettings();
         associationSettings.setFPGrowth()
                 .setMinSupport(0.01)
                 .setMinConfidence(0.4);
+
+
         // build
         fpG.buildAssociations(memDataSet, associationSettings);
         // save
@@ -53,6 +58,15 @@ public class TestAssocRules {
         //fpG.loadAssociationRules("data/saved_data/AssocRules");
 
 
+        System.out.println("RESULTS:\n"+fpG.getStringBuilder().toString());
 
+        // INTERCEPTOR
+
+//        String result = ConsoleInterceptor.copyOut(() ->{
+//            fpG.buildAssociations(memDataSet, associationSettings);
+//            //Predef.println("kurwa");
+//        });
+//        System.out.println(result.length());
+//        System.out.println("result:"+result);
     }
 }

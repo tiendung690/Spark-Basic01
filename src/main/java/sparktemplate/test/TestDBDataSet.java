@@ -12,7 +12,6 @@ import sparktemplate.datasets.DBDataSet;
  */
 public class TestDBDataSet {
     public static void main(String[] args) {
-
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
         Logger.getLogger("akka").setLevel(Level.OFF);
