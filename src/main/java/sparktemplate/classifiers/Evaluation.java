@@ -21,6 +21,7 @@ public class Evaluation {
     private SparkSession sparkSession;
     private Dataset<Row> predictions;
     private MulticlassClassificationEvaluator evaluator;
+    private StringBuilder stringBuilder;
 
     /**
      * Konstruktor inicjalizujacy obiekt Evaluation
@@ -32,13 +33,17 @@ public class Evaluation {
         this.evaluator = new MulticlassClassificationEvaluator()
                 .setLabelCol("indexedLabel")
                 .setPredictionCol("prediction");
+        this.stringBuilder = new StringBuilder();
     }
 
+    public StringBuilder getStringBuilder() {
+        return stringBuilder;
+    }
 
     /**
      * Metoda zwracajaca wybrana ocene dla podanej klasy decyzyjnej.
      *
-     * @param decValue klasa decyzyjna
+     * @param decValue   klasa decyzyjna
      * @param metricName nazwa metryki (accuracy, weightedRecall, f1, precision)
      * @return wynik wybranej metryki
      */
@@ -89,12 +94,16 @@ public class Evaluation {
      * Metoda wypisuje na ekran tekst opisujacy wyniki ekperymentu
      */
     public void printReport() {
-        System.out.println("---------------------" +
+        System.out.println(getReport());
+    }
+
+    private String getReport() {
+        return "---------------------" +
                 "\nAccuracy: " + getAccuracy() +
                 "\nPrecision: " + get_Precision() +
                 "\nCoverage: " + getCoverage() +
                 "\nF1: " + get_F1() +
-                "\n---------------------");
+                "\n---------------------";
     }
 
 
@@ -109,12 +118,11 @@ public class Evaluation {
 
 
         ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());
-
+        stringBuilder = stringBuilder.append("type: " + classificationType + "\n");
 
         switch (classificationType) {
             case LINEARSVM: {
 
-                System.out.println("type: " + classificationType);
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings);
@@ -123,7 +131,6 @@ public class Evaluation {
             }
             case DECISIONTREE: {
 
-                System.out.println("type: " + classificationType);
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings);
@@ -132,7 +139,6 @@ public class Evaluation {
             }
             case RANDOMFORESTS: {
 
-                System.out.println("type: " + classificationType);
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings);
@@ -141,7 +147,6 @@ public class Evaluation {
             }
             case LOGISTICREGRESSION: {
 
-                System.out.println("type: " + classificationType);
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings);
@@ -150,7 +155,6 @@ public class Evaluation {
             }
             case NAIVEBAYES: {
 
-                System.out.println("type: " + classificationType);
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
                 algo.build(trainingDataSet, classifierSettings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings);
@@ -160,7 +164,9 @@ public class Evaluation {
             default:
                 System.out.println("Wrong classification type!");
                 break;
+
         }
+        stringBuilder = stringBuilder.append(getReport());
     }
 
 
