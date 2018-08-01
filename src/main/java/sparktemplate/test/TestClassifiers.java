@@ -63,6 +63,8 @@ public class TestClassifiers {
             System.out.println(evaluation.getMetricByClass("setosa", "f1"));
             //System.out.println(evaluation.getAccuracy("smurf."));
 
+            System.out.println("RESULT:\n"+evaluation.getStringBuilder());
+
         } catch (Exception e) {
             e.printStackTrace();
         }

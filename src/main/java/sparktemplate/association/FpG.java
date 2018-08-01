@@ -25,7 +25,7 @@ public class FpG implements AAssociations {
     public FpG(SparkSession sparkSession)
     {
         this.sparkSession = sparkSession;
-        stringBuilder = new StringBuilder();
+        this.stringBuilder = new StringBuilder();
     }
 
     public StringBuilder getStringBuilder() {
@@ -59,6 +59,9 @@ public class FpG implements AAssociations {
                 .setItemsCol("text")
                 .fit(dataset);
 
+        stringBuilder = stringBuilder.append("MinSupport: "+model.getMinSupport()+"\n");
+        stringBuilder = stringBuilder.append("MinConfidence: "+model.getMinConfidence()+"\n");
+
         // Display frequent itemsets.
         //model.freqItemsets().show(false);
         stringBuilder = stringBuilder.append(model.freqItemsets().showString(20,0,false));
@@ -72,6 +75,7 @@ public class FpG implements AAssociations {
         // consequents as prediction
         //model.transform(dataset).show(false);
         stringBuilder = stringBuilder.append(model.transform(dataset).showString(20,0,false));
+
 
         this.assocRules = assocRules;
         this.fpGrowthModel = model;

@@ -1,7 +1,9 @@
 package sparktemplate.clustering;
 
+import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.clustering.KMeans;
 import org.apache.spark.ml.clustering.KMeansModel;
+import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -14,6 +16,7 @@ import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.ADataSet;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * Created by as on 12.03.2018.
@@ -27,10 +30,16 @@ public class KMean implements AClustering {
     private final String prediciton = "prediction";
     private DataPrepareClustering dataPrepareClustering;
     private final boolean removeStrings = true;
+    private StringBuilder stringBuilder;
 
     public KMean(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
         this.dataPrepareClustering = new DataPrepareClustering();
+        this.stringBuilder = new StringBuilder();
+    }
+
+    public StringBuilder getStringBuilder() {
+        return stringBuilder;
     }
 
     public Dataset<Row> getPredictions() {
@@ -105,9 +114,25 @@ public class KMean implements AClustering {
         this.model = model;
         this.predictions = predictions;
 
+        stringBuilder = stringBuilder
+                .append("clusters no. : "+getNoCluster()+"\n")
+                .append(getEvaluation())
+                .append(getCenters());
+
     }
 
-    public String toString() {
+    public String getEvaluation(){
+        StringBuilder stringBuilderEval = new StringBuilder();
+        ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
+        clusteringEvaluator.setFeaturesCol("features");
+        clusteringEvaluator.setPredictionCol("prediction");
+        stringBuilderEval = stringBuilderEval.append("EVAL: " + clusteringEvaluator.evaluate(this.predictions)+"\n");
+        ClusteringSummary clusteringSummary = new ClusteringSummary(this.predictions, "prediction", "features", getNoCluster());
+        stringBuilderEval = stringBuilderEval.append("Cluster sizes:\n"+Arrays.toString(clusteringSummary.clusterSizes())+"\n");
+        return stringBuilderEval.toString();
+    }
+
+    public String getCenters() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Centers: \n");
         Vector[] centers = model.clusterCenters();

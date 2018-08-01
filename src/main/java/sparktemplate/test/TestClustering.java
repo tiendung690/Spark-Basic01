@@ -31,9 +31,9 @@ import java.util.Scanner;
 public class TestClustering {
     public static void main(String[] args) throws IOException {
         // INFO DISABLED
-        //Logger.getLogger("org").setLevel(Level.OFF);
-        //Logger.getLogger("akka").setLevel(Level.OFF);
-        //Logger.getLogger("INFO").setLevel(Level.OFF);
+        Logger.getLogger("org").setLevel(Level.OFF);
+        Logger.getLogger("akka").setLevel(Level.OFF);
+        Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
                 .setAppName("Spark_Experiment_Implementation_Kmeans_PREPARED_DATASET")
@@ -95,8 +95,8 @@ public class TestClustering {
         clusteringEvaluator.setFeaturesCol("features");
         clusteringEvaluator.setPredictionCol("prediction");
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(kMean.getPredictions()));
-        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", 2);
-
+        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
+        System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         /////////////////////////////////////
 
         System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4));
@@ -107,7 +107,10 @@ public class TestClustering {
             System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4));
         }
 
-        System.out.println(kMean.toString());
+        System.out.println(kMean.getCenters());
+
+
+        System.out.println(kMean.getStringBuilder());
 
         // save
         //kMean.saveClusterer("data/saved_data/Clusters");
