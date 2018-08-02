@@ -1,6 +1,7 @@
 package myimplementation;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.linalg.DenseVector;
@@ -8,16 +9,15 @@ import org.apache.spark.ml.linalg.SparseVector;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.VectorUDT;
 import org.apache.spark.mllib.linalg.Vectors;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
-import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.spark_project.dmg.pmml.DataType;
 import scala.Tuple2;
 
+import javax.print.attribute.standard.Compression;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -27,9 +27,10 @@ import java.util.Arrays;
 public class Util {
 
     public static void main(String[] args) {
-        double[] tab = new double[]{-20,1,2,3,4,6,-1};
+        double[] tab = new double[]{-20, 1, 2, 3, 4, 6, -1};
         System.out.println(findLowerValIndex(tab));
     }
+
     public static JavaRDD<DataModel> convertToRDDModel(Dataset<Row> ds) {
         // Convert dataset to JavaRDD of DataModel
         JavaRDD<DataModel> x3 = ds.toJavaRDD().map(row -> {
@@ -81,21 +82,29 @@ public class Util {
         }
     }
 
-    public static void saveAsCSV(Dataset<Row> dm) {
+    public static void saveAsCSV(Dataset<Row> dm, String featuresCol, String predictionCol) {
 
         // zapis do pliku w formacie csv (po przecinku), bez headera
-        JavaRDD<String> rr = dm.select("features", "prediction").toJavaRDD().map(value -> {
+        JavaRDD<Row> rr = dm.select(featuresCol, predictionCol).toJavaRDD().map(value -> {
             Vector vector = (Vector) value.get(0);
             Integer s = (Integer) value.get(1);
             Vector vector2 = new DenseVector(ArrayUtils.addAll(vector.toArray(), new double[]{s.doubleValue()}));
-            return Arrays.toString(vector2.toArray())
+            return RowFactory.create(Arrays.toString(vector2.toArray())
                     .replace("[", "")
                     .replace("]", "")
-                    .replaceAll(" ", "");
+                    .replaceAll(" ", ""));
         });
-        //System.out.println(rr.first());
-        // brak mozliwosci nadpisania, lepiej zrobic dataframe i wtedy zapisywac z mode overwrite
-        rr.coalesce(1).saveAsTextFile("data/ok");
+        StructType structType = new StructType().add("data", DataTypes.StringType);
+
+        // no overwrite
+        //rr.coalesce(1).saveAsTextFile("data/ok");
+
+        dm.sqlContext().createDataFrame(rr, structType)
+                .write()
+                //.format("com.databricks.spark.csv")
+                //.option("header", "false")
+                .mode(SaveMode.Overwrite)
+                .text("clustering_out");
     }
 
     public static int findLowerValIndex(double[] tab) {
@@ -124,7 +133,7 @@ public class Util {
         return index;
     }
 
-    public static double[] sumArrayByColumn(double[] t1, double[] t2) {
+    public static double[] sumArrayByColumnOld(double[] t1, double[] t2) {
         double[] tab = new double[t1.length];
         for (int i = 0; i < t1.length; i++) {
             tab[i] = t1[i] + t2[i];
@@ -150,8 +159,8 @@ public class Util {
             return new DenseVector(tab);
 
         } else if (t1 instanceof SparseVector && t2 instanceof SparseVector) {
-            SparseVector v1 = (SparseVector)t1;
-            SparseVector v2 = (SparseVector)t2;
+            SparseVector v1 = (SparseVector) t1;
+            SparseVector v2 = (SparseVector) t2;
 
             double[] tab = new double[v1.size()];
             for (int i = 0; i < v1.size(); i++) {

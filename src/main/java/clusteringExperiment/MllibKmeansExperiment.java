@@ -1,4 +1,4 @@
-package sparktemplate.test;
+package clusteringExperiment;
 
 import myimplementation.Util;
 import org.apache.log4j.Level;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by as on 26.04.2018.
  */
-public class TestClustering4 {
+public class MllibKmeansExperiment {
     public static void main(String[] args) {
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
@@ -73,13 +73,26 @@ public class TestClustering4 {
 
 
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        String path = "data/mllib/kdd_5_proc.txt";
+        //String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kmean.txt";
         //String path = "data/mllib/iris2.csv";
-        //String path = "data/mllib/creditcard.csv";
+        String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/creditcardBIG.csv";
         //String path = "data/mllib/kddcup_train.txt";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         // load mem data
@@ -95,7 +108,7 @@ public class TestClustering4 {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row,Long> v1) ->
-                        v1._2==1 || v1._2==2 || v1._2==22 || v1._2==100 || v1._2==222)
+                        v1._2==1 || v1._2==2 || v1._2==22 || v1._2==100)
                 .map(r -> r._1);
 
 
@@ -116,26 +129,29 @@ public class TestClustering4 {
 
 
         org.apache.spark.mllib.clustering.KMeans kMeans = new org.apache.spark.mllib.clustering.KMeans()
-                .setK(5)
-                .setSeed(20L)
+                .setK(newCenters.size())
+                .setEpsilon(1e-4)
+                //.setSeed(20L)
                 .setMaxIterations(20)
-                .setInitialModel(new org.apache.spark.mllib.clustering.KMeansModel(vek))
-                .setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
+                .setInitialModel(new org.apache.spark.mllib.clustering.KMeansModel(vek));
+                //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
 
 
 
+        JavaRDD<Vector> ok = convertToRDD(ds1);
+        System.out.println("FIRST: "+Arrays.toString(ok.first().toArray()));
 
-        org.apache.spark.mllib.clustering.KMeansModel model = kMeans.run(convertToRDD(ds1).rdd());
+        org.apache.spark.mllib.clustering.KMeansModel model = kMeans.run(ok.rdd());
        // System.out.println(Arrays.toString(model.clusterCenters()));
 
-        System.out.println("MAX ITERATIONS "+model.k());
+        //System.out.println("MAX ITERATIONS "+model.k());
 
 
 
         JavaRDD<Row> ss = ds1.toJavaRDD().map(v1 -> {
+            // Transform to mllib.Vector from ml, mllib.Kmeans support only mllib.Vectors
             Vector v = Vectors.fromML((org.apache.spark.ml.linalg.Vector) v1.get(0));
-
-            return RowFactory.create(new org.apache.spark.ml.linalg.DenseVector(v.toArray()),model.predict(v));
+            return RowFactory.create(v1.get(0),model.predict(v));
         });
         StructType schema = new StructType(new StructField[]{
                 new StructField("features", new VectorUDT(), false, Metadata.empty()),
