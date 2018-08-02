@@ -17,10 +17,11 @@ interface AAssociations {
      * Abstrakcyjna metoda szukajaca reguł asocjacyjnych w oparciu o dane.
      *
      * @param dataSet - zbior danych 
-     * @param settings ustawienia 
+     * @param settings ustawienia
+     * @param isPrepared dane przygotowane
      */
         
-    void buildAssociations(ADataSet dataSet, ASettings settings);
+    void buildAssociations(ADataSet dataSet, ASettings settings, boolean isPrepared);
 
 
     /**

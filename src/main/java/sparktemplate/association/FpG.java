@@ -22,8 +22,7 @@ public class FpG implements AAssociations {
     private SparkSession sparkSession;
     private StringBuilder stringBuilder;
 
-    public FpG(SparkSession sparkSession)
-    {
+    public FpG(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
         this.stringBuilder = new StringBuilder();
     }
@@ -33,8 +32,12 @@ public class FpG implements AAssociations {
     }
 
     @Override
-    public void buildAssociations(ADataSet dataSet, ASettings settings) {
-        buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
+    public void buildAssociations(ADataSet dataSet, ASettings settings, boolean isPrepared) {
+        if (isPrepared) {
+            buildAssociations(dataSet.getDs(), settings);
+        } else {
+            buildAssociations(DataPrepareAssociations.prepareDataSet(dataSet.getDs(), sparkSession), settings);
+        }
     }
 
     @Override
@@ -59,26 +62,30 @@ public class FpG implements AAssociations {
                 .setItemsCol("text")
                 .fit(dataset);
 
-        stringBuilder = stringBuilder.append("MinSupport: "+model.getMinSupport()+"\n");
-        stringBuilder = stringBuilder.append("MinConfidence: "+model.getMinConfidence()+"\n");
-
-        // Display frequent itemsets.
-        //model.freqItemsets().show(false);
-        stringBuilder = stringBuilder.append(model.freqItemsets().showString(20,0,false));
-
-        // Display generated association rules.
         Dataset<Row> assocRules = model.associationRules();
-        //assocRules.show(false);
-        stringBuilder = stringBuilder.append(assocRules.showString(20,0,false));
-
-        // transform examines the input items against all the association rules and summarize the
-        // consequents as prediction
-        //model.transform(dataset).show(false);
-        stringBuilder = stringBuilder.append(model.transform(dataset).showString(20,0,false));
-
 
         this.assocRules = assocRules;
         this.fpGrowthModel = model;
+
+        stringBuilder = stringBuilder
+                .append("MinSupport: " + model.getMinSupport() + "\n")
+                .append("MinConfidence: " + model.getMinConfidence() + "\n")
+                .append(frequentItemsets(20))
+                .append(associationRules(20));
+    }
+
+    public String frequentItemsets(int rows) {
+        return fpGrowthModel.freqItemsets().showString(rows, 0, false);
+    }
+
+    public String associationRules(int rows) {
+        return assocRules.showString(rows, 0, false);
+    }
+
+    public String precedentsAndConsequents(int rows, Dataset<Row> dataset) {
+        // transform examines the input items against all the association rules and summarize the
+        // consequents as prediction
+        return fpGrowthModel.transform(dataset).showString(rows, 0, false);
     }
 
 

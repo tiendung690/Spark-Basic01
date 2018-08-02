@@ -19,7 +19,6 @@ public class Cluster {
     private boolean removeStrings; // = true;
 
     Cluster(SparkSession sparkSession, DataPrepareClustering dataPrepareClustering, boolean removeStrings) {
-        //Wstepna inicjacja skupienia
         this.sparkSession = sparkSession;
         this.dataPrepareClustering = dataPrepareClustering;
         this.removeStrings = removeStrings;
@@ -58,7 +57,7 @@ public class Cluster {
      * @return informacje
      */
     public String toString() {
-        return "opis";
+        return "cluster size: "+ds.count();
     }
 
 

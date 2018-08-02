@@ -34,7 +34,7 @@ public class TestClassifiers {
             MemDataSet dataSetTrain = new MemDataSet(spark); //Utworzenie obiektu na dane treningowe
             dataSetTrain.loadDataSet(fNameTabTrain); //Wczytanie danych treningowych
 
-           // DataPrepareClassification.prepareDataSet(dataSetTrain.getDs(), "class").show(2);
+            // DataPrepareClassification.prepareDataSet(dataSetTrain.getDs(), "class").show(2);
 
             //Utworzenie obiektu opcji do tworzenia klasyfikatora
             // param2 values: DECISIONTREE, RANDOMFORESTS, LOGISTICREGRESSION, NAIVEBAYES, LINEARSVM
@@ -52,7 +52,7 @@ public class TestClassifiers {
 
             //Wywolanie metody testujacej metoda Train&Test
             //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
-            evaluation.trainAndTest(dataSetTrain, dataSetTest, classifierSettings);
+            evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings);
 
 //            System.out.println("accuracy: " + evaluation.getAccuracy()
 //                    + ", coverage: " + evaluation.getCoverage()
@@ -63,7 +63,7 @@ public class TestClassifiers {
             System.out.println(evaluation.getMetricByClass("setosa", "f1"));
             //System.out.println(evaluation.getAccuracy("smurf."));
 
-            System.out.println("RESULT:\n"+evaluation.getStringBuilder());
+            //System.out.println("RESULT:\n" + evaluation.getStringBuilder());
 
         } catch (Exception e) {
             e.printStackTrace();

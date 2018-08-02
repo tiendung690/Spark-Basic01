@@ -108,9 +108,10 @@ public class TestClustering {
         }
 
         System.out.println(kMean.getCenters());
+        System.out.println(kMean.getCluster(1).toString());
 
 
-        System.out.println(kMean.getStringBuilder());
+        //System.out.println(kMean.getStringBuilder());
 
         // save
         //kMean.saveClusterer("data/saved_data/Clusters");

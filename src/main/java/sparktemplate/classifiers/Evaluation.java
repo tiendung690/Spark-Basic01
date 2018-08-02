@@ -111,10 +111,14 @@ public class Evaluation {
      * Metoda budujaca model na podstawie danych treningowych oraz klasyfikujaca dane testowe.
      *
      * @param trainingDataSet    - zbior danych treningowych
+     * @param isTrainingPrepared - dane przygotowane
      * @param testingDataSet     - zbior danych testowych
+     * @param isTestingPrepared - dane przygotowane
      * @param classifierSettings - obiekt parametrow
      */
-    public void trainAndTest(ADataSet trainingDataSet, ADataSet testingDataSet, ASettings classifierSettings) {
+    public void trainAndTest(ADataSet trainingDataSet, boolean isTrainingPrepared,
+                             ADataSet testingDataSet, boolean isTestingPrepared,
+                             ASettings classifierSettings) {
 
 
         ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());
@@ -124,40 +128,40 @@ public class Evaluation {
             case LINEARSVM: {
 
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, false);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
 
                 break;
             }
             case DECISIONTREE: {
 
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, false);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
 
                 break;
             }
             case RANDOMFORESTS: {
 
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, false);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
 
                 break;
             }
             case LOGISTICREGRESSION: {
 
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, false);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
 
                 break;
             }
             case NAIVEBAYES: {
 
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, false);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
 
                 break;
             }

@@ -15,24 +15,24 @@ import sparktemplate.datasets.ADataSet;
  */
 public class Deploying {
 
-    public static String assocRules(SparkContext sparkContext, ADataSet dataSet, AssociationSettings associationSettings){
+    public static String assocRules(SparkContext sparkContext, ADataSet dataSet, AssociationSettings associationSettings) {
         SparkSession sparkSession = new SparkSession(sparkContext);
         FpG fpG = new FpG(sparkSession);
-        fpG.buildAssociations(dataSet, associationSettings);
+        fpG.buildAssociations(dataSet, associationSettings, false);
         return fpG.getStringBuilder().toString();
     }
 
-    public static String clustering(SparkContext sparkContext, ADataSet dataSet, ClusteringSettings clusteringSettings){
+    public static String clustering(SparkContext sparkContext, ADataSet dataSet, ClusteringSettings clusteringSettings) {
         SparkSession sparkSession = new SparkSession(sparkContext);
         KMean kMean = new KMean(sparkSession);
         kMean.buildClusterer(dataSet, clusteringSettings, false);
         return kMean.getStringBuilder().toString();
     }
 
-    public static String classification(SparkContext sparkContext, ADataSet dataSetTrain, ADataSet dataSetTest, ClassifierSettings classifierSettings){
+    public static String classification(SparkContext sparkContext, ADataSet dataSetTrain, ADataSet dataSetTest, ClassifierSettings classifierSettings) {
         SparkSession sparkSession = new SparkSession(sparkContext);
         Evaluation evaluation = new Evaluation(sparkSession);
-        evaluation.trainAndTest(dataSetTrain, dataSetTest, classifierSettings);
+        evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings);
         return evaluation.getStringBuilder().toString();
     }
 }
