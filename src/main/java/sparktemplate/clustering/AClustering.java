@@ -12,25 +12,25 @@ import sparktemplate.datasets.MemDataSet;
 //Interfejs pokazujacy jak implementuje sie metody grupowania
 
 interface AClustering {
-    
-     /**
+
+    /**
      * Abstrakcyjna metoda szukajaca skupien w oparciu o dane.
      *
-     * @param dataSet - zbior danych 
-     * @param settings ustawienia 
+     * @param dataSet - zbior danych
+     * @param settings - ustawienia
+     * @param isPrepared - dane przygotowane
      */
-        
-    void buildClusterer(ADataSet dataSet, ASettings settings);
+    void buildClusterer(ADataSet dataSet, ASettings settings, boolean isPrepared);
 
 
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do skupienia
-     * 
+     *
      * @param dataRecord - rekord testowy
-     * @return numer skupienia (numeracja od 0 do liczba skupien-1)     
+     * @param isPrepared - dane przygotowane
+     * @return numer skupienia (numeracja od 0 do liczba skupien-1)
      */
-
-    int clusterRecord(DataRecord dataRecord);
+    int clusterRecord(DataRecord dataRecord, boolean isPrepared);
 
 
     /**
@@ -47,8 +47,8 @@ interface AClustering {
      *
      * @return
      */
-    int getNoCluster(); 
-    
+    int getNoCluster();
+
 
     /**
      * Zapis do pliku tekstowego o podanej nazwie
@@ -66,6 +66,6 @@ interface AClustering {
      */
 
     void loadClusterer(String fileName) throws IOException;
-    
- 
+
+
 }

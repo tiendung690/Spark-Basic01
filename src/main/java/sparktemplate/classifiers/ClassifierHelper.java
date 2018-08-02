@@ -54,6 +54,7 @@ public class ClassifierHelper {
     public static Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, PipelineModel pipelineModel) {
         // prepare data
         Dataset<Row> prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()), aSettings.getLabelName());
+        //prepTest.show();
         // Make predictions
         Dataset<Row> predictions = pipelineModel.transform(prepTest);
         //predictions.show(5);

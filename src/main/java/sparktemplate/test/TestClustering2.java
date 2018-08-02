@@ -91,7 +91,7 @@ public class TestClustering2 {
                 .setK(20)
                 .setSeed(20L);
 
-        kMean.buildClusterer(memDataSet, clusteringSettings);
+        kMean.buildClusterer(memDataSet, clusteringSettings, false);
         // show predicted clusters
         kMean.getPredictions().show();
 

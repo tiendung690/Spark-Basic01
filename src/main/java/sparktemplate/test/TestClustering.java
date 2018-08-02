@@ -85,7 +85,7 @@ public class TestClustering {
                 .setMaxIter(20);
 
 
-        kMean.buildClusterer(memDataSet, clusteringSettings);
+        kMean.buildClusterer(memDataSet, clusteringSettings,false);
         // show predicted clusters
         kMean.getPredictions().show(false);
         kMean.getPredictions().printSchema();
@@ -99,12 +99,12 @@ public class TestClustering {
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         /////////////////////////////////////
 
-        System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4));
+        System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4, false));
         System.out.println("get clusters no.: " + kMean.getNoCluster());
 
         // check if record exists in each cluster
         for (int i = 0; i < kMean.getNoCluster(); i++) {
-            System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4));
+            System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4, false));
         }
 
         System.out.println(kMean.getCenters());

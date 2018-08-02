@@ -47,22 +47,29 @@ public class KMean implements AClustering {
     }
 
     @Override
-    public void buildClusterer(ADataSet dataSet, ASettings settings) {
-        buildCluster(dataPrepareClustering.prepareDataSet(dataSet.getDs(), false, removeStrings), settings);
+    public void buildClusterer(ADataSet dataSet, ASettings settings, boolean isPrepared) {
+        if (isPrepared) {
+            buildCluster(dataSet.getDs(), settings);
+        } else {
+            buildCluster(dataPrepareClustering.prepareDataSet(dataSet.getDs(), false, removeStrings), settings);
+        }
     }
 
     @Override
-    public int clusterRecord(DataRecord dataRecord) {
-
-        Dataset<Row> single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-        Dataset<Row> single_prepared = dataPrepareClustering.prepareDataSet(single,true, removeStrings);
-        Dataset<Row> prediction = model.transform(single_prepared);
+    public int clusterRecord(DataRecord dataRecord, boolean isPrepared) {
+        Dataset<Row> single;
+        if (isPrepared) {
+            single = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
+        } else {
+            single = dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession), true, removeStrings);
+        }
+        Dataset<Row> prediction = model.transform(single);
         return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
     }
 
     @Override
     public Cluster getCluster(int index) {
-        Cluster cluster = new Cluster(sparkSession, this.dataPrepareClustering);
+        Cluster cluster = new Cluster(sparkSession, this.dataPrepareClustering, this.removeStrings);
         cluster.initCluster(predictions.filter(predictions.col(prediciton).equalTo(index)));
         return cluster;
     }
@@ -75,13 +82,13 @@ public class KMean implements AClustering {
     @Override
     public void saveClusterer(String fileName) throws IOException {
         this.predictions.write().mode(SaveMode.Overwrite).json(fileName);
-        System.out.println("saveClusterer: "+fileName);
+        System.out.println("saveClusterer: " + fileName);
     }
 
     @Override
     public void loadClusterer(String fileName) throws IOException {
         this.predictions = sparkSession.read().json(fileName);
-        System.out.println("loadClusterer: "+fileName);
+        System.out.println("loadClusterer: " + fileName);
     }
 
     private void buildCluster(Dataset<Row> ds, ASettings settings) {
@@ -101,7 +108,7 @@ public class KMean implements AClustering {
         kmeans.log();
 
         KMeansModel model = kmeans.fit(ds);
-        System.out.println("MAX ITERATIONS "+model.getMaxIter());
+        System.out.println("MAX ITERATIONS " + model.getMaxIter());
 
 
         // Make predictions
@@ -115,20 +122,20 @@ public class KMean implements AClustering {
         this.predictions = predictions;
 
         stringBuilder = stringBuilder
-                .append("clusters no. : "+getNoCluster()+"\n")
+                .append("clusters no. : " + getNoCluster() + "\n")
                 .append(getEvaluation())
                 .append(getCenters());
 
     }
 
-    public String getEvaluation(){
+    public String getEvaluation() {
         StringBuilder stringBuilderEval = new StringBuilder();
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol("features");
         clusteringEvaluator.setPredictionCol("prediction");
-        stringBuilderEval = stringBuilderEval.append("EVAL: " + clusteringEvaluator.evaluate(this.predictions)+"\n");
+        stringBuilderEval = stringBuilderEval.append("EVAL: " + clusteringEvaluator.evaluate(this.predictions) + "\n");
         ClusteringSummary clusteringSummary = new ClusteringSummary(this.predictions, "prediction", "features", getNoCluster());
-        stringBuilderEval = stringBuilderEval.append("Cluster sizes:\n"+Arrays.toString(clusteringSummary.clusterSizes())+"\n");
+        stringBuilderEval = stringBuilderEval.append("Cluster sizes:\n" + Arrays.toString(clusteringSummary.clusterSizes()) + "\n");
         return stringBuilderEval.toString();
     }
 
@@ -136,7 +143,7 @@ public class KMean implements AClustering {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Centers: \n");
         Vector[] centers = model.clusterCenters();
-        for (Vector center: centers) {
+        for (Vector center : centers) {
             stringBuilder.append(center).append("\n");
         }
         return stringBuilder.toString();

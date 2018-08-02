@@ -25,7 +25,7 @@ public class Deploying {
     public static String clustering(SparkContext sparkContext, ADataSet dataSet, ClusteringSettings clusteringSettings){
         SparkSession sparkSession = new SparkSession(sparkContext);
         KMean kMean = new KMean(sparkSession);
-        kMean.buildClusterer(dataSet, clusteringSettings);
+        kMean.buildClusterer(dataSet, clusteringSettings, false);
         return kMean.getStringBuilder().toString();
     }
 

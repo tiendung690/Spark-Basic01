@@ -22,7 +22,7 @@ public class Main2 {
         // INFO DISABLED
 //        Logger.getLogger("org").setLevel(Level.OFF);
 //        Logger.getLogger("akka").setLevel(Level.OFF);
-//        Logger.getLogger("INFO").setLevel(Level.OFF);
+  //      Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
                 .setAppName("SparkTemplateTest_Clustering")

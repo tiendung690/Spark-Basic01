@@ -16,12 +16,13 @@ public class Cluster {
     private Dataset<Row> ds;
     private SparkSession sparkSession;
     private DataPrepareClustering dataPrepareClustering;
-    private final boolean removeStrings = true;
+    private boolean removeStrings; // = true;
 
-    Cluster(SparkSession sparkSession, DataPrepareClustering dataPrepareClustering) {
+    Cluster(SparkSession sparkSession, DataPrepareClustering dataPrepareClustering, boolean removeStrings) {
         //Wstepna inicjacja skupienia
         this.sparkSession = sparkSession;
         this.dataPrepareClustering = dataPrepareClustering;
+        this.removeStrings = removeStrings;
     }
 
     /**
@@ -34,13 +35,19 @@ public class Cluster {
     }
 
     /**
-     * Metoda sprawdza obecnosc rekordu w skupieniu
+     * * Metoda sprawdza obecnosc rekordu w skupieniu
      *
      * @param record rekord danych
+     * @param isPrepared - dane przygotowane
      * @return obecnosc
      */
-    public boolean checkRecord(DataRecord record) {
-        Dataset<Row> single = this.dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, removeStrings);
+    public boolean checkRecord(DataRecord record, boolean isPrepared) {
+        Dataset<Row> single;
+        if (isPrepared) {
+            single = DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession);
+        } else {
+            single = dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(record.getRow(), record.getStructType(), sparkSession), true, removeStrings);
+        }
         final Object obj = single.first().get(0);
         return ds.filter(value -> value.get(0).equals(obj)).count() > 0;
     }

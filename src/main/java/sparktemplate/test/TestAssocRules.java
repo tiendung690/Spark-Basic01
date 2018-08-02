@@ -49,7 +49,6 @@ public class TestAssocRules {
                 .setMinSupport(0.01)
                 .setMinConfidence(0.4);
 
-
         // build
         fpG.buildAssociations(memDataSet, associationSettings);
         // save

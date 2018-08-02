@@ -39,7 +39,7 @@ public class SaveToExternalDB {
                 .setAppName("Spark_Default_Kmeans")
                 .setMaster("spark://10.2.28.17:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar", "local:/root/.ivy2/jars/org.postgresql_postgresql-42.1.1.jar"})
-                .set("spark.driver.host", "10.2.28.31");
+                .set("spark.driver.host", "10.2.28.34");
 
 
         SparkContext context = new SparkContext(conf);
@@ -68,7 +68,7 @@ public class SaveToExternalDB {
         clusteringSettings.setKMeans()
                 .setK(4)
                 .setSeed(10L);
-        kMean.buildClusterer(dbDataSet, clusteringSettings);
+        kMean.buildClusterer(dbDataSet, clusteringSettings, false);
         kMean.getPredictions().printSchema();
         Dataset<Row> dss = kMean.getPredictions();
 
