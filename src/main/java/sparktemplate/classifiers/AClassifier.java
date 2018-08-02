@@ -23,24 +23,31 @@ public interface AClassifier {
      * Abstrakcyjna metoda budujaca klasyfikator w oparciu o dane z obiektu klasy DBDataSet.
      *
      * @param dataSet  - zbior danych dla ktorego budowany jest klasyfikator
+     * @param isPrepared - dane przygotowane
      * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)
      */
-    void build(ADataSet dataSet, ASettings settings);
+    void build(ADataSet dataSet, ASettings settings, boolean isPrepared);
 
 
-    Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings);
+    /**
+     * Abstrakcyjna metoda testujaca rekordy na przynaleznosc do klas decyzyjnych.
+     *
+     * @param dbDataSet - dane
+     * @param aSettings - ustawienia
+     * @param isPrepared - dane przygotowane
+     * @return
+     */
+    Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, boolean isPrepared);
 
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do klas decyzyjnych.
-     * *
      *
      * @param dataRecord - rekord testowy
+     * @param aSettings - ustawienia
+     * @param isPrepared - dane przygotowane
      * @return nazwa klasy decyzyjne, do ktorej rekord zostal sklasyfikowany (wartośc typu String)
      */
-
-    String classify(DataRecord dataRecord, ASettings aSettings);
-
-
+    String classify(DataRecord dataRecord, ASettings aSettings, boolean isPrepared);
 
 
     /**
@@ -49,7 +56,6 @@ public interface AClassifier {
      * @param fileName nazwa pliku
      * @throws IOException
      */
-
     void saveClassifier(String fileName) throws IOException;
 
 
@@ -59,7 +65,6 @@ public interface AClassifier {
      * @param fileName nazwa pliku
      * @throws IOException
      */
-
     void loadClassifier(String fileName) throws IOException;
 
 

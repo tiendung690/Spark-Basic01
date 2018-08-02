@@ -124,40 +124,40 @@ public class Evaluation {
             case LINEARSVM: {
 
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
-                algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings, false);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
 
                 break;
             }
             case DECISIONTREE: {
 
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
-                algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings, false);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
 
                 break;
             }
             case RANDOMFORESTS: {
 
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
-                algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings, false);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
 
                 break;
             }
             case LOGISTICREGRESSION: {
 
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
-                algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings, false);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
 
                 break;
             }
             case NAIVEBAYES: {
 
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
-                algo.build(trainingDataSet, classifierSettings);
-                this.predictions = algo.classify(testingDataSet, classifierSettings);
+                algo.build(trainingDataSet, classifierSettings, false);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, false);
 
                 break;
             }

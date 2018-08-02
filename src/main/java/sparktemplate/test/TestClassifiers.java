@@ -41,7 +41,7 @@ public class TestClassifiers {
             ClassifierSettings classifierSettings = new ClassifierSettings();
             classifierSettings
                     .setLabelName("species")
-                    .setRandomForest();
+                    .setNaiveBayes();
 
 
             MemDataSet dataSetTest = new MemDataSet(spark); //Utworzenie obiektu na dane testowe

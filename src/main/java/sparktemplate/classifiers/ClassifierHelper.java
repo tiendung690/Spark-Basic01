@@ -24,16 +24,21 @@ public class ClassifierHelper {
      * @param aSettings     ustawienia
      * @param sparkSession  obiekt SparkSession
      * @param pipelineModel obiekt PipelineModel na podstawie ktorego wyznaczana jest klasa decyzyjna
+     * @param isPrepared    dane przygotowane
      * @return klasa decyzyjna
      */
-    public static String classify(DataRecord dataRecord, ASettings aSettings, SparkSession sparkSession, PipelineModel pipelineModel) {
+    public static String classify(DataRecord dataRecord, ASettings aSettings, SparkSession sparkSession, PipelineModel pipelineModel, boolean isPrepared) {
 
         // create dataset
         Dataset<Row> singleRecord = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
 
         // prepare dataset
-        Dataset<Row> singleRecordPrepared = DataPrepareClassification.prepareDataSet(singleRecord, aSettings.getLabelName());
-
+        Dataset<Row> singleRecordPrepared;
+        if (isPrepared) {
+            singleRecordPrepared = singleRecord;
+        } else {
+            singleRecordPrepared = DataPrepareClassification.prepareDataSet(singleRecord, aSettings.getLabelName());
+        }
         // make prediction
         Dataset<Row> prediction = pipelineModel.transform(singleRecordPrepared);
         //prediction.show();
@@ -49,11 +54,17 @@ public class ClassifierHelper {
      * @param dbDataSet     dane
      * @param aSettings     ustawienia
      * @param pipelineModel obiekt PipelineModel na podstawie ktorego wyznaczana jest klasa decyzyjna
+     * @param isPrepared    dane przygotowane
      * @return dane zaklasyfikowane
      */
-    public static Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, PipelineModel pipelineModel) {
+    public static Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, PipelineModel pipelineModel, boolean isPrepared) {
         // prepare data
-        Dataset<Row> prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()), aSettings.getLabelName());
+        Dataset<Row> prepTest;
+        if (isPrepared){
+            prepTest = dbDataSet.getDs();
+        }else {
+            prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()), aSettings.getLabelName());
+        }
         //prepTest.show();
         // Make predictions
         Dataset<Row> predictions = pipelineModel.transform(prepTest);

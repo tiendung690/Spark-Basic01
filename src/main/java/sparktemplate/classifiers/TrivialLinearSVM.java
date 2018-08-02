@@ -19,43 +19,26 @@ import java.io.IOException;
 /**
  * Created by as on 21.03.2018.
  */
-public class TrivialLinearSVM implements AClassifier {
+public class TrivialLinearSVM extends Classifier {
 
-    private PipelineModel pipelineModel;
-    private SparkSession sparkSession;
 
     public TrivialLinearSVM(SparkSession sparkSession) {
-        this.sparkSession = sparkSession;
+        super.setSparkSession(sparkSession);
     }
 
     @Override
-    public void build(ADataSet dataSet, ASettings settings) {
-        this.pipelineModel = buildPipelineModel(dataSet.getDs(), settings);
+    public void build(ADataSet dataSet, ASettings settings, boolean isPrepared) {
+        super.setPipelineModel(buildPipelineModel(dataSet.getDs(), settings, isPrepared));
     }
 
-    @Override
-    public String classify(DataRecord dataRecord, ASettings settings) {
-        return ClassifierHelper.classify(dataRecord, settings, this.sparkSession, this.pipelineModel);
-    }
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings, boolean isPrepared) {
 
-    @Override
-    public Dataset<Row> classify(ADataSet aDataSet, ASettings settings) {
-        return ClassifierHelper.classify(aDataSet, settings, this.pipelineModel);
-    }
-
-    @Override
-    public void saveClassifier(String fileName) throws IOException {
-        this.pipelineModel.write().overwrite().save(fileName);
-    }
-
-    @Override
-    public void loadClassifier(String fileName) throws IOException {
-        this.pipelineModel = PipelineModel.read().load(fileName);
-    }
-
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings) {
-
-        Dataset<Row> data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName());
+        Dataset<Row> data;
+        if (isPrepared) {
+            data = trainingData;
+        } else {
+            data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName());
+        }
         //data.show();
 
         // Index labels, adding metadata to the label column.
