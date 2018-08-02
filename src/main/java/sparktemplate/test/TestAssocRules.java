@@ -59,13 +59,5 @@ public class TestAssocRules {
 
         System.out.println("RESULTS:\n"+fpG.getStringBuilder().toString());
 
-        // INTERCEPTOR
-
-//        String result = ConsoleInterceptor.copyOut(() ->{
-//            fpG.buildAssociations(memDataSet, associationSettings);
-//            //Predef.println("kurwa");
-//        });
-//        System.out.println(result.length());
-//        System.out.println("result:"+result);
     }
 }

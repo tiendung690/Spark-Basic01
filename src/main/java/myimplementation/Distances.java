@@ -99,6 +99,16 @@ public class Distances {
         return distance;
     }
 
+    static double squaredDistance2(double[] a, double[] b) {
+        double distance = 0.0;
+        int size = a.length;
+        for (int i = 0; i < size; i++) {
+            double diff = a[i] - b[i];
+            distance += diff * diff;
+        }
+        return distance;
+    }
+
     public static double distanceEuclidean(double[] t1, double[] t2) {
 
         double sum = 0;

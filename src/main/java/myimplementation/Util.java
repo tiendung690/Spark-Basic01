@@ -124,7 +124,7 @@ public class Util {
         return index;
     }
 
-    public static double[] sumArrayByColumnOld(double[] t1, double[] t2) {
+    public static double[] sumArrayByColumn(double[] t1, double[] t2) {
         double[] tab = new double[t1.length];
         for (int i = 0; i < t1.length; i++) {
             tab[i] = t1[i] + t2[i];
