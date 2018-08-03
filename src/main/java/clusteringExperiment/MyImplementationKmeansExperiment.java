@@ -98,7 +98,7 @@ public class MyImplementationKmeansExperiment {
         initialCenters.stream().forEach(t -> System.out.println(t));
 
         // Convert Dataset to RDD.
-        JavaRDD<DataModel> preparedDataRDD = Util.convertToRDDModel(preparedData);
+        JavaRDD<DataModel> preparedDataRDD = Util.DatasetToRDD(preparedData);
 
         // Set k.
         int k = initialCenters.size(); // 4;
@@ -115,14 +115,14 @@ public class MyImplementationKmeansExperiment {
         // Create Dataset from RDD.
         String featuresCol = "features";
         String predictionCol = "prediction";
-        Dataset<Row> predictedData = Util.createDataSet2(predictedDataRDD, spark, featuresCol, predictionCol);
+        Dataset<Row> predictedData = Util.RDDToDataset(predictedDataRDD, spark, featuresCol, predictionCol);
 
         // Print predicted data.
         predictedData.printSchema();
         predictedData.show();
 
         // Print final centers.
-        Util.printCenters(finalCenters);
+        finalCenters.stream().forEach(s -> System.out.println(s));
 
         // Evaluator for clustering results. The metric computes the Silhouette measure using the squared Euclidean distance.
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
@@ -139,7 +139,7 @@ public class MyImplementationKmeansExperiment {
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         // Save results to text file.
-        Util.saveAsCSV(predictedData,featuresCol, predictionCol);
+        Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");
 
 
         // Keep job alive, allows access to web ui.

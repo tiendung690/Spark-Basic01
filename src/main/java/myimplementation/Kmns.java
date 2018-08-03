@@ -4,6 +4,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.util.LongAccumulator;
@@ -68,7 +69,7 @@ public class Kmns {
 //                return new Tuple2<>(v1._1() + v2._1(), dd);
 
 
-                return new Tuple2<>(v1._1() + v2._1(), Util.sumArrayByColumn(v1._2(), v2._2()));
+                return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()));
 
                 //  return new Tuple2<>(v1._1() + v2._1(), new FastAxpy().axpy(1.0, v2._2(), v1._2().toDense()));
             });
@@ -79,7 +80,7 @@ public class Kmns {
 //                BLAS$.MODULE$.scal(1.0 / v1._1(), v);
 //                return v;
 
-                Vector v = Util.divideArray(v1._2(), v1._1());
+                Vector v = divideArray(v1._2(), v1._1());
                 return v;
             });
 
@@ -141,7 +142,7 @@ public class Kmns {
                     while (dataModel.hasNext()) {
                         Vector points = dataModel.next().getData();
                         double[] distances = computeDistance(centersBroadcast.value(), points);
-                        int predictedCluster = Util.findLowerValIndex(distances);
+                        int predictedCluster = findLowerValIndex(distances);
                         list.add(new Tuple2<>(predictedCluster, points));
                     }
                     return list.iterator();
@@ -187,4 +188,32 @@ public class Kmns {
         return distances;
     }
 
+    public static int findLowerValIndex(double[] tab) {
+
+        int index = 0;
+        double min = tab[index];
+        for (int i = 1; i < tab.length; i++) {
+            if (tab[i] < min) {
+                min = tab[i];
+                index = i;
+            }
+        }
+        return index;
+    }
+
+    public static Vector sumArrayByColumn(Vector t1, Vector t2) {
+        double[] tab = new double[t1.size()];
+        for (int i = 0; i < t1.size(); i++) {
+            tab[i] = t1.apply(i) + t2.apply(i);
+        }
+        return new DenseVector(tab);
+    }
+
+    public static Vector divideArray(Vector t1, Long l) {
+        double[] tab = new double[t1.size()];
+        for (int i = 0; i < t1.size(); i++) {
+            tab[i] = t1.apply(i) / l;
+        }
+        return new DenseVector(tab);
+    }
 }

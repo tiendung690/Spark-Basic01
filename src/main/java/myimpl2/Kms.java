@@ -101,7 +101,7 @@ public class Kms extends Estimator<KmsModel> {
     @Override
     public KmsModel fit(Dataset<?> dataset) {
         //this.transformSchema(dataset.schema());
-        JavaRDD<DataModel> x3 = Util.convertToRDDModel(dataset.select(this.featuresCol));
+        JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
         if(this.initialCenters.isEmpty()){
             this.initialCenters = Kmns.initializeCenters(x3,this.k);
         }

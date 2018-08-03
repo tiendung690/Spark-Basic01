@@ -1,24 +1,17 @@
 package myimplementation;
 
 import org.apache.commons.lang.ArrayUtils;
-import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.linalg.DenseVector;
-import org.apache.spark.ml.linalg.SparseVector;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.ml.linalg.VectorUDT;
-import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import org.spark_project.dmg.pmml.DataType;
-import scala.Tuple2;
 
-import javax.print.attribute.standard.Compression;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
@@ -26,13 +19,7 @@ import java.util.Arrays;
  */
 public class Util {
 
-    public static void main(String[] args) {
-        double[] tab = new double[]{-20, 1, 2, 3, 4, 6, -1};
-        System.out.println(findLowerValIndex(tab));
-    }
-
-    public static JavaRDD<DataModel> convertToRDDModel(Dataset<Row> ds) {
-        // Convert dataset to JavaRDD of DataModel
+    public static JavaRDD<DataModel> DatasetToRDD(Dataset<Row> ds) {
         JavaRDD<DataModel> x3 = ds.toJavaRDD().map(row -> {
             KMeansModel KMeansModel = new KMeansModel();
             KMeansModel.setData((Vector) row.get(0));
@@ -42,47 +29,17 @@ public class Util {
         //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
     }
 
-    public static JavaPairRDD<Integer, Vector> convertToRDDModel2(Dataset<Row> ds) {
-        // Convert dataset to JavaRDD of DataModel
-        JavaPairRDD<Integer, Vector> x3 = ds.toJavaRDD().mapToPair(row -> {
-            return new Tuple2<>(0, (Vector) row.get(0));
+    public static Dataset<Row> RDDToDataset(JavaPairRDD<Integer, Vector> x, SparkSession spark, String featuresCol, String predictionCol) {
+        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1._2(), v1._1()));
+        StructType schema = new StructType(new StructField[]{
+                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
+                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
         });
-        return x3;//.repartition(4);
-        //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
+        Dataset<Row> dm = spark.createDataFrame(ss, schema);
+        return dm;
     }
 
-    public static JavaRDD<Vector> convertToRDDModel4(Dataset<Row> ds) {
-        // Convert dataset to JavaRDD of DataModel
-        JavaRDD<Vector> x3 = ds.toJavaRDD().map(row -> (Vector) row.get(0));
-        return x3;//.repartition(4);
-        //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
-    }
-
-
-    public static JavaPairRDD<Integer, org.apache.spark.mllib.linalg.Vector> convertToRDDModel3(Dataset<Row> ds) {
-        JavaPairRDD<Integer, org.apache.spark.mllib.linalg.Vector> x3 = ds.toJavaRDD().mapToPair(row -> {
-            return new Tuple2<Integer, Vector>(0, (Vector) row.get(0));
-        }).mapToPair(v1 -> {
-            return new Tuple2<Integer, org.apache.spark.mllib.linalg.Vector>(v1._1(), Vectors.fromML(v1._2()));
-        });
-        return x3;
-    }
-
-    public static void printCenters(ArrayList<Vector> v) {
-        System.out.println("Centers:");
-        for (int i = 0; i < v.size(); i++) {
-            System.out.println(Arrays.toString(v.get(i).toArray()));
-        }
-    }
-
-    public static void printCenters2(ArrayList<org.apache.spark.mllib.linalg.Vector> v) {
-        System.out.println("Centers:");
-        for (int i = 0; i < v.size(); i++) {
-            System.out.println(Arrays.toString(v.get(i).toArray()));
-        }
-    }
-
-    public static void saveAsCSV(Dataset<Row> dm, String featuresCol, String predictionCol) {
+    public static void saveAsCSV(Dataset<Row> dm, String featuresCol, String predictionCol, String path) {
 
         // zapis do pliku w formacie csv (po przecinku), bez headera
         JavaRDD<Row> rr = dm.select(featuresCol, predictionCol).toJavaRDD().map(value -> {
@@ -104,117 +61,7 @@ public class Util {
                 //.format("com.databricks.spark.csv")
                 //.option("header", "false")
                 .mode(SaveMode.Overwrite)
-                .text("clustering_out");
+                .text(path);
     }
 
-    public static int findLowerValIndex(double[] tab) {
-
-        int index = 0;
-        double min = tab[index];
-        for (int i = 1; i < tab.length; i++) {
-            if (tab[i] < min) {
-                min = tab[i];
-                index = i;
-            }
-        }
-        return index;
-    }
-
-    public static int findLowerValIndexNew(Vector tab) {
-
-        int index = 0;
-        double min = tab.apply(index);
-        for (int i = 1; i < tab.size(); i++) {
-            if (tab.apply(i) < min) {
-                min = tab.apply(i);
-                index = i;
-            }
-        }
-        return index;
-    }
-
-    public static double[] sumArrayByColumnOld(double[] t1, double[] t2) {
-        double[] tab = new double[t1.length];
-        for (int i = 0; i < t1.length; i++) {
-            tab[i] = t1[i] + t2[i];
-        }
-        return tab;
-    }
-
-    public static Vector sumArrayByColumn(Vector t1, Vector t2) {
-        double[] tab = new double[t1.size()];
-        for (int i = 0; i < t1.size(); i++) {
-            tab[i] = t1.apply(i) + t2.apply(i);
-        }
-        return new DenseVector(tab);
-    }
-
-    public static Vector sumArrayByColumn2(Vector t1, Vector t2) {
-        if (t1 instanceof DenseVector && t2 instanceof DenseVector) {
-
-            double[] tab = new double[t1.size()];
-            for (int i = 0; i < t1.size(); i++) {
-                tab[i] = t1.apply(i) + t2.apply(i);
-            }
-            return new DenseVector(tab);
-
-        } else if (t1 instanceof SparseVector && t2 instanceof SparseVector) {
-            SparseVector v1 = (SparseVector) t1;
-            SparseVector v2 = (SparseVector) t2;
-
-            double[] tab = new double[v1.size()];
-            for (int i = 0; i < v1.size(); i++) {
-                tab[i] = t1.apply(i) + t2.apply(i);
-            }
-            return new DenseVector(tab);
-
-        } else if (t1 instanceof SparseVector && t2 instanceof DenseVector) {
-
-        } else if (t1 instanceof DenseVector && t2 instanceof SparseVector) {
-
-        } else {
-
-        }
-        return null;
-    }
-
-    public static Vector sumArrayByColumnSparse(SparseVector t1, SparseVector t2) {
-        double[] tab = new double[t1.size()];
-        for (int i = 0; i < t1.size(); i++) {
-            tab[i] = t1.apply(i) + t2.apply(i);
-        }
-        return new DenseVector(tab);
-    }
-
-    public static Vector divideArray(Vector t1, Long l) {
-        double[] tab = new double[t1.size()];
-        for (int i = 0; i < t1.size(); i++) {
-            tab[i] = t1.apply(i) / l;
-        }
-        return new DenseVector(tab);
-    }
-
-    // Transform JavaRDD<DataModel> -> Dataset<Row>  (VectorUDF)
-//    public static Dataset<Row> createDataSetUDF(JavaRDD<DataModel> x, SparkSession spark, String featuresCol, String predictionCol) {
-//        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1.getData(), v1.getCluster()));
-//        // new StructType
-//        StructType schema = new StructType(new StructField[]{
-//                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
-//                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
-//        });
-//        Dataset<Row> dm = spark.createDataFrame(ss, schema);
-//        return dm;
-//    }
-
-    // Transform JavaPairRDD<DataModel> -> Dataset<Row>  (VectorUDF)
-    public static Dataset<Row> createDataSet2(JavaPairRDD<Integer, Vector> x, SparkSession spark, String featuresCol, String predictionCol) {
-        JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1._2(), v1._1()));
-        // new StructType
-        StructType schema = new StructType(new StructField[]{
-                new StructField(featuresCol, new VectorUDT(), false, Metadata.empty()),
-                new StructField(predictionCol, DataTypes.IntegerType, true, Metadata.empty())
-        });
-        Dataset<Row> dm = spark.createDataFrame(ss, schema);
-        return dm;
-    }
 }
