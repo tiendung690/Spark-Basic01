@@ -1,4 +1,4 @@
-package myimplOldFiles;
+package myimplementation.myimplOldFiles;
 
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;

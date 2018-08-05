@@ -1,19 +1,11 @@
-package myimplOldFiles;
+package myimplementation.myimplOldFiles;
 
-import com.github.fommil.netlib.F2jBLAS;
-import org.apache.spark.ml.linalg.DenseMatrix;
 import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.SparseVector;
 import org.apache.spark.ml.linalg.Vector;
 import org.apache.spark.mllib.clustering.VectorWithNorm;
 import org.apache.spark.mllib.linalg.Vectors;
-import scala.Serializable;
-import scala.StringContext;
-import scala.collection.immutable.VectorBuilder;
-import scala.collection.mutable.StringBuilder;
 import scala.runtime.BoxedUnit;
-
-import java.util.Arrays;
 
 /**
  * Created by as on 10.05.2018.

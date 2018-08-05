@@ -1,9 +1,8 @@
-package myimplOldFiles;
+package myimplementation.myimplOldFiles;
 
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;
 import org.apache.spark.mllib.linalg.Vector;
-import scala.StringContext;
 import scala.Tuple2;
 
 /**
