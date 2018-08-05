@@ -16,7 +16,7 @@ import java.util.ArrayList;
 /**
  * Created by as on 16.04.2018.
  */
-public class Kms extends Estimator<KmsModel> {
+public class KmsEstimator extends Estimator<KmsModel> {
 
     private static final long serialVersionUID = 5345470610951989479L;
     private String featuresCol = "features";
@@ -27,7 +27,7 @@ public class Kms extends Estimator<KmsModel> {
     private int maxIterations;
     private int k;
 
-    public Kms() {
+    public KmsEstimator() {
         this.initialCenters = new ArrayList<>();
         this.seed = 20L;
         this.epsilon =1e-4;
@@ -39,7 +39,7 @@ public class Kms extends Estimator<KmsModel> {
         return featuresCol;
     }
 
-    public Kms setFeaturesCol(String featuresCol) {
+    public KmsEstimator setFeaturesCol(String featuresCol) {
         this.featuresCol = featuresCol;
         return this;
     }
@@ -48,7 +48,7 @@ public class Kms extends Estimator<KmsModel> {
         return predictionCol;
     }
 
-    public Kms setPredictionCol(String predictionCol) {
+    public KmsEstimator setPredictionCol(String predictionCol) {
         this.predictionCol = predictionCol;
         return this;
     }
@@ -57,7 +57,7 @@ public class Kms extends Estimator<KmsModel> {
         return initialCenters;
     }
 
-    public Kms setInitialCenters(ArrayList<Vector> initialCenters) {
+    public KmsEstimator setInitialCenters(ArrayList<Vector> initialCenters) {
         this.initialCenters = initialCenters;
         return this;
     }
@@ -66,7 +66,7 @@ public class Kms extends Estimator<KmsModel> {
         return seed;
     }
 
-    public Kms setSeed(long seed) {
+    public KmsEstimator setSeed(long seed) {
         this.seed = seed;
         return this;
     }
@@ -75,7 +75,7 @@ public class Kms extends Estimator<KmsModel> {
         return epsilon;
     }
 
-    public Kms setEpsilon(double epsilon) {
+    public KmsEstimator setEpsilon(double epsilon) {
         this.epsilon = epsilon;
         return this;
     }
@@ -84,7 +84,7 @@ public class Kms extends Estimator<KmsModel> {
         return maxIterations;
     }
 
-    public Kms setMaxIterations(int maxIterations) {
+    public KmsEstimator setMaxIterations(int maxIterations) {
         this.maxIterations = maxIterations;
         return this;
     }
@@ -93,7 +93,7 @@ public class Kms extends Estimator<KmsModel> {
         return k;
     }
 
-    public Kms setK(int k) {
+    public KmsEstimator setK(int k) {
         this.k = k;
         return this;
     }

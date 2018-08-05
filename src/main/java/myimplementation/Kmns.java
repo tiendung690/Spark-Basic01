@@ -63,11 +63,11 @@ public class Kmns {
     }
 
     private static Map<Integer, Vector> predictClusterAndComputeNewCenters1(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
-        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters) // 1
-                .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2()))) // 2
+        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters)                                    // 1
+                .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))                               // 2
                 .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()))) // 3
-                .mapValues(v1 -> divideArray(v1._2(), v1._1())) // 4
-                .collectAsMap(); // 5
+                .mapValues(v1 -> divideArray(v1._2(), v1._1()))                                                   // 4
+                .collectAsMap();                                                                                  // 5
         return newCenters;
     }
 
@@ -79,12 +79,6 @@ public class Kmns {
         boolean condition = true;
         int iteration = 0;
 
-        // 1. Predict cluster.
-        // 2. MapToPair.
-        // 3. ReduceByKey.
-        // 4. MapValues.
-        // 5. CollectAsMap.
-
         do {
             ////////////////////////////////////////
             long startTime = System.currentTimeMillis();
@@ -92,6 +86,11 @@ public class Kmns {
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
+            // 1. Predict cluster.
+            // 2. MapToPair.
+            // 3. ReduceByKey.
+            // 4. MapValues.
+            // 5. CollectAsMap.
             data.persist(StorageLevel.MEMORY_ONLY());
             Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters1(data, newClusterCenters);
             data.unpersist();

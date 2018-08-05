@@ -1,15 +1,10 @@
 package myimpl2;
 
-import myimplementation.Kmns;
-import myimplementation.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.ml.Pipeline;
-import org.apache.spark.ml.PipelineModel;
-import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.linalg.Vector;
@@ -96,7 +91,7 @@ public class TestKMS {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-        Kms kmsModel = new Kms()
+        KmsEstimator kmsEstimatorModel = new KmsEstimator()
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
                 .setK(5)
@@ -114,18 +109,18 @@ public class TestKMS {
 
 
         // Make predictions.
-        Dataset<Row> predictions = kmsModel.fit(ds1).transform(ds1);// model.transform(ds1);
+        Dataset<Row> predictions = kmsEstimatorModel.fit(ds1).transform(ds1);// model.transform(ds1);
         //predictions.show();
         //predictions.printSchema();
         //System.out.println(Arrays.toString(kmsModel.getInitialCenters().toArray()));
 
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-        clusteringEvaluator.setFeaturesCol(kmsModel.getFeaturesCol());
-        clusteringEvaluator.setPredictionCol(kmsModel.getPredictionCol());
+        clusteringEvaluator.setFeaturesCol(kmsEstimatorModel.getFeaturesCol());
+        clusteringEvaluator.setPredictionCol(kmsEstimatorModel.getPredictionCol());
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(predictions));
 
-        ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kmsModel.getPredictionCol(), kmsModel.getFeaturesCol(), kmsModel.getK());
+        ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kmsEstimatorModel.getPredictionCol(), kmsEstimatorModel.getFeaturesCol(), kmsEstimatorModel.getK());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         //Util.saveAsCSV(predictions);
