@@ -1,4 +1,4 @@
-package myimplementation;
+package kmeans_implementation;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -6,9 +6,6 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.Vectors;
-import org.apache.spark.mllib.clustering.VectorWithNorm;
-import org.apache.spark.mllib.util.MLUtils$;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;

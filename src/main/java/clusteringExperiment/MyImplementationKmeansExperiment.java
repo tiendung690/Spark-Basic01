@@ -1,8 +1,8 @@
 package clusteringExperiment;
 
-import myimplementation.DataModel;
-import myimplementation.Kmns;
-import myimplementation.Util;
+import kmeans_implementation.DataModel;
+import kmeans_implementation.Kmns;
+import kmeans_implementation.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;

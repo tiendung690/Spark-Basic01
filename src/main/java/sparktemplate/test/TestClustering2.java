@@ -1,29 +1,16 @@
 package sparktemplate.test;
 
-import myimplementation.Kmns;
-import myimplementation.Test1;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.DataRecord;
-import sparktemplate.association.AssociationSettings;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
-import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created by as on 13.03.2018.

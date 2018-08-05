@@ -1,4 +1,4 @@
-package myimplementation.myimplOldFiles;
+package kmeans_implementation.myimplOldFiles;
 
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;

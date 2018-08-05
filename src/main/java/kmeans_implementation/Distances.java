@@ -1,18 +1,7 @@
-package myimplementation;
+package kmeans_implementation;
 
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.mllib.linalg.DenseVector;
-import org.apache.spark.mllib.linalg.SparseVector;
-import org.apache.spark.mllib.linalg.Vectors;
-import scala.Option;
-import scala.Serializable;
-import scala.StringContext;
-import scala.Tuple2;
-import scala.collection.mutable.StringBuilder;
-import scala.math.package$;
-import scala.runtime.BoxedUnit;
-import scala.runtime.BoxesRunTime;
 
 /**
  * Created by as on 26.04.2018.

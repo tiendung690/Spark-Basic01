@@ -1,4 +1,4 @@
-package myimplementation;
+package kmeans_implementation;
 
 import org.apache.spark.ml.linalg.Vector;
 

@@ -1,4 +1,4 @@
-package myimplementation.myimplOldFiles;
+package kmeans_implementation.myimplOldFiles;
 
 import org.apache.spark.mllib.linalg.Vectors;
 import scala.math.package$;
