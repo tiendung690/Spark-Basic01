@@ -107,7 +107,7 @@ public class MyImplementationKmeansExperiment {
         //ArrayList<Vector> initialCenters = initializeCenters(preparedDataRDD, k);
 
         // Compute final centers.
-        ArrayList<Vector> finalCenters = Kmns.computeCenters(preparedDataRDD, initialCenters, 1e-4, 1);
+        ArrayList<Vector> finalCenters = Kmns.computeCenters(preparedDataRDD, initialCenters, 1e-4, 20);
 
         // Predict clusters.
         JavaPairRDD<Integer, Vector> predictedDataRDD = Kmns.predictCluster(preparedDataRDD, finalCenters);

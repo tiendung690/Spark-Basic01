@@ -25,8 +25,7 @@ public class Util {
             KMeansModel.setData((Vector) row.get(0));
             return KMeansModel;
         });
-        return x3;//.repartition(4);
-        //return x3.repartition(SparkContext.getOrCreate().defaultParallelism());
+        return x3;
     }
 
     public static Dataset<Row> RDDToDataset(JavaPairRDD<Integer, Vector> x, SparkSession spark, String featuresCol, String predictionCol) {
@@ -40,8 +39,6 @@ public class Util {
     }
 
     public static void saveAsCSV(Dataset<Row> dm, String featuresCol, String predictionCol, String path) {
-
-        // zapis do pliku w formacie csv (po przecinku), bez headera
         JavaRDD<Row> rr = dm.select(featuresCol, predictionCol).toJavaRDD().map(value -> {
             Vector vector = (Vector) value.get(0);
             Integer s = (Integer) value.get(1);
@@ -53,13 +50,10 @@ public class Util {
         });
         StructType structType = new StructType().add("data", DataTypes.StringType);
 
-        // no overwrite
-        //rr.coalesce(1).saveAsTextFile("data/ok");
-
+        // save Dataset (overwrite allowed)
         dm.sqlContext().createDataFrame(rr, structType)
+                .coalesce(1) // file in 1 part
                 .write()
-                //.format("com.databricks.spark.csv")
-                //.option("header", "false")
                 .mode(SaveMode.Overwrite)
                 .text(path);
     }

@@ -120,7 +120,7 @@ public class MllibKmeansExperiment {
                 .setK(k)
                 .setEpsilon(1e-4)
                 //.setSeed(20L)
-                .setMaxIterations(1)
+                .setMaxIterations(20)
                 .setInitialModel(new KMeansModel(initialCentersArray));
         //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
 

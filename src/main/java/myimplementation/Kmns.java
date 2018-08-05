@@ -6,6 +6,9 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.Vector;
+import org.apache.spark.ml.linalg.Vectors;
+import org.apache.spark.mllib.clustering.VectorWithNorm;
+import org.apache.spark.mllib.util.MLUtils$;
 import org.apache.spark.storage.StorageLevel;
 import org.apache.spark.util.LongAccumulator;
 import scala.Tuple2;
@@ -28,73 +31,70 @@ public class Kmns {
         return initialCentersVector;
     }
 
+    private static Map<Integer, Vector> predictClusterAndComputeNewCenters2(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
+        // 1
+        JavaPairRDD<Integer, Vector> s1 = predictCluster(data, clusterCenters);
+        // 2
+        JavaPairRDD<Integer, Tuple2<Long, Vector>> s2 = s1.mapPartitionsToPair(t -> {
+            List<Tuple2<Integer, Tuple2<Long, Vector>>> list = new ArrayList<>();
+            while (t.hasNext()) {
+                Tuple2<Integer, Vector> element = t.next();
+                list.add(new Tuple2<>(element._1(), new Tuple2<>(1L, element._2())));
+            }
+            return list.iterator();
+        });
+        // 3
+        JavaPairRDD<Integer, Tuple2<Long, Vector>> s3 = s2.reduceByKey((v1, v2) -> {
+            // DenseVector dd = v1._2().toDense();
+            //BLAS$.MODULE$.axpy(1.0, v2._2(), dd);
+            // return new Tuple2<>(v1._1() + v2._1(), dd);
+            return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2().toArray(), v2._2().toArray()));
+        });
+        // 4
+        JavaPairRDD<Integer, Vector> s4 = s3.mapValues(v1 -> {
+            // Vector v = v1._2();
+            // BLAS$.MODULE$.scal(1.0 / v1._1(), v);
+            // return v;
+            return divideArray(v1._2().toArray(), v1._1());
+        });
+        // 5
+        Map<Integer, Vector> newCenters = s4.collectAsMap();
+        return newCenters;
+    }
+
+    private static Map<Integer, Vector> predictClusterAndComputeNewCenters1(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
+        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters) // 1
+                .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2()))) // 2
+                .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()))) // 3
+                .mapValues(v1 -> divideArray(v1._2(), v1._1())) // 4
+                .collectAsMap(); // 5
+        return newCenters;
+    }
+
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations) {
 
         JavaSparkContext jsc = new JavaSparkContext(data.context());
-        LongAccumulator accumulator = jsc.sc().longAccumulator("Accumulator_1");
+        LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
         ArrayList<Vector> clusterCenters = new ArrayList<>(centers);
-        // double epsilon = 1e-4;
-        // int maxIterations = 20;
-        boolean bol = true;
-        int ii = 0;
+        boolean condition = true;
+        int iteration = 0;
+
+        // 1. Predict cluster.
+        // 2. MapToPair.
+        // 3. ReduceByKey.
+        // 4. MapValues.
+        // 5. CollectAsMap.
 
         do {
-            data.persist(StorageLevel.MEMORY_ONLY());
+            ////////////////////////////////////////
             long startTime = System.currentTimeMillis();
+            ////////////////////////////////////////
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
-            // 1
-            //JavaPairRDD<Integer, Vector> s1 = predictClusterWithNorm(data, newClusterCenters);
-            JavaPairRDD<Integer, Vector> s1 = predictCluster(data, newClusterCenters);
-
-            // 2
-            JavaPairRDD<Integer, Tuple2<Long, Vector>> s2 = s1.mapPartitionsToPair(t -> {
-                List<Tuple2<Integer, Tuple2<Long, Vector>>> list = new ArrayList<>();
-                while (t.hasNext()) {
-                    //DataModel element = t.next();
-                    Tuple2<Integer, Vector> element = t.next();
-                    //System.out.println(element.getCluster()+"__"+Arrays.toString(element.getData().toArray()));
-                    //list.add(new Tuple2<>(element.getCluster(), new Tuple2<>(1L, element.getData())));
-                    list.add(new Tuple2<>(element._1(), new Tuple2<>(1L, element._2())));
-                }
-                return list.iterator();
-            });
-
-            // 3
-            JavaPairRDD<Integer, Tuple2<Long, Vector>> s3 = s2.reduceByKey((v1, v2) -> {
-
-//                DenseVector dd = v1._2().toDense();//.copy();
-//                BLAS$.MODULE$.axpy(1.0, v2._2(), dd);
-//                return new Tuple2<>(v1._1() + v2._1(), dd);
-
-
-                return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()));
-
-                //  return new Tuple2<>(v1._1() + v2._1(), new FastAxpy().axpy(1.0, v2._2(), v1._2().toDense()));
-            });
-
-            // 4
-            JavaPairRDD<Integer, Vector> s4 = s3.mapValues(v1 -> {
-//                Vector v = v1._2();
-//                BLAS$.MODULE$.scal(1.0 / v1._1(), v);
-//                return v;
-
-                Vector v = divideArray(v1._2(), v1._1());
-                return v;
-            });
-
-            // 5
-            Map<Integer, Vector> xc = s4.collectAsMap();
-
+            data.persist(StorageLevel.MEMORY_ONLY());
+            Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters1(data, newClusterCenters);
             data.unpersist();
-
-
-//            Map<Integer, Vector> xc2 = predictClusterWithNorm(data, newClusterCenters)
-//                    .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))
-//                    .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), Util.sumArrayByColumn(v1._2(), v2._2())))
-//                    .mapValues(v1 -> Util.divideArray(v1._2(), v1._1()))
-//                    .collectAsMap();
 
 
             ////////////////////////////////////////
@@ -103,30 +103,25 @@ public class Kmns {
             ///////////////////////////////////////
 
             double centersDistance = 0.0;
-
             for (int i = 0; i < clusterCenters.size(); i++) {
-                Vector tp = xc.get(i);
-                //System.out.println(Arrays.toString(tp.toArray()));
+                Vector tp = newCenters.get(i);
                 if (tp != null) {
                     newClusterCenters.set(i, tp);
                 } else {
                     newClusterCenters.set(i, newClusterCenters.get(i));
                 }
-                //centersDistance += org.apache.spark.ml.linalg.Vectors.sqdist(clusterCenters.get(i), newClusterCenters.get(i)); //4,2s
-                //centersDistance += Distances.squaredDistance(clusterCenters.get(i), newClusterCenters.get(i)); // 3,7s
-                centersDistance += Distances.squaredDistance2(clusterCenters.get(i).toArray(), newClusterCenters.get(i).toArray()); // 4s
+                centersDistance += Distances.squaredDistance(clusterCenters.get(i).toArray(), newClusterCenters.get(i).toArray());
             }
             centersDistance = centersDistance / clusterCenters.size();
 
-            if (centersDistance < epsilon || ii == maxIterations) {
-                bol = false;
+            if (centersDistance < epsilon || iteration == maxIterations) {
+                condition = false;
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
-                ii++;
-                //System.out.println("ITERATION: " + ii);
-                System.out.println("ITERATION: " + ii + ", ACCUMULATOR: " + accumulator.value() + " ms");
+                iteration++;
+                System.out.println("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
             }
-        } while (bol);
+        } while (condition);
 
         return clusterCenters;
     }
@@ -155,34 +150,12 @@ public class Kmns {
     private static double[] computeDistance(ArrayList<Vector> centers, Vector point) {
         double[] distances = new double[centers.size()];
         for (int i = 0; i < centers.size(); i++) {
-
-            // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            //double d = Distances.distanceEuclidean2(point, centers.get(i)); // 7s !!!!!!!!!!!!!! BAD BAD BAD BAD
-            //double d = Vectors.sqdist(point, centers.get(i)); //3,7s - 4,2s
-
-
-            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray()); //4s -3,9 OK OK OK OK OK OK OK
-
-            // double d = Distances.fastDistanceXD(point.vector(), centers.get(i).vector());
-
-            // VECTOR WITH NORM//////////////////////////////////////////////////////// 4,7s
-//            ArrayList<VectorWithNorm> centers2 = new ArrayList<>();
-//            for (Vector v : centers) {
-//                centers2.add(new VectorWithNorm(org.apache.spark.mllib.linalg.Vectors.fromML(v)));
-//            }
-//            VectorWithNorm point2 = new VectorWithNorm(org.apache.spark.mllib.linalg.Vectors.fromML(point),2.0);
-//            double d = MLUtils$.MODULE$.fastSquaredDistance(
-//                    point2.vector(), point2.norm(),
-//                    centers2.get(i).vector(), centers2.get(i).norm(),
-//                    1e-6);
-            ////////////////////////////////////////////////////////////////////////////////////////
-
-//            double d = Distances.fastSquaredDistance(point2.vector(), point2.norm(),  // 4,3s
-//                    centers2.get(i).vector(), centers2.get(i).norm());
-
-//            double d = Distances.fastSquaredDistance_V2(point2.vector(), point2.norm(), //4.1s
-//                    centers2.get(i).vector(), centers2.get(i).norm());
-
+            //Spark sqdist.
+            //double d = Vectors.sqdist(point, centers.get(i));                                 //16s
+            //Euclidean distance with Vector.
+            //double d = Distances.distanceEuclidean(point, centers.get(i));                    //25s
+            //Euclidean distance with Array.
+            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray());  //16s
             distances[i] = d;
         }
         return distances;
@@ -209,10 +182,26 @@ public class Kmns {
         return new DenseVector(tab);
     }
 
+    public static Vector sumArrayByColumn(double[] t1, double[] t2) {
+        double[] tab = new double[t1.length];
+        for (int i = 0; i < t1.length; i++) {
+            tab[i] = t1[i] + t2[i];
+        }
+        return new DenseVector(tab);
+    }
+
     public static Vector divideArray(Vector t1, Long l) {
         double[] tab = new double[t1.size()];
         for (int i = 0; i < t1.size(); i++) {
             tab[i] = t1.apply(i) / l;
+        }
+        return new DenseVector(tab);
+    }
+
+    public static Vector divideArray(double[] t1, Long l) {
+        double[] tab = new double[t1.length];
+        for (int i = 0; i < t1.length; i++) {
+            tab[i] = t1[i] / l;
         }
         return new DenseVector(tab);
     }
