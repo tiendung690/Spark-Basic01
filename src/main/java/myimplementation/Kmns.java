@@ -118,7 +118,7 @@ public class Kmns {
             }
             centersDistance = centersDistance / clusterCenters.size();
 
-            if (centersDistance < epsilon || ii == maxIterations - 1) {
+            if (centersDistance < epsilon || ii == maxIterations) {
                 bol = false;
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);

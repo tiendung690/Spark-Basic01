@@ -55,7 +55,7 @@ public class MllibKmeansExperiment {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt";
-        //String path = "data/mllib/kdd_5_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
@@ -65,7 +65,7 @@ public class MllibKmeansExperiment {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris2.csv";
+        //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/serce.csv";
         //String path = "data/mllib/rezygnacje.csv";
@@ -120,7 +120,7 @@ public class MllibKmeansExperiment {
                 .setK(k)
                 .setEpsilon(1e-4)
                 //.setSeed(20L)
-                .setMaxIterations(20)
+                .setMaxIterations(1)
                 .setInitialModel(new KMeansModel(initialCentersArray));
         //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
 

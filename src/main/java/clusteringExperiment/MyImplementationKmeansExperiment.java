@@ -49,7 +49,7 @@ public class MyImplementationKmeansExperiment {
         //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
         //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
         //String path = "data/mllib/kdd_10_proc.txt";
-        //String path = "data/mllib/kdd_5_proc.txt";
+        String path = "data/mllib/kdd_5_proc.txt";
         //String path = "data/mllib/kdd_3_proc.txt";
         //String path = "data/mllib/flights_low.csv";
         //String path = "data/mllib/kddFIX.txt";
@@ -59,7 +59,7 @@ public class MyImplementationKmeansExperiment {
         //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
         //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
         //String path = "data/mllib/kmean.txt";
-        String path = "data/mllib/iris2.csv";
+        //String path = "data/mllib/iris2.csv";
         //String path = "data/mllib/creditcard.csv";
         //String path = "data/mllib/serce.csv";
         //String path = "data/mllib/rezygnacje.csv";
@@ -107,7 +107,7 @@ public class MyImplementationKmeansExperiment {
         //ArrayList<Vector> initialCenters = initializeCenters(preparedDataRDD, k);
 
         // Compute final centers.
-        ArrayList<Vector> finalCenters = Kmns.computeCenters(preparedDataRDD, initialCenters, 1e-4, 20);
+        ArrayList<Vector> finalCenters = Kmns.computeCenters(preparedDataRDD, initialCenters, 1e-4, 1);
 
         // Predict clusters.
         JavaPairRDD<Integer, Vector> predictedDataRDD = Kmns.predictCluster(preparedDataRDD, finalCenters);
