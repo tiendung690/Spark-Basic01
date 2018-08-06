@@ -1,4 +1,4 @@
-package kmeans_implementation.myimplOldFiles;
+package kmeans_implementation.old_files;
 
 import org.apache.spark.mllib.linalg.DenseVector;
 import org.apache.spark.mllib.linalg.SparseVector;

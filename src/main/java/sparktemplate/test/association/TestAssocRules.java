@@ -1,4 +1,4 @@
-package sparktemplate.test;
+package sparktemplate.test.association;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

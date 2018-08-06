@@ -27,9 +27,8 @@ public class TestRemoveNulls {
                 .setMaster("local[*]");
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
-        //JavaSparkContext javaSparkContext = new JavaSparkContext(conf);
 
-        String path = "data/mllib/flights_low.csv"; //"data/mllib/iris.csv";
+        String path = "data_test/iris.csv";//"data/mllib/flights_low.csv"; //"data/mllib/iris.csv";
         System.out.println("// TEST MemDataSet");
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
@@ -38,7 +37,7 @@ public class TestRemoveNulls {
         ds.printSchema();
         ds.cache();
         Dataset<Row> ds2 = DataPrepare.fillMissingValues(ds);
-        //ds2.show();
+        ds2.show();
         Dataset<Row> ds3 = new DataPrepareClustering().prepareDataSet(ds2,false,false);
         ds3.show();
         ds3.printSchema();
