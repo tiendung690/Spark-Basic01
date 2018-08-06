@@ -19,95 +19,96 @@ import java.util.List;
  */
 public class DataPrepareAssociations {
 
-    private static final boolean removeNumerics = true; // remove all columns with numeric values
-    private static final boolean removeNull = true; // remove all null columns in row
+    // Remove all columns with numeric values.
+    private static final boolean removeNumerics = true;
+    // Remove all null columns in row.
+    private static final boolean removeNull = true;
 
     /**
      * Metoda przygotowuje dane do wyznaczania regul asocjacyjnych.
      *
-     * @param df dane
+     * @param data dane
      * @param sparkSession obiekt SparkSession
      * @return przygotowane dane
      */
-    public static Dataset<Row> prepareDataSet(Dataset<Row> df, SparkSession sparkSession) {
+    public static Dataset<Row> prepareDataSet(Dataset<Row> data, SparkSession sparkSession) {
 
-        // find columns with StringType from dataset
+        // Find columns with StringType from dataset.
         List<String> listString = new ArrayList<>();
-
-        for (StructField o : df.schema().fields()) {
+        for (StructField o : data.schema().fields()) {
             if (o.dataType().equals(DataTypes.StringType)) {
                 listString.add(o.name());
             }
         }
-
-        System.out.println("StringType in Dataset: " + listString.toString());
         String[] stringArray = listString.toArray(new String[0]);
 
-        // wszystkie kolumny sa string
-        if (listString.size() == df.columns().length) {
-            return prepareArray(df, sparkSession);
-        }// nie wszystkie i chcemy usunac nie-string
+        // All columns are StringType.
+        if (listString.size() == data.columns().length) {
+            return prepareArray(data, sparkSession);
+        }
+        // Not all columns are StringType. Then remove them.
         else if (removeNumerics) {
-            Dataset<Row> df2 = df.drop(df.drop(stringArray).columns());
-            return prepareArray(df2, sparkSession);
-        } else {
-            // create new structtype with only String types
-            String[] cols = df.columns();
+            Dataset<Row> removedNumerics = data.drop(data.drop(stringArray).columns());
+            return prepareArray(removedNumerics, sparkSession);
+        }
+        // Treat non StringType as StringType.
+        else {
+            // Create new StructType with only String types.
+            String[] cols = data.columns();
             StructType structType = new StructType();
             for (String col : cols) {
                 structType = structType.add(col, DataTypes.StringType, false);
             }
             ExpressionEncoder<Row> encoder = RowEncoder.apply(structType);
-            // create new dataset with concat col names + values
-            Dataset<Row> dfX = df.map(value -> {
+            // Create new dataset with concatenated column names and values.
+            String concatDelimiter = "-";
+            Dataset<Row> columnNamesAndValuesConcatenated = data.map(value -> {
                 Object[] obj = new Object[value.size()];
                 for (int i = 0; i < value.size(); i++) {
-                    //System.out.println(value.get(i)+cols[i]);
                     if (value.isNullAt(i)) {
                         obj[i] = value.get(i);
                     } else {
-                        obj[i] = value.get(i) + "-" + cols[i];
+                        obj[i] = value.get(i) + concatDelimiter + cols[i];
                     }
                 }
                 return RowFactory.create(obj);
             }, encoder);
-            return prepareArray(dfX, sparkSession);
+            return prepareArray(columnNamesAndValuesConcatenated, sparkSession);
         }
     }
 
     /**
      * Metoda przygotowujaca dane w odpowiednim formacie
      *
-     * @param dfX
+     * @param data
      * @param sparkSession obiekt SparkSession
      * @return
      */
-    private static Dataset<Row> prepareArray(Dataset<Row> dfX, SparkSession sparkSession) {
+    private static Dataset<Row> prepareArray(Dataset<Row> data, SparkSession sparkSession) {
 
-        Dataset<String> ds1;
+        // Before.
+        //  |-- _c0: string (nullable = true)
+        //  |-- _c1: string (nullable = true)
 
+        // After.
+        //  |-- text: array (nullable = false)
+        //  |    |-- element: string (containsNull = true)
+
+        String delimiter = ",";
+        Dataset<String> stringDataset;
+        // Convert rows to String.
         if (removeNull) {
-            ds1 = removeNullCols(dfX);
+            stringDataset = removeNullCols(data);
         } else {
-            //row -> String ","
-            ds1 = dfX.map(row -> row.mkString(","), Encoders.STRING());
+            stringDataset = data.map(row -> row.mkString(delimiter), Encoders.STRING());
         }
-
-        // row String to Array
-        //JavaRDD<Row> rows = ds1.toJavaRDD().map(v1 -> RowFactory.create(new ArrayList<String>().add("elo")));
-        JavaRDD<Row> rows = ds1.toJavaRDD().map(v1 -> RowFactory.create(new String[][]{v1.split(",")}));
-
-
-        // new StructType
+        // Convert String to Row with Array.
+        JavaRDD<Row> rows = stringDataset.toJavaRDD().map(v1 -> RowFactory.create(new String[][]{v1.split(delimiter)}));
+        // New StructType.
         StructType schema2 = new StructType(new StructField[]{
                 new StructField("text", new ArrayType(DataTypes.StringType, true), false, Metadata.empty())
         });
-
-        //ExpressionEncoder<Row> encoder2 = RowEncoder.apply(schema2);
-        //Dataset<Row> rows2 = ds1.map(v1 -> RowFactory.create(new String[][]{v1.split(",")}), encoder2);
-
-
-        // create dataset from parts
+        // Create dataset.
         Dataset<Row> prepared = sparkSession.createDataFrame(rows, schema2);
         return prepared;
     }
@@ -115,12 +116,26 @@ public class DataPrepareAssociations {
     /**
      * Metoda usuwajaca puste kolumny w kazdym wierszu
      *
-     * @param dfX dane
+     * @param data dane
      * @return przygotowane dane
      */
-    private static Dataset<String> removeNullCols(Dataset<Row> dfX) {
+    private static Dataset<String> removeNullCols(Dataset<Row> data) {
 
-        Dataset<String> removedNull = dfX.map(value -> {
+        // Before.
+        //+-------+--------+--------+------+
+        //|    _c0|     _c1|     _c2|   _c3|
+        //+-------+--------+--------+------+
+        //|   cola|    null|   apple|  null|
+        //+-------+--------+--------+------+
+
+        // After.
+        //+--------------------+
+        //|text                |
+        //+--------------------+
+        //|[cola, apple]       |
+        //+--------------------+
+
+        Dataset<String> removedNull = data.map(value -> {
                     List list = new ArrayList<String>();
                     for (int i = 0; i < value.size(); i++) {
                         if (!value.isNullAt(i)) {

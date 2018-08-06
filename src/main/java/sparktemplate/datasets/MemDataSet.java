@@ -51,6 +51,21 @@ public class MemDataSet implements ADataSet {
     }
 
     /**
+     * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
+     *
+     * @param csvFileName sciezka do pliku
+     * @param header zawiera nazwy kolumn
+     * @param inferSchema
+     */
+    public void loadDataSet(String csvFileName, boolean header, boolean inferSchema) {
+        this.ds = sparkSession.read()
+                .format("com.databricks.spark.csv")
+                .option("header", header)
+                .option("inferSchema", inferSchema)
+                .load(csvFileName);
+    }
+
+    /**
      * Metoda zwracajaca ilosc atrybutow (kolumn) w tablicy
      *
      * @return liczba atrybutow
