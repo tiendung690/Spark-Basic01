@@ -7,13 +7,7 @@ import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataTypes;
-import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -24,6 +18,10 @@ import java.util.Map;
 public class DataPrepareClustering {
 
     private DataModelsClustering dataModelsClustering;
+    // Prepare data based on existing model.
+    private static final boolean isSingleDefault = true;
+    // Remove symbolical columns.
+    private static final boolean removeStringsDefault = true;
     // Logger.
     public static final String loggerName = "DataPrepareClustering";
     private static final Logger logger = Logger.getLogger(loggerName);
@@ -32,18 +30,32 @@ public class DataPrepareClustering {
         this.dataModelsClustering = new DataModelsClustering();
     }
 
+
     /**
      * Metoda przygotowuje dane do grupowania.
      *
      * @param data          dane
      * @param isSingle      dane zawieraja tylko jeden wiersz (wyznaczenie skupiska dla pojedynczego obiektu)
-     * @param removeStrings usuwanie kolumn z typem String
+     * @param removeStrings usuwanie kolumn z wartosciami symbolicznymi
      * @return przygotowane dane
      */
-    public Dataset<Row> prepareDataSet(Dataset<Row> data, boolean isSingle, boolean removeStrings) {
+    public Dataset<Row> prepareDataSet(Dataset<Row> data, boolean isSingle, boolean removeStrings){
+        return prepare(data,isSingle,removeStrings);
+    }
 
+    /**
+     * Metoda przygotowuje dane do grupowania.
+     *
+     * @param data dane
+     * @return
+     */
+    public Dataset<Row> prepareDataSet(Dataset<Row> data){
+        return prepare(data, isSingleDefault, removeStringsDefault);
+    }
 
-        logger.info("isSingle: " + isSingle + " removeStrings: " + removeStrings);
+    private Dataset<Row> prepare(Dataset<Row> data, boolean isSingle, boolean removeStrings) {
+
+        logger.info("isSingleDefault: " + isSingle + " removeStringsDefault: " + removeStrings);
 
         // Maps with symbolical and numerical values.
         // K - column, V - index
@@ -53,9 +65,8 @@ public class DataPrepareClustering {
         String[] numericalArray = mapNumerical.keySet().toArray(new String[0]);
         // Remove unsupported types.
         data = data.drop(data.drop(symbolicalArray).drop(numericalArray).columns());
-
+        // Prepared dataset.
         Dataset<Row> dsPrepared;
-
         // Symbolical values in dataset.
         if (symbolicalArray.length > 0) {
             logger.info("Symbolical values in dataset.");
@@ -108,8 +119,6 @@ public class DataPrepareClustering {
             logger.info("No symbolical values in dataset.");
             dsPrepared = data;
         }
-
-
         // Column names created by StringIndexer.
         String[] afterStringIndexer = dsPrepared.drop(data.columns()).columns();
         // Future column names created by OneHotEncoder.
@@ -142,7 +151,6 @@ public class DataPrepareClustering {
 
         // Transform and drop remained StringIndexer columns.
         Dataset<Row> dsAfterOneHotEncoder = oneHotEncoderModel.transform(dsPrepared).drop(afterStringIndexer);
-
         // Convert OneHotEncoder columns to Vector.
         VectorAssembler assembler = new VectorAssembler()
                 .setInputCols(dsAfterOneHotEncoder.columns())

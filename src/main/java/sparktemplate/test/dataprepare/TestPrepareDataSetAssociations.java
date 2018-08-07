@@ -21,7 +21,7 @@ public class TestPrepareDataSetAssociations {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("TestFillMissingValues")
+                .setAppName("TestPrepareDataSetAssociations")
                 .setMaster("local[*]");
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
