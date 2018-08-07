@@ -1,5 +1,6 @@
 package sparktemplate.dataprepare;
 
+import org.apache.log4j.Logger;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
@@ -16,6 +17,10 @@ import java.util.*;
  */
 public class DataPrepare {
 
+    // Logger.
+    public static final String loggerName = "DataPrepare";
+    private static final Logger logger = Logger.getLogger(loggerName);
+
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
      *
@@ -25,6 +30,7 @@ public class DataPrepare {
      * @return zbior danych
      */
     public static Dataset<Row> createDataSet(Row row, StructType structType, SparkSession sparkSession) {
+        logger.info("Create dataset.");
         List<Row> rows = new ArrayList<>();
         rows.add(row);
         return sparkSession.createDataFrame(rows, structType);
@@ -38,6 +44,8 @@ public class DataPrepare {
      * @return wypelniony zbior danych
      */
     public static Dataset<Row> fillMissingValues(Dataset<Row> ds) {
+
+        logger.info("Fill missing values.");
 
         // Maps with symbolical and numerical values.
         // K - column, V - index

@@ -17,7 +17,7 @@ import java.util.List;
 
 /**
  * Klasa zawierajaca metody przygotowujace dane do grupowania.
- *
+ * <p>
  * Created by as on 12.03.2018.
  */
 public class DataPrepareClustering {
@@ -34,15 +34,15 @@ public class DataPrepareClustering {
     /**
      * Metoda przygotowuje dane do grupowania.
      *
-     * @param data dane
-     * @param isSingle dane zawieraja tylko jeden wiersz (wyznaczenie skupiska dla pojedynczego obiektu)
+     * @param data          dane
+     * @param isSingle      dane zawieraja tylko jeden wiersz (wyznaczenie skupiska dla pojedynczego obiektu)
      * @param removeStrings usuwanie kolumn z typem String
      * @return przygotowane dane
      */
     public Dataset<Row> prepareDataSet(Dataset<Row> data, boolean isSingle, boolean removeStrings) {
 
 
-        logger.info("isSingle: "+isSingle+" removeStrings: "+removeStrings);
+        logger.info("isSingle: " + isSingle + " removeStrings: " + removeStrings);
 
         // Find columns with StringType from dataset.
         List<String> listSymbolical = new ArrayList<>();
@@ -101,6 +101,9 @@ public class DataPrepareClustering {
                 // Prepare data next time with existing models.
                 if (isSingle) {
                     pipelineModel = this.dataModelsClustering.getPipelineModel();
+                    if (pipelineModel==null){
+                        throw new RuntimeException("The model does not exist.");
+                    }
                 }
                 // Prepare data first time.
                 else {
@@ -119,51 +122,52 @@ public class DataPrepareClustering {
         }
 
 
-        ///  ONE-HOT-ENCODER
+        // Column names created by StringIndexer.
         String[] afterStringIndexer = dsPrepared.drop(data.columns()).columns();
-        String[] afterStringIndexer2 = new String[afterStringIndexer.length];
+        // Future column names created by OneHotEncoder.
+        String[] afterOneHot = new String[afterStringIndexer.length];
 
-        for (int i = 0; i < afterStringIndexer2.length; i++) {
-            afterStringIndexer2[i] = new StringBuffer().append(afterStringIndexer[i]).append("*").toString();
+        for (int i = 0; i < afterOneHot.length; i++) {
+            afterOneHot[i] = new StringBuffer().append(afterStringIndexer[i]).append("*").toString();
         }
 
+        // OneHotEncoder Maps a column of category indices to a column of binary vectors.
         OneHotEncoderEstimator encoderHot = new OneHotEncoderEstimator()
                 .setInputCols(afterStringIndexer)
-                .setOutputCols(afterStringIndexer2)
+                .setOutputCols(afterOneHot)
                 //.setHandleInvalid("keep") // keep invalid and assign extra value
                 .setDropLast(false);  // avoid removing last val
 
-        /// MODEL
         OneHotEncoderModel oneHotEncoderModel;
-
+        // Prepare data next time with existing models.
         if (isSingle) {
             oneHotEncoderModel = this.dataModelsClustering.getOneHotEncoderModel();
-        } else {
+            if (oneHotEncoderModel==null){
+                throw new RuntimeException("The model does not exist.");
+            }
+        }
+        // Prepare data first time.
+        else {
             oneHotEncoderModel = encoderHot.fit(dsPrepared);
             this.dataModelsClustering.setOneHotEncoderModel(oneHotEncoderModel);
         }
 
-        Dataset<Row> encoded = oneHotEncoderModel.transform(dsPrepared).drop(afterStringIndexer);
-        //////////////////////////////////////////////////////////////////////////////////////
+        // Transform and drop remained StringIndexer columns.
+        Dataset<Row> dsAfterOneHotEncoder = oneHotEncoderModel.transform(dsPrepared).drop(afterStringIndexer);
 
-
-        // EXAMPLE 2 BETTER/////////////////////////////////////////////////////////////////////////////
+        // Convert OneHotEncoder columns to Vector.
         VectorAssembler assembler = new VectorAssembler()
-                .setInputCols(encoded.columns())
+                .setInputCols(dsAfterOneHotEncoder.columns())
                 .setOutputCol("features");
-        Dataset<Row> output = assembler.transform(encoded).drop(encoded.columns());
-        output.show(false);
-        //////////////////////////////////////////////////////////////////////////////////////////
-
-
+        // Transform.
+        Dataset<Row> dsVectorOHE = assembler.transform(dsAfterOneHotEncoder).drop(dsAfterOneHotEncoder.columns());
         // Normalize each Vector.
         Normalizer normalizer = new Normalizer()
                 .setInputCol("features")
                 .setOutputCol("normFeatures")
                 .setP(1.0);
         // Transform. Dataset with features and normalized features.
-        Dataset<Row> dsNormalized = normalizer.transform(output);
-        dsNormalized.show(false);
+        Dataset<Row> dsNormalized = normalizer.transform(dsVectorOHE);
         return dsNormalized;
     }
 }

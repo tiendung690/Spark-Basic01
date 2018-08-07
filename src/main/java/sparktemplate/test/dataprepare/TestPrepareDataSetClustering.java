@@ -8,12 +8,13 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.dataprepare.DataPrepare;
+import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
 /**
- * Created by as on 06.08.2018.
+ * Created by as on 07.08.2018.
  */
-public class TestFillMissingValues {
+public class TestPrepareDataSetClustering {
     public static void main(String[] args) {
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
@@ -26,17 +27,20 @@ public class TestFillMissingValues {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path = "data_test/iris_missing_values.csv";
+        String path = "data_test/data_classification_mixed.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
 
         // Raw data.
         Dataset<Row> ds = memDataSet.getDs();
+        //ds.printSchema();
         ds.show();
+        DataPrepareClustering dataPrepareClustering = new DataPrepareClustering();
+        Dataset<Row> ds2 = dataPrepareClustering.prepareDataSet(ds,false,false);
+        ds2.show(false);
+        ds2.printSchema();
 
-        // Prepared data.
-        Dataset<Row> ds2 = DataPrepare.fillMissingValues(ds);
-        ds2.show();
+       // dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(ds.first(),ds.schema(),sparkSession),true,false).show(false);
 
     }
 }
