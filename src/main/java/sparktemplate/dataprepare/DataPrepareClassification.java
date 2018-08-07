@@ -1,5 +1,6 @@
 package sparktemplate.dataprepare;
 
+import org.apache.log4j.Logger;
 import org.apache.spark.ml.Pipeline;
 import org.apache.spark.ml.PipelineModel;
 import org.apache.spark.ml.PipelineStage;
@@ -10,10 +11,10 @@ import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 
-import java.util.*;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
+
 
 /**
  * Klasa zawierajaca metody przygotowujace dane do klasyfikacji.
@@ -23,7 +24,9 @@ import java.util.logging.Logger;
 public class DataPrepareClassification {
 
     private static final boolean removeStrings = false;
+    // Logger.
     public static final String loggerName = "DataPrepareClassification";
+    private static final Logger logger = Logger.getLogger(loggerName);
 
     /**
      * Metoda przygotowuje dane do klasyfikacji (klasa decyzyjna jako ostatnia kolumna).
@@ -32,7 +35,7 @@ public class DataPrepareClassification {
      * @return przygotowane dane
      */
     public static Dataset<Row> prepareDataSet(Dataset<Row> ds){
-        org.apache.log4j.Logger.getLogger(loggerName).info("Decision class: last column");
+        logger.info("Decision class: last column");
         return prepare(ds,ds.columns()[ds.columns().length - 1]);
     }
 
@@ -44,17 +47,17 @@ public class DataPrepareClassification {
      * @return
      */
     public static Dataset<Row> prepareDataSet(Dataset<Row> ds, String label){
-        org.apache.log4j.Logger.getLogger(loggerName).info("Decision class: "+label);
+        logger.info("Decision class: "+label);
         return prepare(ds,label);
     }
 
 
-    private static Dataset<Row> prepare(Dataset<Row> ds, String label) {
+    private static Dataset<Row> prepare(Dataset<Row> data, String label) {
 
         // Dataset without label.
-        Dataset<Row> dsNoLabel = ds.drop(label);
+        Dataset<Row> dsNoLabel = data.drop(label);
         // Only label
-        Dataset<Row> dsLabel = ds.drop(dsNoLabel.columns());
+        Dataset<Row> dsLabel = data.drop(dsNoLabel.columns());
         // Find symbolical and numerical values.
         List<String> listSymbolical = new ArrayList();
         List<String> listNumerical = new ArrayList();
@@ -82,10 +85,10 @@ public class DataPrepareClassification {
 
 
         // Prepare data for numerical values if they are all or remove symbolical values.
-        if (numericalColumnNames.length + 1 == ds.columns().length || removeStrings) {
-            org.apache.log4j.Logger.getLogger(loggerName).info("Only numerical values, removeStrings: "+removeStrings);
+        if (numericalColumnNames.length + 1 == data.columns().length || removeStrings) {
+            logger.info("Only numerical values, removeStrings: "+removeStrings);
             // Throw exception wile attempting to remove symbolical columns while all are symbolical.
-            if (symbolicalColumnNames.length + 1 == ds.columns().length){
+            if (symbolicalColumnNames.length + 1 == data.columns().length){
                 throw new RuntimeException("Each column is symbolical, cannot use removeStrings: "+removeStrings);
             }
             // Convert features to Vector.
@@ -94,13 +97,13 @@ public class DataPrepareClassification {
                     .setInputCols(numericalColumnNames)
                     .setOutputCol("features");
             // Transform and drop unnecessary columns. Remains only Vector and label.
-            Dataset<Row> vectorNum = assembler.transform(ds).drop(numericalColumnNames).drop(symbolicalColumnNames);
+            Dataset<Row> vectorNum = assembler.transform(data).drop(numericalColumnNames).drop(symbolicalColumnNames);
             // Rename label column.
             dsPrepared = vectorNum.withColumnRenamed(label, "label");
         }
         // Prepare data for numerical and symbolical values. Convert symbolical to numerical.
         else {
-            org.apache.log4j.Logger.getLogger(loggerName).info("Numerical and symbolical values, removeStrings: "+removeStrings);
+            logger.info("Numerical and symbolical values, removeStrings: "+removeStrings);
             // Use StringIndexer on each symbolical column with Pipeline.
             PipelineStage[] pipelineStages = new PipelineStage[symbolicalColumnNames.length];
             for (int i = 0; i < pipelineStages.length; i++) {
@@ -116,12 +119,12 @@ public class DataPrepareClassification {
             // Set stages to pipeline.
             Pipeline pipeline = new Pipeline().setStages(pipelineStages);
             // Fit.
-            PipelineModel pipelineModel = pipeline.fit(ds);
+            PipelineModel pipelineModel = pipeline.fit(data);
             // Transform. Dataset will contain additional columns created by StringIndexer.
             // When the original symbolical column names are e.g "col4,col5", columns from StringIndexer are "col4*,col5*".
-            Dataset<Row> dsAfterPipelineTransform = pipelineModel.transform(ds);
+            Dataset<Row> dsAfterPipelineTransform = pipelineModel.transform(data);
             // Drop original columns, remains only created by StringIndexer.
-            Dataset<Row> dsAfterStringIndexer = dsAfterPipelineTransform.drop(ds.columns());
+            Dataset<Row> dsAfterStringIndexer = dsAfterPipelineTransform.drop(data.columns());
 
 
             // Column names created by StringIndexer.
@@ -154,8 +157,8 @@ public class DataPrepareClassification {
             Dataset<Row> dsVectorOHE = assembler.transform(dsAfterOneHotEncoder);
 
             // Only symbolical values in dataset.
-            if (symbolicalColumnNames.length + 1 == ds.columns().length) {
-                org.apache.log4j.Logger.getLogger(loggerName).info("Only symbolical values in dataset.");
+            if (symbolicalColumnNames.length + 1 == data.columns().length) {
+                logger.info("Only symbolical values in dataset.");
                 // Delete unnecessary columns.
                 String[] colsForDelete = dsAfterOneHotEncoder.drop(label).columns();
                 Dataset<Row> dsFeaturesLabel = dsVectorOHE.drop(colsForDelete);
@@ -166,7 +169,7 @@ public class DataPrepareClassification {
             }
             // Mixed symbolical and numerical values in dataset.
             else {
-                org.apache.log4j.Logger.getLogger(loggerName).info("Mixed symbolical and numerical values in dataset.");
+                logger.info("Mixed symbolical and numerical values in dataset.");
                 // Convert numerical columns to Vector.
                 VectorAssembler assembler2 = new VectorAssembler()
                         .setInputCols(numericalColumnNames)

@@ -1,5 +1,6 @@
 package sparktemplate.dataprepare;
 
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
@@ -14,7 +15,7 @@ import java.util.List;
 
 /**
  * Klasa zawierajaca metody przygotowujace dane do wyznaczania regul asocjacyjnych.
- *
+ * <p>
  * Created by as on 13.03.2018.
  */
 public class DataPrepareAssociations {
@@ -23,11 +24,14 @@ public class DataPrepareAssociations {
     private static final boolean removeNumerics = true;
     // Remove all null columns in row.
     private static final boolean removeNull = true;
+    // Logger.
+    public static final String loggerName = "DataPrepareAssociations";
+    private static final Logger logger = Logger.getLogger(loggerName);
 
     /**
      * Metoda przygotowuje dane do wyznaczania regul asocjacyjnych.
      *
-     * @param data dane
+     * @param data         dane
      * @param sparkSession obiekt SparkSession
      * @return przygotowane dane
      */
@@ -44,15 +48,18 @@ public class DataPrepareAssociations {
 
         // All columns are StringType.
         if (listString.size() == data.columns().length) {
+            logger.info("All columns are StringType.");
             return prepareArray(data, sparkSession);
         }
         // Not all columns are StringType. Then remove them.
         else if (removeNumerics) {
+            logger.info("Not all columns are StringType. Then remove them.");
             Dataset<Row> removedNumerics = data.drop(data.drop(stringArray).columns());
             return prepareArray(removedNumerics, sparkSession);
         }
         // Treat non StringType as StringType.
         else {
+            logger.info("Treat non StringType as StringType.");
             // Create new StructType with only String types.
             String[] cols = data.columns();
             StructType structType = new StructType();
@@ -85,6 +92,8 @@ public class DataPrepareAssociations {
      * @return
      */
     private static Dataset<Row> prepareArray(Dataset<Row> data, SparkSession sparkSession) {
+
+        logger.info("Convert dataset with string columns to one array column.");
 
         // Before.
         //  |-- _c0: string (nullable = true)
@@ -121,6 +130,8 @@ public class DataPrepareAssociations {
      */
     private static Dataset<String> removeNullCols(Dataset<Row> data) {
 
+        logger.info("Remove null values.");
+
         // Before.
         //+-------+--------+--------+------+
         //|    _c0|     _c1|     _c2|   _c3|
@@ -136,17 +147,17 @@ public class DataPrepareAssociations {
         //+--------------------+
 
         Dataset<String> removedNull = data.map(value -> {
-                    List list = new ArrayList<String>();
-                    for (int i = 0; i < value.size(); i++) {
-                        if (!value.isNullAt(i)) {
-                            list.add(value.get(i));
-                        }
-                    }
-                    return list.toString()
-                            .replace("[", "")
-                            .replace("]", "")
-                            .replaceAll(" ", "");
-                }, Encoders.STRING());
+            List list = new ArrayList<String>();
+            for (int i = 0; i < value.size(); i++) {
+                if (!value.isNullAt(i)) {
+                    list.add(value.get(i));
+                }
+            }
+            return list.toString()
+                    .replace("[", "")
+                    .replace("]", "")
+                    .replaceAll(" ", "");
+        }, Encoders.STRING());
 
         return removedNull;
     }
