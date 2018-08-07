@@ -14,6 +14,7 @@ import org.apache.spark.sql.types.StructType;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Klasa zawierajaca metody przygotowujace dane do grupowania.
@@ -44,30 +45,19 @@ public class DataPrepareClustering {
 
         logger.info("isSingle: " + isSingle + " removeStrings: " + removeStrings);
 
-        // Find columns with StringType from dataset.
-        List<String> listSymbolical = new ArrayList<>();
-        List<String> listOtherTypes = new ArrayList<>();
-
-        for (StructField o : data.schema().fields()) {
-            if (o.dataType().equals(DataTypes.StringType)) {
-                listSymbolical.add(o.name());
-            }
-            if (!o.dataType().equals(DataTypes.StringType)
-                    && !o.dataType().equals(DataTypes.IntegerType)
-                    && !o.dataType().equals(DataTypes.DoubleType)) {
-                listOtherTypes.add(o.name());
-            }
-        }
-
-        //System.out.println("StringType in Dataset: " + listString.toString());
-        //System.out.println("Other DataTypes in Dataset (except int,double,string): " + listOther.toString());
-        String[] symbolicalArray = listSymbolical.toArray(new String[0]);
-        String[] otherTypesArray = listOtherTypes.toArray(new String[0]);
+        // Maps with symbolical and numerical values.
+        // K - column, V - index
+        Map<String, Integer> mapSymbolical = DataPrepare.findSymbolicalColumns(data);
+        Map<String, Integer> mapNumerical = DataPrepare.findNumericalColumns(data);
+        String[] symbolicalArray = mapSymbolical.keySet().toArray(new String[0]);
+        String[] numericalArray = mapNumerical.keySet().toArray(new String[0]);
+        // Remove unsupported types.
+        data = data.drop(data.drop(symbolicalArray).drop(numericalArray).columns());
 
         Dataset<Row> dsPrepared;
 
         // Symbolical values in dataset.
-        if (listSymbolical.size() > 0) {
+        if (symbolicalArray.length > 0) {
             logger.info("Symbolical values in dataset.");
             // Remove symbolical values.
             if (removeStrings) {
@@ -78,15 +68,13 @@ public class DataPrepareClustering {
             // Keep symbolical values.
             else {
                 logger.info("Keep symbolical values.");
-                // Dataset without symbolical columns.
-                Dataset<Row> dsSymbolical = data.drop(symbolicalArray);
-                // Dataset with numerical columns.
-                Dataset<Row> dsNumerical = data.drop(dsSymbolical.columns());
+                // Dataset with symbolical columns.
+                Dataset<Row> dsSymbolical = data.drop(numericalArray);
                 // Use StringIndexer on each symbolical column with Pipeline.
-                PipelineStage[] pipelineStages = new PipelineStage[dsNumerical.columns().length];
+                PipelineStage[] pipelineStages = new PipelineStage[dsSymbolical.columns().length];
                 for (int i = 0; i < pipelineStages.length; i++) {
                     // Get current column name,
-                    String currentCol = dsNumerical.columns()[i];
+                    String currentCol = dsSymbolical.columns()[i];
                     // Create indexer on column.
                     StringIndexer indexer = new StringIndexer()
                             .setInputCol(currentCol)
@@ -111,14 +99,14 @@ public class DataPrepareClustering {
                     this.dataModelsClustering.setPipelineModel(pipelineModel);
                 }
                 // Transform and drop unnecessary columns.
-                Dataset<Row> dsIndexed = pipelineModel.transform(data).drop(dsNumerical.columns());
-                dsPrepared = dsIndexed.drop(otherTypesArray);
+                Dataset<Row> dsIndexed = pipelineModel.transform(data);
+                dsPrepared = dsIndexed.drop(symbolicalArray);
             }
         }
         // No symbolical values in dataset.
         else {
             logger.info("No symbolical values in dataset.");
-            dsPrepared = data.drop(otherTypesArray);
+            dsPrepared = data;
         }
 
 
@@ -162,12 +150,14 @@ public class DataPrepareClustering {
         // Transform.
         Dataset<Row> dsVectorOHE = assembler.transform(dsAfterOneHotEncoder).drop(dsAfterOneHotEncoder.columns());
         // Normalize each Vector.
-        Normalizer normalizer = new Normalizer()
-                .setInputCol("features")
-                .setOutputCol("normFeatures")
-                .setP(1.0);
+        //Normalizer normalizer = new Normalizer()
+        //        .setInputCol("features")
+        //        .setOutputCol("normFeatures")
+        //        .setP(1.0);
         // Transform. Dataset with features and normalized features.
-        Dataset<Row> dsNormalized = normalizer.transform(dsVectorOHE);
-        return dsNormalized;
+        //Dataset<Row> dsNormalized = normalizer.transform(dsVectorOHE);
+        //return dsNormalized;
+
+        return dsVectorOHE;
     }
 }

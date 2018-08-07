@@ -21,6 +21,7 @@ public class DataPrepare {
     public static final String loggerName = "DataPrepare";
     private static final Logger logger = Logger.getLogger(loggerName);
 
+
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
      *
@@ -36,6 +37,53 @@ public class DataPrepare {
         return sparkSession.createDataFrame(rows, structType);
     }
 
+    /**
+     * Metoda zwracajaca mape nazw koolumn wartosci i ich indeksy.
+     *
+     * @param data - dane
+     * @return zmapowane wartosci
+     */
+    public static Map<String, Integer> findSymbolicalColumns(Dataset<Row> data){
+        // Maps with symbolical values.
+        // K - column, V - index
+        Map<String, Integer> mapSymbolical = new HashMap<>();
+        // Find symbolical values and their indexes in dataset.
+        int j = 0;
+        for (StructField o : data.schema().fields()) {
+            if (o.dataType().equals(DataTypes.StringType)) {
+                mapSymbolical.put(o.name(), j);
+            }
+            j++;
+        }
+        logger.info("Symbolical values:"+mapSymbolical.keySet().toString());
+        return mapSymbolical;
+    }
+
+    /**
+     * Metoda zwracajaca mape nazw koolumn wartosci i ich indeksy.
+     *
+     * @param data - dane
+     * @return zmapowane wartosci
+     */
+    public static Map<String, Integer> findNumericalColumns(Dataset<Row> data){
+        // Maps with numerical values.
+        // K - column, V - index
+        Map<String, Integer> mapNumerical = new HashMap<>();
+        // Find numerical values and their indexes in dataset.
+        int j = 0;
+        for (StructField o : data.schema().fields()) {
+            if (o.dataType().equals(DataTypes.IntegerType)
+                    || o.dataType().equals(DataTypes.DoubleType)
+                    || o.dataType().equals(DataTypes.FloatType)
+                    || o.dataType().equals(DataTypes.LongType)
+                    || o.dataType().equals(DataTypes.ShortType)) {
+                mapNumerical.put(o.name(), j);
+            }
+            j++;
+        }
+        logger.info("Numerical values:"+mapNumerical.keySet().toString());
+        return mapNumerical;
+    }
 
     /**
      * Metoda wypelniajaca brakujace dane.
@@ -49,29 +97,11 @@ public class DataPrepare {
 
         // Maps with symbolical and numerical values.
         // K - column, V - index
-        Map<String, Integer> mapSymbolical = new HashMap<>();
-        Map<String, Integer> mapNumerical = new HashMap<>();
-
-        // Find symbolical and numerical values in dataset.
-        int j = 0;
-        for (StructField o : ds.schema().fields()) {
-            if (o.dataType().equals(DataTypes.StringType) || o.dataType().equals(DataTypes.DateType)) {
-                mapSymbolical.put(o.name(), j);
-            } else if (o.dataType().equals(DataTypes.IntegerType)
-                    || o.dataType().equals(DataTypes.DoubleType)
-                    || o.dataType().equals(DataTypes.StringType)
-                    || o.dataType().equals(DataTypes.FloatType)
-                    || o.dataType().equals(DataTypes.LongType)
-                    || o.dataType().equals(DataTypes.ShortType)){
-                mapNumerical.put(o.name(),j);
-            }
-            j++;
-        }
-
+        Map<String, Integer> mapSymbolical = findSymbolicalColumns(ds);
+        Map<String, Integer> mapNumerical = findNumericalColumns(ds);
         // Map with replacement values.
         // K - column, V - replacement value
         Map<String, Object> mapReplacementValues = new HashMap<>();
-
         // Find missing numerical values replacement.
         mapNumerical.entrySet().forEach(s -> {
             //Column index.
