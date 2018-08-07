@@ -84,13 +84,17 @@ public class DataPrepareClassification {
         // Prepare data for numerical values if they are all or remove symbolical values.
         if (numericalColumnNames.length + 1 == ds.columns().length || removeStrings) {
             org.apache.log4j.Logger.getLogger(loggerName).info("Only numerical values, removeStrings: "+removeStrings);
+            // Throw exception wile attempting to remove symbolical columns while all are symbolical.
+            if (symbolicalColumnNames.length + 1 == ds.columns().length){
+                throw new RuntimeException("Each column is symbolical, cannot use removeStrings: "+removeStrings);
+            }
             // Convert features to Vector.
             // Combines a given list of columns into a single vector column.
             VectorAssembler assembler = new VectorAssembler()
                     .setInputCols(numericalColumnNames)
                     .setOutputCol("features");
             // Transform and drop unnecessary columns. Remains only Vector and label.
-            Dataset<Row> vectorNum = assembler.transform(ds).drop(numericalColumnNames);
+            Dataset<Row> vectorNum = assembler.transform(ds).drop(numericalColumnNames).drop(symbolicalColumnNames);
             // Rename label column.
             dsPrepared = vectorNum.withColumnRenamed(label, "label");
         }

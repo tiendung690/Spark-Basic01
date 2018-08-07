@@ -26,17 +26,20 @@ public class TestPrepareDataSetClassification {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path =  "data_test/data_classification.csv";
+        String path = "data_test/data_classification_mixed.csv";
+        //String path = "data_test/data_classification_only_symbolical.csv";
+        //String path = "data_test/data_classification_only_numerical.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSet(path);
 
         // Raw data.
         Dataset<Row> ds = memDataSet.getDs();
-       // ds.printSchema();
-       // ds.show();
+        ds.printSchema();
+        ds.show();
 
+        // Prepared data.
         Dataset<Row> ds2 = DataPrepareClassification.prepareDataSet(ds);
         ds2.show(false);
-        //ds2.printSchema();
+        ds2.printSchema();
     }
 }
