@@ -7,6 +7,7 @@ import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.feature.*;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
+import sparktemplate.strings.ClusteringStrings;
 
 import java.util.Map;
 
@@ -154,7 +155,7 @@ public class DataPrepareClustering {
         // Convert OneHotEncoder columns to Vector.
         VectorAssembler assembler = new VectorAssembler()
                 .setInputCols(dsAfterOneHotEncoder.columns())
-                .setOutputCol("features");
+                .setOutputCol(ClusteringStrings.featuresCol);
         // Transform.
         Dataset<Row> dsVectorOHE = assembler.transform(dsAfterOneHotEncoder).drop(dsAfterOneHotEncoder.columns());
         // Normalize each Vector.

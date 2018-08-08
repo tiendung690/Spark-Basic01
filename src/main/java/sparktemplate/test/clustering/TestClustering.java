@@ -17,6 +17,7 @@ import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
 import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
+import sparktemplate.strings.ClusteringStrings;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -45,21 +46,6 @@ public class TestClustering {
                 //.set("spark.executor.memory", "4g")
                 .setMaster("local[*]");
 
-//        SparkConf conf = new SparkConf()
-//                .setAppName("Spark_Default_Kmeans")
-//                .setMaster("spark://10.2.28.17:7077")
-//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-//                //.set("spark.executor.memory", "15g")
-//                .set("spark.default.parallelism", "12")
-//                .set("spark.driver.host", "10.2.28.31");
-
-//        SparkConf conf = new SparkConf()
-//                .setAppName("Spark_Default_Kmeans")
-//                .setMaster("spark://192.168.100.4:7077")
-//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-//                //.set("spark.executor.memory", "15g")
-//                //.set("spark.default.parallelism", "12")
-//                .set("spark.driver.host", "192.168.100.2");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
@@ -92,10 +78,10 @@ public class TestClustering {
         System.out.println(Arrays.toString(kMean.getPredictions().schema().fields()));
         //////////////////////
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-        clusteringEvaluator.setFeaturesCol("features");
-        clusteringEvaluator.setPredictionCol("prediction");
+        clusteringEvaluator.setFeaturesCol(ClusteringStrings.featuresCol);
+        clusteringEvaluator.setPredictionCol(ClusteringStrings.predictionCol);
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(kMean.getPredictions()));
-        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), "prediction", "features", kMean.getNoCluster());
+        ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), ClusteringStrings.predictionCol, ClusteringStrings.featuresCol, kMean.getNoCluster());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         /////////////////////////////////////
 

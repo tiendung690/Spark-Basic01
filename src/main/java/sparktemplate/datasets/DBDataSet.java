@@ -16,8 +16,8 @@ import java.sql.*;
 public class DBDataSet implements ADataSet {
 
     private SparkSession sparkSession;
-    private Dataset<Row> ds; //zbior danych otrzymywany po wywolaniu metody connect()
-    private String url, user, password, table; //parametry bazy
+    private Dataset<Row> ds;
+    private String url, user, password, table;
     private final String driver = "org.postgresql.Driver";
     private final String driver2 = "com.mysql.jdbc.Driver";
     private ResultSet rs;
@@ -54,7 +54,7 @@ public class DBDataSet implements ADataSet {
     /**
      * Metoda inicjalizujaca polaczenie z baza.
      */
-    public void connect() //Polaczenie z baza danych
+    public void connect()
     {
         // Spark
         try {

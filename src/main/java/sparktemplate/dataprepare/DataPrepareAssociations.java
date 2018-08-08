@@ -6,6 +6,7 @@ import org.apache.spark.sql.*;
 import org.apache.spark.sql.catalyst.encoders.ExpressionEncoder;
 import org.apache.spark.sql.catalyst.encoders.RowEncoder;
 import org.apache.spark.sql.types.*;
+import sparktemplate.strings.AssociationStrings;
 
 
 import java.io.SequenceInputStream;
@@ -128,7 +129,7 @@ public class DataPrepareAssociations {
         JavaRDD<Row> rows = stringDataset.toJavaRDD().map(v1 -> RowFactory.create(new String[][]{v1.split(delimiter)}));
         // New StructType.
         StructType schema2 = new StructType(new StructField[]{
-                new StructField("text", new ArrayType(DataTypes.StringType, true), false, Metadata.empty())
+                new StructField(AssociationStrings.featuresCol, new ArrayType(DataTypes.StringType, true), false, Metadata.empty())
         });
         // Create dataset.
         Dataset<Row> prepared = sparkSession.createDataFrame(rows, schema2);

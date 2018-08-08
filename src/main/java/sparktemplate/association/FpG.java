@@ -9,6 +9,7 @@ import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
 import sparktemplate.dataprepare.DataPrepareAssociations;
 import sparktemplate.datasets.ADataSet;
+import sparktemplate.strings.AssociationStrings;
 
 import java.io.IOException;
 
@@ -59,7 +60,7 @@ public class FpG implements AAssociations {
         FPGrowth fpGrowth = (FPGrowth) settings.getModel();
 
         FPGrowthModel model = fpGrowth
-                .setItemsCol("text")
+                .setItemsCol(AssociationStrings.featuresCol)
                 .fit(dataset);
 
         Dataset<Row> assocRules = model.associationRules();

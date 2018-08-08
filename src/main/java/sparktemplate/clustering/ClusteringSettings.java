@@ -9,7 +9,7 @@ import sparktemplate.ASettings;
 public class ClusteringSettings implements ASettings {
 
     private KMeans kMeans;
-    private ClusteringName clusteringAlgo; //wybrany algorytm
+    private ClusteringName clusteringAlgo;
 
     public class ClusteringKMeans extends KMeans{}
 

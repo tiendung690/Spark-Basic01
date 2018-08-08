@@ -13,6 +13,7 @@ import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.ADataSet;
+import sparktemplate.strings.ClassificationStrings;
 
 import java.io.IOException;
 
@@ -26,54 +27,29 @@ public class TrivialLogisticRegression extends Classifier {
     }
 
     @Override
-    public void build(ADataSet dataSet, ASettings settings, boolean isPrepared) {
-        super.setPipelineModel(buildPipelineModel(dataSet.getDs(), settings, isPrepared));
+    public void build(ADataSet dataSet, ASettings settings, boolean isPrepared, boolean removeStrings) {
+        super.setPipelineModel(buildPipelineModel(dataSet.getDs(), settings, isPrepared, removeStrings));
     }
 
-    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings, boolean isPrepared) {
+    private PipelineModel buildPipelineModel(Dataset<Row> trainingData, ASettings settings, boolean isPrepared, boolean removeStrings) {
 
         Dataset<Row> data;
-        if (isPrepared){
+        if (isPrepared) {
             data = trainingData;
-        }else {
-            data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName());
+        } else {
+            data = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(trainingData), settings.getLabelName(), removeStrings);
         }
-        //data.show();
 
-        // Index labels, adding metadata to the label column.
-        // Fit on whole dataset to include all labels in index.
-        StringIndexerModel labelIndexer = new StringIndexer()
-                .setInputCol("label")
-                .setOutputCol("indexedLabel")
-                .fit(data);
+        // Classification algorithm.
+        LogisticRegression logisticRegression = ((LogisticRegression) settings.getModel())
+                .setLabelCol(ClassificationStrings.indexedLabelCol)
+                .setFeaturesCol(ClassificationStrings.indexedFeaturesCol)
+                .setPredictionCol(ClassificationStrings.predictionCol);
 
-        // Automatically identify categorical features, and index them.
-        VectorIndexerModel featureIndexer = new VectorIndexer()
-                .setInputCol("features")
-                .setOutputCol("indexedFeatures")
-                .setMaxCategories(4) // features with > 4 distinct values are treated as continuous.
-                .fit(data);
+        // Add algorithm to Pipeline.
+        PipelineStage[] pipelineStages = PipelineStagesCreator.createPipelineStages(data, logisticRegression);
+        Pipeline pipeline = new Pipeline().setStages(pipelineStages);
 
-        // Classification
-        LogisticRegression lr1 = (LogisticRegression) settings.getModel();
-
-        LogisticRegression lr = lr1
-//                .setMaxIterations(10)
-//                .setRegParam(0.3)
-//                .setElasticNetParam(0.8)
-//                .setFamily("multinomial")
-                .setLabelCol("indexedLabel")
-                .setFeaturesCol("indexedFeatures");
-
-        // Convert indexed labels back to original labels.
-        IndexToString labelConverter = new IndexToString()
-                .setInputCol("prediction")
-                .setOutputCol("predictedLabel")
-                .setLabels(labelIndexer.labels());
-
-        // Chain indexers and tree in a Pipeline.
-        Pipeline pipeline = new Pipeline()
-                .setStages(new PipelineStage[]{labelIndexer, featureIndexer, lr, labelConverter});
 
         // Train model. This also runs the indexers.
         PipelineModel model = pipeline.fit(data);

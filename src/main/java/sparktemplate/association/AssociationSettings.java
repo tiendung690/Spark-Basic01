@@ -10,7 +10,7 @@ import sparktemplate.ASettings;
 public class AssociationSettings implements ASettings {
 
     private FPGrowth fpGrowth;
-    private AssociationName associationAlgo; //wybrany algorytm
+    private AssociationName associationAlgo;
 
     public class AssociationFP extends FPGrowth{}
 

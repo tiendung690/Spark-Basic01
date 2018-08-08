@@ -13,8 +13,8 @@ public class ClassifierSettings implements ASettings {
     private LinearSVC linearSVC;
     private LogisticRegression logisticRegression;
     private NaiveBayes naiveBayes;
-    private ClassifierName classificationAlgo; //wybrany algorytm
-    private String labelName; // nazwa kolumny klasy decyzyjnej
+    private ClassifierName classificationAlgo;
+    private String labelName;
 
     public ClassifierSettings setLabelName(String labelName) {this.labelName = labelName; return this;}
 
@@ -32,11 +32,8 @@ public class ClassifierSettings implements ASettings {
 
     public ClassifierDecisionTree setDecisionTree() {
         classificationAlgo = ClassifierName.DECISIONTREE;
-        //ClassifierDecisionTree cc = new ClassifierDecisionTree();
-        //decisionTreeClassifier = cc;
-        //return cc;
-        decisionTreeClassifier = new ClassifierDecisionTree(); //
-        return (ClassifierDecisionTree) decisionTreeClassifier; //
+        decisionTreeClassifier = new ClassifierDecisionTree();
+        return (ClassifierDecisionTree) decisionTreeClassifier;
     }
 
     public ClassifierRandomForest setRandomForest() {

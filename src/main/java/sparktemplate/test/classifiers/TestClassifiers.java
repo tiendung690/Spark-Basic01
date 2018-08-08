@@ -28,8 +28,8 @@ public class TestClassifiers {
         SparkSession spark = new SparkSession(context);
 
         try {
-            String fNameTabTrain = "data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/train_data.csv"; //Okreslenie lokalizacji pliku z danymi treningowymi
-            String fNameTabTest = "data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/test_data.csv"; //Okreslenie lokalizacji pliku z danymi testowymi
+            String fNameTabTrain = "data_test/data_classification_mixed.csv";//"data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/train_data.csv"; //Okreslenie lokalizacji pliku z danymi treningowymi
+            String fNameTabTest = "data_test/data_classification_mixed.csv";//"data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/test_data.csv"; //Okreslenie lokalizacji pliku z danymi testowymi
 
             MemDataSet dataSetTrain = new MemDataSet(spark); //Utworzenie obiektu na dane treningowe
             dataSetTrain.loadDataSet(fNameTabTrain); //Wczytanie danych treningowych
@@ -40,7 +40,7 @@ public class TestClassifiers {
             // param2 values: DECISIONTREE, RANDOMFORESTS, LOGISTICREGRESSION, NAIVEBAYES, LINEARSVM
             ClassifierSettings classifierSettings = new ClassifierSettings();
             classifierSettings
-                    .setLabelName("species")
+                    .setLabelName("class")
                     .setNaiveBayes();
 
 
@@ -52,7 +52,7 @@ public class TestClassifiers {
 
             //Wywolanie metody testujacej metoda Train&Test
             //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
-            evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings);
+            evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings, true);
 
 //            System.out.println("accuracy: " + evaluation.getAccuracy()
 //                    + ", coverage: " + evaluation.getCoverage()
@@ -61,6 +61,8 @@ public class TestClassifiers {
 
             evaluation.printReport();
             System.out.println(evaluation.getMetricByClass("setosa", "f1"));
+
+            evaluation.getPredictions().show(false);
             //System.out.println(evaluation.getAccuracy("smurf."));
 
             //System.out.println("RESULT:\n" + evaluation.getStringBuilder());

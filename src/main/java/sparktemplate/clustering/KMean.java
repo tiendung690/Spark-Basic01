@@ -14,6 +14,7 @@ import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.ADataSet;
+import sparktemplate.strings.ClusteringStrings;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -27,7 +28,6 @@ public class KMean implements AClustering {
     private KMeansModel model;
     private Dataset<Row> predictions;
     public SparkSession sparkSession;
-    private final String prediciton = "prediction";
     private DataPrepareClustering dataPrepareClustering;
     private final boolean removeStrings = true;
     private StringBuilder stringBuilder;
@@ -64,13 +64,13 @@ public class KMean implements AClustering {
             single = dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession), true, removeStrings);
         }
         Dataset<Row> prediction = model.transform(single);
-        return (int) prediction.first().get(prediction.schema().fieldIndex(prediciton));
+        return (int) prediction.first().get(prediction.schema().fieldIndex(ClusteringStrings.predictionCol));
     }
 
     @Override
     public Cluster getCluster(int index) {
         Cluster cluster = new Cluster(sparkSession, this.dataPrepareClustering, this.removeStrings);
-        cluster.initCluster(predictions.filter(predictions.col(prediciton).equalTo(index)));
+        cluster.initCluster(predictions.filter(predictions.col(ClusteringStrings.predictionCol).equalTo(index)));
         return cluster;
     }
 
@@ -93,30 +93,15 @@ public class KMean implements AClustering {
 
     private void buildCluster(Dataset<Row> ds, ASettings settings) {
 
-        ClusteringSettings cs = (ClusteringSettings) settings;
 
-        // Trains a k-means model.
         KMeans km = (KMeans) settings.getModel();
-
         KMeans kmeans = km
-                //.setTol(0)
-                //.setInitSteps(1)
-                //.setTol(0.0)
                 .setInitMode(org.apache.spark.mllib.clustering.KMeans.RANDOM())
-                .setFeaturesCol("features"); //normFeatures
-
-        kmeans.log();
-
+                .setPredictionCol(ClusteringStrings.predictionCol)
+                .setFeaturesCol(ClusteringStrings.featuresCol); //normFeatures
         KMeansModel model = kmeans.fit(ds);
-        System.out.println("MAX ITERATIONS " + model.getMaxIter());
-
-
         // Make predictions
-        Dataset<Row> predictions = model.transform(ds);//.drop("features");
-
-        //predictions.show(false);
-        //predictions.printSchema();
-
+        Dataset<Row> predictions = model.transform(ds);
         this.kmeans = kmeans;
         this.model = model;
         this.predictions = predictions;
@@ -125,16 +110,15 @@ public class KMean implements AClustering {
                 .append("clusters no. : " + getNoCluster() + "\n")
                 .append(getEvaluation())
                 .append(getCenters());
-
     }
 
     public String getEvaluation() {
         StringBuilder stringBuilderEval = new StringBuilder();
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-        clusteringEvaluator.setFeaturesCol("features");
-        clusteringEvaluator.setPredictionCol("prediction");
+        clusteringEvaluator.setFeaturesCol(ClusteringStrings.featuresCol);
+        clusteringEvaluator.setPredictionCol(ClusteringStrings.predictionCol);
         stringBuilderEval = stringBuilderEval.append("EVAL: " + clusteringEvaluator.evaluate(this.predictions) + "\n");
-        ClusteringSummary clusteringSummary = new ClusteringSummary(this.predictions, "prediction", "features", getNoCluster());
+        ClusteringSummary clusteringSummary = new ClusteringSummary(this.predictions, ClusteringStrings.predictionCol, ClusteringStrings.featuresCol, getNoCluster());
         stringBuilderEval = stringBuilderEval.append("Cluster sizes:\n" + Arrays.toString(clusteringSummary.clusterSizes()) + "\n");
         return stringBuilderEval.toString();
     }

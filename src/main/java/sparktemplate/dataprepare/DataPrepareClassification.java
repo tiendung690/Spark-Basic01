@@ -9,6 +9,7 @@ import org.apache.spark.ml.feature.OneHotEncoderModel;
 import org.apache.spark.ml.feature.StringIndexer;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.sql.*;
+import sparktemplate.strings.ClassificationStrings;
 
 import java.util.Map;
 
@@ -110,11 +111,11 @@ public class DataPrepareClassification {
             // Combines a given list of columns into a single vector column.
             VectorAssembler assembler = new VectorAssembler()
                     .setInputCols(numericalColumnNames)
-                    .setOutputCol("features");
+                    .setOutputCol(ClassificationStrings.featuresCol);
             // Transform and drop unnecessary columns. Remains only Vector and label.
             Dataset<Row> vectorNum = assembler.transform(data).drop(numericalColumnNames).drop(symbolicalColumnNames);
             // Rename label column.
-            dsPrepared = vectorNum.withColumnRenamed(label, "label");
+            dsPrepared = vectorNum.withColumnRenamed(label, ClassificationStrings.labelCol);
         }
         // Prepare data for numerical and symbolical values. Convert symbolical to numerical.
         else {
@@ -161,9 +162,10 @@ public class DataPrepareClassification {
             // Transform and drop remained StringIndexer columns.
             Dataset<Row> dsAfterOneHotEncoder = oneHotEncoderModel.transform(dsAfterPipelineTransform).drop(dsAfterStringIndexer.columns());
             // Convert OneHotEncoder columns to Vector.
+            String featuresOHE = "featuresOHE";
             VectorAssembler assembler = new VectorAssembler()
                     .setInputCols(afterOneHot)
-                    .setOutputCol("featuresOHE");
+                    .setOutputCol(featuresOHE);
             // Transform.
             Dataset<Row> dsVectorOHE = assembler.transform(dsAfterOneHotEncoder);
             // Only symbolical values in dataset.
@@ -174,23 +176,24 @@ public class DataPrepareClassification {
                 Dataset<Row> dsFeaturesLabel = dsVectorOHE.drop(colsForDelete);
                 // Rename columns.
                 dsPrepared = dsFeaturesLabel
-                        .withColumnRenamed(label, "label")
-                        .withColumnRenamed("featuresOHE", "features");
+                        .withColumnRenamed(label, ClassificationStrings.labelCol)
+                        .withColumnRenamed(featuresOHE, ClassificationStrings.featuresCol);
             }
             // Mixed symbolical and numerical values in dataset.
             else {
                 logger.info("Mixed symbolical and numerical values in dataset.");
                 // Convert numerical columns to Vector.
+                String featuresNUM = "featuresNUM";
                 VectorAssembler assembler2 = new VectorAssembler()
                         .setInputCols(numericalColumnNames)
-                        .setOutputCol("featuresNUM");
+                        .setOutputCol(featuresNUM);
                 // Transform.
                 Dataset<Row> dsVectorNum = assembler2.transform(dsVectorOHE);
                 // Convert Vector from OneHotEncoder(symbolical values)
                 // and Vector from numerical values into one Vector.
                 VectorAssembler assembler3 = new VectorAssembler()
-                        .setInputCols(new String[]{"featuresOHE", "featuresNUM"})
-                        .setOutputCol("features");
+                        .setInputCols(new String[]{featuresOHE, featuresNUM})
+                        .setOutputCol(ClassificationStrings.featuresCol);
                 // Transform.
                 Dataset<Row> dsVectorOHEAndNUM = assembler3.transform(dsVectorNum);
                 // Column for delete.
@@ -198,7 +201,7 @@ public class DataPrepareClassification {
                 // Delete unnecessary columns.
                 Dataset<Row> dsFeaturesLabel = dsVectorOHEAndNUM.drop(colsForDelete);
                 // Rename column.
-                dsPrepared = dsFeaturesLabel.withColumnRenamed(label, "label");
+                dsPrepared = dsFeaturesLabel.withColumnRenamed(label, ClassificationStrings.labelCol);
             }
         }
         return dsPrepared;

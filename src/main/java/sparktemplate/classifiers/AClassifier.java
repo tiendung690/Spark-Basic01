@@ -22,32 +22,32 @@ public interface AClassifier {
     /**
      * Abstrakcyjna metoda budujaca klasyfikator w oparciu o dane z obiektu klasy DBDataSet.
      *
-     * @param dataSet  - zbior danych dla ktorego budowany jest klasyfikator
+     * @param dataSet    - zbior danych dla ktorego budowany jest klasyfikator
      * @param isPrepared - dane przygotowane
-     * @param settings ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)
+     * @param settings   ustawienia klasyfikatora (dla każdej metody konstrukcji klasyfikatora implementujemy tę klasę inaczej)
      */
-    void build(ADataSet dataSet, ASettings settings, boolean isPrepared);
+    void build(ADataSet dataSet, ASettings settings, boolean isPrepared, boolean removeStrings);
 
 
     /**
      * Abstrakcyjna metoda testujaca rekordy na przynaleznosc do klas decyzyjnych.
      *
-     * @param dbDataSet - dane
-     * @param aSettings - ustawienia
+     * @param dbDataSet  - dane
+     * @param aSettings  - ustawienia
      * @param isPrepared - dane przygotowane
      * @return
      */
-    Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, boolean isPrepared);
+    Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, boolean isPrepared, boolean removeStrings);
 
     /**
      * Abstrakcyjna metoda testujaca rekord na przynaleznosc do klas decyzyjnych.
      *
      * @param dataRecord - rekord testowy
-     * @param aSettings - ustawienia
+     * @param aSettings  - ustawienia
      * @param isPrepared - dane przygotowane
      * @return nazwa klasy decyzyjne, do ktorej rekord zostal sklasyfikowany (wartośc typu String)
      */
-    String classify(DataRecord dataRecord, ASettings aSettings, boolean isPrepared);
+    String classify(DataRecord dataRecord, ASettings aSettings, boolean isPrepared, boolean removeStrings);
 
 
     /**

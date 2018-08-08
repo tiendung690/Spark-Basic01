@@ -16,8 +16,8 @@ interface AClustering {
     /**
      * Abstrakcyjna metoda szukajaca skupien w oparciu o dane.
      *
-     * @param dataSet - zbior danych
-     * @param settings - ustawienia
+     * @param dataSet    - zbior danych
+     * @param settings   - ustawienia
      * @param isPrepared - dane przygotowane
      */
     void buildClusterer(ADataSet dataSet, ASettings settings, boolean isPrepared);
@@ -52,6 +52,7 @@ interface AClustering {
 
     /**
      * Zapis do pliku tekstowego o podanej nazwie
+     *
      * @param fileName nazwa pliku
      * @throws IOException
      */
@@ -61,6 +62,7 @@ interface AClustering {
 
     /**
      * Odczyt z pliku tekstowego o podanej nazwie
+     *
      * @param fileName nazwa pliku
      * @throws IOException
      */

@@ -16,7 +16,7 @@ public class Cluster {
     private Dataset<Row> ds;
     private SparkSession sparkSession;
     private DataPrepareClustering dataPrepareClustering;
-    private boolean removeStrings; // = true;
+    private boolean removeStrings;
 
     Cluster(SparkSession sparkSession, DataPrepareClustering dataPrepareClustering, boolean removeStrings) {
         this.sparkSession = sparkSession;
@@ -36,7 +36,7 @@ public class Cluster {
     /**
      * * Metoda sprawdza obecnosc rekordu w skupieniu
      *
-     * @param record rekord danych
+     * @param record     rekord danych
      * @param isPrepared - dane przygotowane
      * @return obecnosc
      */
@@ -57,7 +57,7 @@ public class Cluster {
      * @return informacje
      */
     public String toString() {
-        return "cluster size: "+ds.count();
+        return "cluster size: " + ds.count();
     }
 
 

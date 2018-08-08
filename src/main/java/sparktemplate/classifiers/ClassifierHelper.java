@@ -9,6 +9,7 @@ import sparktemplate.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.ADataSet;
+import sparktemplate.strings.ClassificationStrings;
 
 /**
  * Klasa zawierajaca metody pomocne w klasyfikacji.
@@ -27,24 +28,22 @@ public class ClassifierHelper {
      * @param isPrepared    dane przygotowane
      * @return klasa decyzyjna
      */
-    public static String classify(DataRecord dataRecord, ASettings aSettings, SparkSession sparkSession, PipelineModel pipelineModel, boolean isPrepared) {
+    public static String classify(DataRecord dataRecord, ASettings aSettings, SparkSession sparkSession, PipelineModel pipelineModel, boolean isPrepared, boolean removeStrings) {
 
-        // create dataset
+        // Create dataset.
         Dataset<Row> singleRecord = DataPrepare.createDataSet(dataRecord.getRow(), dataRecord.getStructType(), sparkSession);
-
-        // prepare dataset
+        // Prepare dataset.
         Dataset<Row> singleRecordPrepared;
         if (isPrepared) {
             singleRecordPrepared = singleRecord;
         } else {
-            singleRecordPrepared = DataPrepareClassification.prepareDataSet(singleRecord, aSettings.getLabelName());
+            singleRecordPrepared = DataPrepareClassification.prepareDataSet(singleRecord, aSettings.getLabelName(), removeStrings
+            );
         }
-        // make prediction
+        // Make prediction.
         Dataset<Row> prediction = pipelineModel.transform(singleRecordPrepared);
-        //prediction.show();
-
-        // find predicted label
-        String predictedLabel = prediction.select(prediction.col("predictedLabel")).first().toString();
+        // Find predicted label.
+        String predictedLabel = prediction.select(prediction.col(ClassificationStrings.predictedLabelCol)).first().toString();
         return predictedLabel;
     }
 
@@ -57,18 +56,16 @@ public class ClassifierHelper {
      * @param isPrepared    dane przygotowane
      * @return dane zaklasyfikowane
      */
-    public static Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, PipelineModel pipelineModel, boolean isPrepared) {
-        // prepare data
+    public static Dataset<Row> classify(ADataSet dbDataSet, ASettings aSettings, PipelineModel pipelineModel, boolean isPrepared, boolean removeStrings) {
+        // Prepare data.
         Dataset<Row> prepTest;
-        if (isPrepared){
+        if (isPrepared) {
             prepTest = dbDataSet.getDs();
-        }else {
-            prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()), aSettings.getLabelName());
+        } else {
+            prepTest = DataPrepareClassification.prepareDataSet(DataPrepare.fillMissingValues(dbDataSet.getDs()), aSettings.getLabelName(), removeStrings);
         }
-        //prepTest.show();
-        // Make predictions
+        // Make predictions.
         Dataset<Row> predictions = pipelineModel.transform(prepTest);
-        //predictions.show(5);
         return predictions;
     }
 

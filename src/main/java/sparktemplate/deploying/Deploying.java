@@ -32,7 +32,7 @@ public class Deploying {
     public static String classification(SparkContext sparkContext, ADataSet dataSetTrain, ADataSet dataSetTest, ClassifierSettings classifierSettings) {
         SparkSession sparkSession = new SparkSession(sparkContext);
         Evaluation evaluation = new Evaluation(sparkSession);
-        evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings);
+        evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings,true);
         return evaluation.getStringBuilder().toString();
     }
 }

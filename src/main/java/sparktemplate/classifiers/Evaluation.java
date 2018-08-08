@@ -6,6 +6,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
 import sparktemplate.datasets.ADataSet;
+import sparktemplate.strings.ClassificationStrings;
 
 
 /**
@@ -31,13 +32,23 @@ public class Evaluation {
     public Evaluation(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
         this.evaluator = new MulticlassClassificationEvaluator()
-                .setLabelCol("indexedLabel")
-                .setPredictionCol("prediction");
+                .setLabelCol(ClassificationStrings.indexedLabelCol)
+                .setPredictionCol(ClassificationStrings.predictionCol);
         this.stringBuilder = new StringBuilder();
     }
 
     public StringBuilder getStringBuilder() {
         return stringBuilder;
+    }
+
+
+    /**
+     * Metoda zwracajaca sklasyfikowane dane.
+     *
+     * @return
+     */
+    public Dataset<Row> getPredictions() {
+        return predictions;
     }
 
     /**
@@ -48,7 +59,7 @@ public class Evaluation {
      * @return wynik wybranej metryki
      */
     public double getMetricByClass(String decValue, String metricName) {
-        int labelIndex = (int) predictions.schema().getFieldIndex("label").get();
+        int labelIndex = (int) predictions.schema().getFieldIndex(ClassificationStrings.labelCol).get();
         Dataset<Row> predictionsSelected = this.predictions.filter(value -> value.get(labelIndex).toString().equals(decValue));
         return this.evaluator.setMetricName(metricName).evaluate(predictionsSelected);
     }
@@ -113,12 +124,12 @@ public class Evaluation {
      * @param trainingDataSet    - zbior danych treningowych
      * @param isTrainingPrepared - dane przygotowane
      * @param testingDataSet     - zbior danych testowych
-     * @param isTestingPrepared - dane przygotowane
+     * @param isTestingPrepared  - dane przygotowane
      * @param classifierSettings - obiekt parametrow
      */
     public void trainAndTest(ADataSet trainingDataSet, boolean isTrainingPrepared,
                              ADataSet testingDataSet, boolean isTestingPrepared,
-                             ASettings classifierSettings) {
+                             ASettings classifierSettings, boolean removeStrings) {
 
 
         ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());
@@ -128,40 +139,40 @@ public class Evaluation {
             case LINEARSVM: {
 
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
 
                 break;
             }
             case DECISIONTREE: {
 
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
 
                 break;
             }
             case RANDOMFORESTS: {
 
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
 
                 break;
             }
             case LOGISTICREGRESSION: {
 
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
 
                 break;
             }
             case NAIVEBAYES: {
 
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
-                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared);
-                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared);
+                algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
+                this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
 
                 break;
             }

@@ -28,7 +28,6 @@ public class MemDataSet implements ADataSet {
      * @param sparkSession obiekt sparkSession
      */
     public MemDataSet(SparkSession sparkSession) {
-        //Konstruktor przygotowuje struktuty do wczytania danych
         this.sparkSession = sparkSession;
     }
 
@@ -100,8 +99,6 @@ public class MemDataSet implements ADataSet {
                 .filter((Tuple2<Row, Long> v1) -> v1._2 == atIndex.get())
                 .map(r -> r._1);
 
-        //Dataset<Row> filtered = sparkSession.createDataFrame(filteredRDD, ds.schema());
-        //filteredDataFrame.show();
         System.err.println("getDataRecord at index: " + atIndex + ", count:" + filteredRDD.count());
         return new DataRecord(filteredRDD.first(), ds.schema());
     }
