@@ -4,6 +4,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
 import sparktemplate.DataRecord;
 
@@ -36,33 +37,51 @@ public class MemDataSet implements ADataSet {
         return ds;
     }
 
-    /**
-     * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
-     *
-     * @param csvFileName sciezka do pliku
-     */
-    public void loadDataSet(String csvFileName) {
-        this.ds = sparkSession.read()
-                .format("com.databricks.spark.csv")
-                .option("header", true)
-                .option("inferSchema", true)
-                .load(csvFileName);
+    public void setDs(Dataset<Row> ds) {
+        this.ds = ds;
     }
 
     /**
      * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
      *
-     * @param csvFileName sciezka do pliku
-     * @param header zawiera nazwy kolumn
+     * @param path sciezka do pliku
+     */
+    public void loadDataSetCSV(String path) {
+        this.ds = sparkSession.read()
+                .format("com.databricks.spark.csv")
+                .option("header", true)
+                .option("inferSchema", true)
+                .load(path);
+    }
+
+    /**
+     * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
+     *
+     * @param path        sciezka do pliku
+     * @param header      zawiera nazwy kolumn
      * @param inferSchema
      */
-    public void loadDataSet(String csvFileName, boolean header, boolean inferSchema) {
+    public void loadDataSetCSV(String path, boolean header, boolean inferSchema) {
         this.ds = sparkSession.read()
                 .format("com.databricks.spark.csv")
                 .option("header", header)
                 .option("inferSchema", inferSchema)
-                .load(csvFileName);
+                .load(path);
     }
+
+    public void saveDataSetCSV(String path, Dataset<Row> dataset) {dataset.write().csv(path);}
+
+    public void loadDataSetPARQUET(String path) {this.ds = sparkSession.read().parquet(path);}
+
+    // -----------------------------------IMPORTANT--------------------------------------------------
+    // Use parquet format when features are SparseVector or save as JSON with provided schema.
+    public static void saveDataSetPARQUET(String path, Dataset<Row> dataset) {dataset.write().parquet(path);}
+
+    public void loadDataSetJSON(String path) {this.ds = sparkSession.read().json(path);}
+
+    public void loadDataSetJSON(String path, StructType schema) {this.ds = sparkSession.read().schema(schema).json(path);}
+
+    public static void saveDataSetJSON(String path, Dataset<Row> dataset) {dataset.write().json(path);}
 
     /**
      * Metoda zwracajaca ilosc atrybutow (kolumn) w tablicy

@@ -76,7 +76,7 @@ public class MllibKmeansExperiment {
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();

@@ -59,7 +59,7 @@ public class TestKMS {
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
         Dataset<Row> ds1 = dpc.prepareDataSet(memDataSet.getDs(), false, true);

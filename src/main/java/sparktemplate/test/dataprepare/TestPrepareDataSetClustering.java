@@ -27,10 +27,10 @@ public class TestPrepareDataSetClustering {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path = "data_test/data_clustering_mixed.csv";
-        //String path = "data_test/data_clustering_only_numerical.csv";
+        String path = "data_test_prepare/data_clustering_mixed.csv";
+        //String path = "data_test_prepare/data_clustering_only_numerical.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         // Raw data.
         Dataset<Row> ds = memDataSet.getDs();
@@ -39,12 +39,14 @@ public class TestPrepareDataSetClustering {
 
         // Prepared data.
         DataPrepareClustering dataPrepareClustering = new DataPrepareClustering();
-        Dataset<Row> ds2 = dataPrepareClustering.prepareDataSet(ds,false,false);
+        Dataset<Row> ds2 = dataPrepareClustering.prepareDataSet(ds, false, false);
         ds2.show(false);
         ds2.printSchema();
 
         // Prepared new data based on an existing model.
-        dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(ds.first(),ds.schema(),sparkSession),true,false).show(false);
+        // dataPrepareClustering.prepareDataSet(DataPrepare.createDataSet(ds.first(), ds.schema(), sparkSession), true, false).show(false);
+
+
 
     }
 }

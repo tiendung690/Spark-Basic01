@@ -5,7 +5,6 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.datasets.MemDataSet;
 
 /**
@@ -27,14 +26,10 @@ public class TestMemDataSet {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-
         String path = "data/mllib/kdd_short2.txt";
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSet(path);
-
-        // test missing values
-        DataPrepare.fillMissingValues(memDataSet.getDs()).show();
+        memDataSet.loadDataSetCSV(path);
     }
 }

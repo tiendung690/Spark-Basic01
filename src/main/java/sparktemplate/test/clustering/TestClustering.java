@@ -1,30 +1,20 @@
 package sparktemplate.test.clustering;
 
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
-import org.apache.spark.rdd.NewHadoopPartition;
-import org.apache.spark.sql.Dataset;
-import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.DataRecord;
-import sparktemplate.association.AssociationSettings;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
-import sparktemplate.datasets.DBDataSet;
 import sparktemplate.datasets.MemDataSet;
 import sparktemplate.strings.ClusteringStrings;
 
 import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
 
 /**
  * Created by as on 13.03.2018.
@@ -37,13 +27,7 @@ public class TestClustering {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_Experiment_Implementation_Kmeans_PREPARED_DATASET")
-                .set("spark.driver.allowMultipleContexts", "true")
-                .set("spark.eventLog.dir", "file:///C:/logs")
-                .set("spark.eventLog.enabled", "true")
-                //.set("spark.submit.deployMode", "cluster")
-                //.set("spark.driver.memory", "4g")
-                //.set("spark.executor.memory", "4g")
+                .setAppName("TestClustering")
                 .setMaster("local[*]");
 
 
@@ -51,18 +35,15 @@ public class TestClustering {
         SparkSession sparkSession = new SparkSession(context);
 
         //String path = "hdfs://10.2.28.17:9000/user/kdd_10_proc.txt";
-        //String path = "data/mllib/kddcup_train.txt";
-        //String path = "data/mllib/kdd_10_proc.txt.gz";
-        String path = "data/mllib/iris.csv";
-        //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
+        String path = "data_test/kdd_train.csv";
 
-        // load mem data
+        // Load data.
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSet(path);
-        // get single record at index
+        memDataSet.loadDataSetCSV(path);
+        // Get single record at index.
         DataRecord dataRecord4 = memDataSet.getDataRecord(0);
 
-        // KMEANS test
+        // Settings.
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setKMeans()
@@ -72,19 +53,18 @@ public class TestClustering {
 
 
         kMean.buildClusterer(memDataSet, clusteringSettings,false);
-        // show predicted clusters
+        // Show predicted clusters.
         kMean.getPredictions().show(false);
         kMean.getPredictions().printSchema();
         System.out.println(Arrays.toString(kMean.getPredictions().schema().fields()));
-        //////////////////////
+        // Evaluate.
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol(ClusteringStrings.featuresCol);
         clusteringEvaluator.setPredictionCol(ClusteringStrings.predictionCol);
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(kMean.getPredictions()));
         ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), ClusteringStrings.predictionCol, ClusteringStrings.featuresCol, kMean.getNoCluster());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
-        /////////////////////////////////////
-
+        // Check cluster for single record.
         System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4, false));
         System.out.println("get clusters no.: " + kMean.getNoCluster());
 

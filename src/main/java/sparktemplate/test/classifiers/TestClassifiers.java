@@ -4,11 +4,19 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.ml.linalg.VectorUDT;
+import org.apache.spark.sql.DataFrameReader;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
+import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
+import org.apache.spark.sql.types.StructField;
+import org.apache.spark.sql.types.StructType;
 import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.classifiers.Evaluation;
-import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.datasets.MemDataSet;
+import sparktemplate.strings.ClassificationStrings;
 
 /**
  * Created by as on 14.03.2018.
@@ -21,57 +29,56 @@ public class TestClassifiers {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_Experiment")
-                .set("spark.driver.allowMultipleContexts", "true")
+                .setAppName("TestClassifiers")
                 .setMaster("local");
         SparkContext context = new SparkContext(conf);
         SparkSession spark = new SparkSession(context);
 
         try {
-            String fNameTabTrain = "data_test/data_classification_mixed.csv";//"data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/train_data.csv"; //Okreslenie lokalizacji pliku z danymi treningowymi
-            String fNameTabTest = "data_test/data_classification_mixed.csv";//"data/mllib/iris2.csv";//"data/mllib/kdd_5_proc.txt";//"C:/DANE/test_data.csv"; //Okreslenie lokalizacji pliku z danymi testowymi
+            String trainPath = "data_test/kdd_train.csv";
+            String testPath = "data_test/kdd_test.csv";
 
-            MemDataSet dataSetTrain = new MemDataSet(spark); //Utworzenie obiektu na dane treningowe
-            dataSetTrain.loadDataSet(fNameTabTrain); //Wczytanie danych treningowych
+            // From csv. (Raw data)
+            MemDataSet dataSetTrain = new MemDataSet(spark);
+            dataSetTrain.loadDataSetCSV(trainPath);
+            MemDataSet dataSetTest = new MemDataSet(spark);
+            dataSetTest.loadDataSetCSV(testPath);
 
-            // DataPrepareClassification.prepareDataSet(dataSetTrain.getDs(), "class").show(2);
+            // From parquet. (Prepared data)
+            MemDataSet dataSetTrain2 = new MemDataSet(spark);
+            dataSetTrain2.loadDataSetPARQUET("data_test/kdd_train_prepared_parquet");
+            MemDataSet dataSetTest2 = new MemDataSet(spark);
+            dataSetTest2.loadDataSetPARQUET("data_test/kdd_train_prepared_parquet");
 
-            //Utworzenie obiektu opcji do tworzenia klasyfikatora
-            // param2 values: DECISIONTREE, RANDOMFORESTS, LOGISTICREGRESSION, NAIVEBAYES, LINEARSVM
+            // From JSON. (Prepared data)(Schema required)
+            StructType schema = new StructType(new StructField[]{
+                    new StructField(ClassificationStrings.featuresCol, new VectorUDT(), false, Metadata.empty()),
+                    new StructField(ClassificationStrings.labelCol, DataTypes.StringType, true, Metadata.empty())
+            });
+            MemDataSet dataSetTest3 = new MemDataSet(spark);
+            dataSetTest3.loadDataSetJSON("data_test/kdd_test_prepared_json",schema);
+
+            // Settings.
             ClassifierSettings classifierSettings = new ClassifierSettings();
             classifierSettings
                     .setLabelName("class")
-                    .setNaiveBayes();
+                    .setRandomForest();
 
-
-            MemDataSet dataSetTest = new MemDataSet(spark); //Utworzenie obiektu na dane testowe
-            dataSetTest.loadDataSet(fNameTabTest); //Wczytanie danych testowych
-
-            //Utworzenie obiektu testowania roznymi metodami
             Evaluation evaluation = new Evaluation(spark);
-
-            //Wywolanie metody testujacej metoda Train&Test
-            //evaluation.makeTrainAndTest(dataSetTrain,dataSetTest,classifierSettings);
-            evaluation.trainAndTest(dataSetTrain, false, dataSetTest, false, classifierSettings, true);
-
-//            System.out.println("accuracy: " + evaluation.getAccuracy()
-//                    + ", coverage: " + evaluation.getCoverage()
-//                    + ", f1: "+evaluation.get_F1()
-//                    + ", precison: "+evaluation.get_Precision());
-
+            evaluation.trainAndTest(dataSetTrain2, true, dataSetTest3, true, classifierSettings, false);
             evaluation.printReport();
-            System.out.println(evaluation.getMetricByClass("setosa", "f1"));
 
-            evaluation.getPredictions().show(false);
-            //System.out.println(evaluation.getAccuracy("smurf."));
-
+            // Print metric for decision class.
+            System.out.println(evaluation.getMetricByClass("class", "f1"));
+            // Show predictions.
+            Dataset<Row> predictions = evaluation.getPredictions().select(ClassificationStrings.labelCol, ClassificationStrings.predictedLabelCol, ClassificationStrings.featuresCol);
+            predictions.show(100);
+            // Print all results.
             //System.out.println("RESULT:\n" + evaluation.getStringBuilder());
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println("Done.");
     }
 }
 

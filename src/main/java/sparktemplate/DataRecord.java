@@ -24,7 +24,6 @@ public class DataRecord {
      * @param structType struktura
      */
     public DataRecord(Row row, StructType structType) {
-        //konstruktor przygotowuje wewnetrzna strukture danych
         this.structType = structType;
         this.row = row;
     }
@@ -74,8 +73,6 @@ public class DataRecord {
      *                       zgodnosci typu wartosci).
      */
     public void setAttributeValue(int attributeIndex, String value) {
-
-        // 1 wersja prosta
         Object[] obj = new Object[row.size()];
         for (int i = 0; i < row.size(); i++) {
             if (i == attributeIndex) {
@@ -84,11 +81,6 @@ public class DataRecord {
                 obj[i] = row.get(i);
             }
         }
-
-        // 2 wersja
-        //Object[] obj = (Object[]) row.toSeq().toArray( scala.reflect.ClassTag$.MODULE$.apply(Object.class));
-        //obj2[attributeIndex]=value;
-
         this.row = RowFactory.create(obj);
     }
 

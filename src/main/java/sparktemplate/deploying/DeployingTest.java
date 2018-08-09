@@ -33,7 +33,7 @@ public class DeployingTest {
         //String path = "data/mllib/kdd_5_proc.txt"; // classifiers
 
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         //System.out.println(Deploying.assocRules(context, memDataSet, associationSettings()));
         System.out.println(Deploying.classification(context, memDataSet, memDataSet,classifierSettings()));

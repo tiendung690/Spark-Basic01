@@ -49,7 +49,7 @@ public class SaveToExternalDB {
         String path = "data/mllib/iris.csv";
         // ODCZYT Z PLIKU
 //        MemDataSet memDataSet = new MemDataSet(sparkSession);
-//        memDataSet.loadDataSet(path);
+//        memDataSet.loadDataSetCSV(path);
 //        memDataSet.getDs().printSchema();
 
         // ODCZYT Z BAZY

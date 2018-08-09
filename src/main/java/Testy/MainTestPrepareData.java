@@ -49,7 +49,7 @@ public class MainTestPrepareData {
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         memDataSet.getDs().cache();
 

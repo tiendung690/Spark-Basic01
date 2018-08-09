@@ -24,13 +24,7 @@ public class TestDBDataSet {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-
-//        String url = "jdbc:postgresql://10.2.28.17:5432/postgres";
-//        String user = "postgres";
-//        String password = "postgres";
-//        String table = "dane1";
-
-        // ODCZYT Z BAZY KLASTRA
+        // Database settings.
         String url = "jdbc:postgresql://10.2.28.17:5432/postgres";
         String user = "postgres";
         String password = "postgres";
@@ -45,7 +39,5 @@ public class TestDBDataSet {
         System.out.println(dbDataSet.getAttrName(0));
         dbDataSet.getFirstRecord();
         dbDataSet.getNextRecord();
-
-
     }
 }

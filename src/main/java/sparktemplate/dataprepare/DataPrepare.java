@@ -1,7 +1,9 @@
 package sparktemplate.dataprepare;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.ml.linalg.*;
 import org.apache.spark.sql.*;
+import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
@@ -10,9 +12,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
 
+import static org.apache.spark.sql.functions.col;
+import static org.apache.spark.sql.functions.udf;
+
 /**
  * Klasa zawierajaca metody przygotowujace wstepnie dane.
- *
+ * <p>
  * Created by as on 21.03.2018.
  */
 public class DataPrepare {
@@ -22,11 +27,24 @@ public class DataPrepare {
     private static final Logger logger = Logger.getLogger(loggerName);
 
 
+    public static Dataset<Row> convertVectorColToDense(Dataset<Row> data, String featuresCol) {
+        // Prepare udf.
+        UserDefinedFunction mode = udf(
+                (org.apache.spark.ml.linalg.Vector v) -> v.toDense(), SQLDataTypes.VectorType()
+        );
+        // Convert.
+        Dataset<Row> converted = data
+                .withColumn("udf", mode.apply(col(featuresCol)))
+                .drop(featuresCol)
+                .withColumnRenamed("udf", featuresCol);
+        return converted;
+    }
+
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
      *
-     * @param row dane
-     * @param structType struktura
+     * @param row          dane
+     * @param structType   struktura
      * @param sparkSession obiekt SparkSession
      * @return zbior danych
      */
@@ -43,7 +61,7 @@ public class DataPrepare {
      * @param data - dane
      * @return zmapowane wartosci
      */
-    public static Map<String, Integer> findSymbolicalColumns(Dataset<Row> data){
+    public static Map<String, Integer> findSymbolicalColumns(Dataset<Row> data) {
         // Maps with symbolical values.
         // K - column, V - index
         Map<String, Integer> mapSymbolical = new HashMap<>();
@@ -55,7 +73,7 @@ public class DataPrepare {
             }
             j++;
         }
-        logger.info("Symbolical values:"+mapSymbolical.keySet().toString());
+        logger.info("Symbolical values:" + mapSymbolical.keySet().toString());
         return mapSymbolical;
     }
 
@@ -65,7 +83,7 @@ public class DataPrepare {
      * @param data - dane
      * @return zmapowane wartosci
      */
-    public static Map<String, Integer> findNumericalColumns(Dataset<Row> data){
+    public static Map<String, Integer> findNumericalColumns(Dataset<Row> data) {
         // Maps with numerical values.
         // K - column, V - index
         Map<String, Integer> mapNumerical = new HashMap<>();
@@ -81,7 +99,7 @@ public class DataPrepare {
             }
             j++;
         }
-        logger.info("Numerical values:"+mapNumerical.keySet().toString());
+        logger.info("Numerical values:" + mapNumerical.keySet().toString());
         return mapNumerical;
     }
 
@@ -113,7 +131,7 @@ public class DataPrepare {
                     .map(value -> Double.parseDouble(value.get(colId).toString()), Encoders.DOUBLE())
                     .reduce((v1, v2) -> v1 + v2);
             // Compute and round avg.
-            Double avg = sum/ss;
+            Double avg = sum / ss;
             BigDecimal avgRounded = new BigDecimal(avg);
             avgRounded = avgRounded.setScale(2, RoundingMode.HALF_UP);
             mapReplacementValues.put(s.getKey(), avgRounded.doubleValue());
@@ -145,6 +163,6 @@ public class DataPrepare {
 
         // Fill missing values
         Dataset<Row> dsWithoutNulls = ds.na().fill(mapReplacementValues);
-        return  dsWithoutNulls;
+        return dsWithoutNulls;
     }
 }

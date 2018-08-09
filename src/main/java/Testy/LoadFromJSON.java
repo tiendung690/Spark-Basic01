@@ -69,7 +69,7 @@ public class LoadFromJSON {
 
         // load mem data
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         DataPrepareClustering dpc = new DataPrepareClustering();
         Dataset<Row> ds = dpc.prepareDataSet(memDataSet.getDs(), false, false).select("features");

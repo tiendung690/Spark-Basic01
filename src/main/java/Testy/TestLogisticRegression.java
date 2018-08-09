@@ -38,7 +38,7 @@
 //
 //        System.out.println("// TEST MemDataSet");
 //        MemDataSet memDataSet = new MemDataSet(sparkSession);
-//        memDataSet.loadDataSet(path);
+//        memDataSet.loadDataSetCSV(path);
 //        Dataset<Row> ds = memDataSet.getDs();
 //        ds.show();
 //

@@ -26,9 +26,9 @@ public class TestFillMissingValues {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path = "data_test/iris_missing_values.csv";
+        String path = "data_test_prepare/iris_missing_values.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSet(path);
+        memDataSet.loadDataSetCSV(path);
 
         // Raw data.
         Dataset<Row> ds = memDataSet.getDs();

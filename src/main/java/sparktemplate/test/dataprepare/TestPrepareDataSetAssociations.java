@@ -26,10 +26,10 @@ public class TestPrepareDataSetAssociations {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        String path =  "data_test/basket_associations.csv";
+        String path = "data_test_prepare/basket_associations.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         // Load data without header.
-        memDataSet.loadDataSet(path,false,false);
+        memDataSet.loadDataSetCSV(path, false, false);
 
         // Raw data.
         Dataset<Row> ds = memDataSet.getDs();
@@ -40,6 +40,16 @@ public class TestPrepareDataSetAssociations {
         Dataset<Row> ds2 = DataPrepareAssociations.prepareDataSet(ds, sparkSession);
         ds2.show(false);
         ds2.printSchema();
+
+        // Save prepared data. (JSON format)
+        //ds2.write().json("data_test/basket_associations_prepared_json");
+
+        // Load prepared data.
+        //MemDataSet memDataSet2 = new MemDataSet(sparkSession);
+        //memDataSet2.loadDataSetJSON("data_test/basket_associations_prepared_json");
+        //Dataset<Row> dsFromJson = memDataSet2.getDs();
+        //dsFromJson.show();
+        //dsFromJson.printSchema();
 
 
     }
