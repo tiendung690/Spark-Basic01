@@ -1,6 +1,6 @@
-package clusteringExperiment;
+package clusteringexperiment;
 
-import kmeans_implementation.Util;
+import kmeansimplementation.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;

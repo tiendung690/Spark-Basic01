@@ -1,4 +1,4 @@
-package kmeans_implementation;
+package kmeansimplementation;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.spark.api.java.JavaPairRDD;
