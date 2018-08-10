@@ -1,9 +1,9 @@
-package kmeans_implementation.pipeline;
+package kmeansimplementation.pipeline;
 
 
-import kmeans_implementation.DataModel;
-import kmeans_implementation.KMeansImpl;
-import kmeans_implementation.Util;
+import kmeansimplementation.DataModel;
+import kmeansimplementation.KMeansImpl;
+import kmeansimplementation.Util;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.Model;

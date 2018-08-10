@@ -1,0 +1,5 @@
+w1,w2,w3,w4,color,class
+dark,good,ok,abcd,blue,setosa
+light,good,ok,abcd,red,virginica
+dark,bad,ok,efg,blue,setosa
+light,bad,ok,efg,red,virginica

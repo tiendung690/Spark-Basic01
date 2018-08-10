@@ -1,6 +1,5 @@
-package kmeans_implementation;
+package kmeansimplementation;
 
-import org.apache.log4j.Logger;
 import org.apache.spark.ml.linalg.BLAS;
 import org.apache.spark.ml.linalg.Vector;
 
