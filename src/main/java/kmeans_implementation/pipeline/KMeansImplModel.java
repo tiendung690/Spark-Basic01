@@ -2,7 +2,7 @@ package kmeans_implementation.pipeline;
 
 
 import kmeans_implementation.DataModel;
-import kmeans_implementation.Kmns;
+import kmeans_implementation.KMeansImpl;
 import kmeans_implementation.Util;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
@@ -19,24 +19,24 @@ import java.util.ArrayList;
 /**
  * Created by as on 16.04.2018.
  */
-public class KmsModel extends Model<KmsModel> {
+public class KMeansImplModel extends Model<KMeansImplModel> {
 
     private static final long serialVersionUID = 5542470640921989462L;
     private ArrayList<Vector> clusterCenters;
     private String featuresCol = "features";
     private String predictionCol = "prediction";
 
-    public KmsModel setClusterCenters(ArrayList<Vector> clusterCenters) {
+    public KMeansImplModel setClusterCenters(ArrayList<Vector> clusterCenters) {
         this.clusterCenters = clusterCenters;
         return this;
     }
 
-    public KmsModel setFeaturesCol(String featuresCol) {
+    public KMeansImplModel setFeaturesCol(String featuresCol) {
         this.featuresCol = featuresCol;
         return this;
     }
 
-    public KmsModel setPredictionCol(String predictionCol) {
+    public KMeansImplModel setPredictionCol(String predictionCol) {
         this.predictionCol = predictionCol;
         return this;
     }
@@ -57,7 +57,7 @@ public class KmsModel extends Model<KmsModel> {
     public Dataset<Row> transform(Dataset<?> dataset) {
 
         JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
-        JavaPairRDD<Integer, Vector> x5 = Kmns.predictCluster2(x3, this.clusterCenters);
+        JavaPairRDD<Integer, Vector> x5 = KMeansImpl.predictCluster2(x3, this.clusterCenters);
         Dataset<Row> dm = Util.RDDToDataset(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
         return dm;
     }
@@ -68,7 +68,7 @@ public class KmsModel extends Model<KmsModel> {
     }
 
     @Override
-    public KmsModel copy(ParamMap paramMap) {
+    public KMeansImplModel copy(ParamMap paramMap) {
         return defaultCopy(paramMap);
     }
 

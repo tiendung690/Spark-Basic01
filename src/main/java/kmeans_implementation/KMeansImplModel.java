@@ -7,7 +7,7 @@ import java.io.Serializable;
 /**
  * Created by as on 02.06.2018.
  */
-public class KMeansModel implements Serializable, DataModel {
+public class KMeansImplModel implements Serializable, DataModel {
 
     private Vector data;
 

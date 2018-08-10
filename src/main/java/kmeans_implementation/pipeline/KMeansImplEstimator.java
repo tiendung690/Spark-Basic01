@@ -2,7 +2,7 @@ package kmeans_implementation.pipeline;
 
 
 import kmeans_implementation.DataModel;
-import kmeans_implementation.Kmns;
+import kmeans_implementation.KMeansImpl;
 import kmeans_implementation.Util;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.ml.Estimator;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 /**
  * Created by as on 16.04.2018.
  */
-public class KmsEstimator extends Estimator<KmsModel> {
+public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
 
     private static final long serialVersionUID = 5345470610951989479L;
     private String featuresCol = "features";
@@ -27,7 +27,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
     private int maxIterations;
     private int k;
 
-    public KmsEstimator() {
+    public KMeansImplEstimator() {
         this.initialCenters = new ArrayList<>();
         this.seed = 20L;
         this.epsilon =1e-4;
@@ -39,7 +39,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return featuresCol;
     }
 
-    public KmsEstimator setFeaturesCol(String featuresCol) {
+    public KMeansImplEstimator setFeaturesCol(String featuresCol) {
         this.featuresCol = featuresCol;
         return this;
     }
@@ -48,7 +48,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return predictionCol;
     }
 
-    public KmsEstimator setPredictionCol(String predictionCol) {
+    public KMeansImplEstimator setPredictionCol(String predictionCol) {
         this.predictionCol = predictionCol;
         return this;
     }
@@ -57,7 +57,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return initialCenters;
     }
 
-    public KmsEstimator setInitialCenters(ArrayList<Vector> initialCenters) {
+    public KMeansImplEstimator setInitialCenters(ArrayList<Vector> initialCenters) {
         this.initialCenters = initialCenters;
         return this;
     }
@@ -66,7 +66,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return seed;
     }
 
-    public KmsEstimator setSeed(long seed) {
+    public KMeansImplEstimator setSeed(long seed) {
         this.seed = seed;
         return this;
     }
@@ -75,7 +75,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return epsilon;
     }
 
-    public KmsEstimator setEpsilon(double epsilon) {
+    public KMeansImplEstimator setEpsilon(double epsilon) {
         this.epsilon = epsilon;
         return this;
     }
@@ -84,7 +84,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return maxIterations;
     }
 
-    public KmsEstimator setMaxIterations(int maxIterations) {
+    public KMeansImplEstimator setMaxIterations(int maxIterations) {
         this.maxIterations = maxIterations;
         return this;
     }
@@ -93,25 +93,25 @@ public class KmsEstimator extends Estimator<KmsModel> {
         return k;
     }
 
-    public KmsEstimator setK(int k) {
+    public KMeansImplEstimator setK(int k) {
         this.k = k;
         return this;
     }
 
     @Override
-    public KmsModel fit(Dataset<?> dataset) {
+    public KMeansImplModel fit(Dataset<?> dataset) {
         //this.transformSchema(dataset.schema());
         JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
         if(this.initialCenters.isEmpty()){
-            this.initialCenters = Kmns.initializeCenters(x3,this.k);
+            this.initialCenters = KMeansImpl.initializeCenters(x3,this.k);
         }
-        ArrayList<Vector> finalCenters = Kmns.computeCenters(x3, initialCenters, this.epsilon, this.maxIterations);
-        KmsModel kmsModel = new KmsModel()
+        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(x3, initialCenters, this.epsilon, this.maxIterations);
+        KMeansImplModel KMeansImplModel = new KMeansImplModel()
                 .setClusterCenters(finalCenters)
                 .setPredictionCol(this.predictionCol)
                 .setFeaturesCol(this.featuresCol);
 
-        return kmsModel;
+        return KMeansImplModel;
     }
 
     @Override
@@ -120,7 +120,7 @@ public class KmsEstimator extends Estimator<KmsModel> {
     }
 
     @Override
-    public Estimator<KmsModel> copy(ParamMap paramMap) {
+    public Estimator<KMeansImplModel> copy(ParamMap paramMap) {
         return defaultCopy(paramMap);
     }
 

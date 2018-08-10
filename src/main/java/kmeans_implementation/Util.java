@@ -21,9 +21,9 @@ public class Util {
 
     public static JavaRDD<DataModel> DatasetToRDD(Dataset<Row> ds) {
         JavaRDD<DataModel> x3 = ds.toJavaRDD().map(row -> {
-            KMeansModel KMeansModel = new KMeansModel();
-            KMeansModel.setData((Vector) row.get(0));
-            return KMeansModel;
+            KMeansImplModel KMeansImplModel = new KMeansImplModel();
+            KMeansImplModel.setData((Vector) row.get(0));
+            return KMeansImplModel;
         });
         return x3;
     }

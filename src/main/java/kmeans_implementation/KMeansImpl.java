@@ -18,7 +18,7 @@ import java.util.Map;
 /**
  * Created by as on 09.04.2018.
  */
-public class Kmns {
+public class KMeansImpl {
 
     // Logger.
     public static final String loggerName = "K-Means Implementation";
@@ -35,7 +35,7 @@ public class Kmns {
 
     private static Map<Integer, Vector> predictClusterAndComputeNewCenters2(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
         // 1
-        JavaPairRDD<Integer, Vector> s1 = predictCluster(data, clusterCenters);
+        JavaPairRDD<Integer, Vector> s1 = predictCluster2(data, clusterCenters);
         // 2
         JavaPairRDD<Integer, Tuple2<Long, Vector>> s2 = s1.mapPartitionsToPair(t -> {
             List<Tuple2<Integer, Tuple2<Long, Vector>>> list = new ArrayList<>();
@@ -65,7 +65,7 @@ public class Kmns {
     }
 
     private static Map<Integer, Vector> predictClusterAndComputeNewCenters(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
-        Map<Integer, Vector> newCenters = predictCluster2(data, clusterCenters)                                   // 1
+        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters)                                   // 1
                 .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))                               // 2
                 .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()))) // 3
                 .mapValues(v1 -> divideArray(v1._2(), v1._1()))                                                   // 4
@@ -111,7 +111,7 @@ public class Kmns {
                 } else {
                     newClusterCenters.set(i, newClusterCenters.get(i));
                 }
-                centersDistance += Distances.squaredDistance(clusterCenters.get(i).toArray(), newClusterCenters.get(i).toArray());
+                centersDistance += Distances.distanceSquared(clusterCenters.get(i).toArray(), newClusterCenters.get(i).toArray());
             }
             centersDistance = centersDistance / clusterCenters.size();
 
@@ -120,7 +120,6 @@ public class Kmns {
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
                 iteration++;
-                //System.out.println("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
                 logger.info("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
             }
         } while (condition);
@@ -174,7 +173,26 @@ public class Kmns {
             //Euclidean distance with Vector.
             //double d = Distances.distanceEuclidean(point, centers.get(i));                    //25s
             //Euclidean distance with Array.
-            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray());  //16s
+            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray());  //16s // DEFAULT
+            //double d = new org.apache.commons.math3.ml.distance.EuclideanDistance().compute(point.toArray(), centers.get(i).toArray());
+
+            // Chebyshev.
+            //double d = Distances.distanceChebyshev(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.ChebyshevDistance().compute(point.toArray(), centers.get(i).toArray());
+
+            // Manhattan.
+            //double d = Distances.distanceManhattan(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.ManhattanDistance().compute(point.toArray(), centers.get(i).toArray());
+
+            // Minkowski. 3x slower than Euclidean.
+            //double d = Distances.distanceMinkowski(point.toArray(), centers.get(i).toArray());
+
+            // Canberra. Returns 1 cluster.
+            // double d = new org.apache.commons.math3.ml.distance.CanberraDistance().compute(point.toArray(), centers.get(i).toArray());
+
+            // EarthMovers.
+            // double d = new org.apache.commons.math3.ml.distance.EarthMoversDistance().compute(point.toArray(), centers.get(i).toArray());
+
             distances[i] = d;
         }
         return distances;

@@ -1,14 +1,15 @@
-package clusteringExperiment;
+package kmeans_implementation.pipeline;
 
 import kmeans_implementation.DataModel;
-import kmeans_implementation.KMeansImpl;
 import kmeans_implementation.Util;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
+import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.ml.linalg.Vector;
@@ -21,11 +22,12 @@ import sparktemplate.datasets.MemDataSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
- * Created by as on 02.08.2018.
+ * Created by as on 18.04.2018.
  */
-public class MyImplementationKmeansExperiment {
+public class TestKMeansImplPipeline {
     public static void main(String[] args) {
 
         // INFO DISABLED
@@ -97,54 +99,46 @@ public class MyImplementationKmeansExperiment {
         System.out.println("Initial centers:");
         initialCenters.stream().forEach(t -> System.out.println(t));
 
-        // Convert Dataset to RDD.
-        JavaRDD<DataModel> preparedDataRDD = Util.DatasetToRDD(preparedData);
-
         // Set k.
         int k = initialCenters.size(); // 4;
 
-        // Random k centers.
-        //ArrayList<Vector> initialCenters = initializeCenters(preparedDataRDD, k);
+        // Algorithm settings.
+        KMeansImplEstimator kMeansImplEstimator = new KMeansImplEstimator()
+                .setFeaturesCol("features")
+                .setPredictionCol("prediction")
+                .setK(k)
+                .setEpsilon(1e-4)
+                .setInitialCenters(initialCenters)
+                .setMaxIterations(20)
+                .setSeed(1L);
 
-        // Compute final centers.
-        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(preparedDataRDD, initialCenters, 1e-4, 20);
+        // Create pipeline and add stages.
+        Pipeline pipeline = new Pipeline()
+                .setStages(new PipelineStage[]{kMeansImplEstimator});
 
-        // Predict clusters.
-        JavaPairRDD<Integer, Vector> predictedDataRDD = KMeansImpl.predictCluster(preparedDataRDD, finalCenters);
+        // Build model.
+        PipelineModel model = pipeline.fit(preparedData);
 
-        // Create Dataset from RDD.
-        String featuresCol = "features";
-        String predictionCol = "prediction";
-        Dataset<Row> predictedData = Util.RDDToDataset(predictedDataRDD, spark, featuresCol, predictionCol);
+        // Make predictions.
+        Dataset<Row> predictions = model.transform(preparedData);
+        //Dataset<Row> predictions = kMeansImplEstimator.fit(preparedData).transform(preparedData);
 
-        // Print predicted data.
-        predictedData.printSchema();
-        predictedData.show();
-
-
-        // Print final centers.
-        finalCenters.stream().forEach(s -> System.out.println(s));
-
-        // Evaluator for clustering results. The metric computes the Silhouette measure using the squared Euclidean distance.
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
-        clusteringEvaluator.setFeaturesCol(featuresCol);
-        clusteringEvaluator.setPredictionCol(predictionCol);
-
+        clusteringEvaluator.setFeaturesCol(kMeansImplEstimator.getFeaturesCol());
+        clusteringEvaluator.setPredictionCol(kMeansImplEstimator.getPredictionCol());
         // Print evaluation.
-        System.out.println("Evaluation (Silhouette measure): " + clusteringEvaluator.evaluate(predictedData));
-
+        System.out.println("Evaluation (Silhouette measure): " + clusteringEvaluator.evaluate(predictions));
         // Summary of clustering algorithms.
-        ClusteringSummary clusteringSummary = new ClusteringSummary(predictedData, predictionCol, featuresCol, k);
-
+        ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kMeansImplEstimator.getPredictionCol(), kMeansImplEstimator.getFeaturesCol(), kMeansImplEstimator.getK());
         // Print size of (number of data points in) each cluster.
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
-
         // Save results to text file.
-        Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");
+        //Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");
 
-        // Keep job alive, allows access to web ui.
-        //new Scanner(System.in).nextLine();
-
-        spark.close();
     }
 }
+
+
+// Add new column.
+//Dataset<Row> final12 = otherDataset.select(otherDataset.col("colA"), otherDataSet.col("colB"));
+//Dataset<Row> result = final12.withColumn("columnName", lit(1))
