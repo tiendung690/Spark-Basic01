@@ -57,7 +57,7 @@ public class KmsModel extends Model<KmsModel> {
     public Dataset<Row> transform(Dataset<?> dataset) {
 
         JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
-        JavaPairRDD<Integer, Vector> x5 = Kmns.predictCluster(x3, this.clusterCenters);
+        JavaPairRDD<Integer, Vector> x5 = Kmns.predictCluster2(x3, this.clusterCenters);
         Dataset<Row> dm = Util.RDDToDataset(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
         return dm;
     }

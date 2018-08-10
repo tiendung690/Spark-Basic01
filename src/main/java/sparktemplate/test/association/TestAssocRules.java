@@ -28,7 +28,7 @@ public class TestAssocRules {
         SparkSession sparkSession = new SparkSession(context);
 
 
-        String path =  "data_test/groceries.csv";
+        String path = "data_test/groceries.csv";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSetCSV(path);
 

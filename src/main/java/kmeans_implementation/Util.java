@@ -50,7 +50,7 @@ public class Util {
         });
         StructType structType = new StructType().add("data", DataTypes.StringType);
 
-        // save Dataset (overwrite allowed)
+        // Save Dataset (overwrite allowed).
         dm.sqlContext().createDataFrame(rr, structType)
                 .coalesce(1) // file in 1 part
                 .write()

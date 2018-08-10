@@ -1,5 +1,6 @@
 package kmeans_implementation;
 
+import org.apache.log4j.Logger;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -18,6 +19,10 @@ import java.util.Map;
  * Created by as on 09.04.2018.
  */
 public class Kmns {
+
+    // Logger.
+    public static final String loggerName = "K-Means Implementation";
+    private static final Logger logger = Logger.getLogger(loggerName);
 
     public static ArrayList<Vector> initializeCenters(JavaRDD<DataModel> data, int k) {
         ArrayList<DataModel> initialCenters = new ArrayList<>(data.takeSample(false, k, 20L));
@@ -59,13 +64,15 @@ public class Kmns {
         return newCenters;
     }
 
-    private static Map<Integer, Vector> predictClusterAndComputeNewCenters1(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
-        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters)                                    // 1
+    private static Map<Integer, Vector> predictClusterAndComputeNewCenters(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
+        Map<Integer, Vector> newCenters = predictCluster2(data, clusterCenters)                                   // 1
                 .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))                               // 2
                 .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()))) // 3
                 .mapValues(v1 -> divideArray(v1._2(), v1._1()))                                                   // 4
+                //.map(v1 -> new Tuple2<>(v1._1(), divideArray(v1._2()._2(), v1._2._1())))
                 .collectAsMap();                                                                                  // 5
         return newCenters;
+
     }
 
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations) {
@@ -77,9 +84,8 @@ public class Kmns {
         int iteration = 0;
 
         do {
-            ////////////////////////////////////////
+            // Accumulator time.
             long startTime = System.currentTimeMillis();
-            ////////////////////////////////////////
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
@@ -89,14 +95,13 @@ public class Kmns {
             // 4. MapValues.
             // 5. CollectAsMap.
             data.persist(StorageLevel.MEMORY_ONLY());
-            Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters1(data, newClusterCenters);
+            Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters(data, newClusterCenters);
             data.unpersist();
 
 
-            ////////////////////////////////////////
+            // Accumulator time.
             long endTime = System.currentTimeMillis();
             accumulator.add(endTime - startTime);
-            ///////////////////////////////////////
 
             double centersDistance = 0.0;
             for (int i = 0; i < clusterCenters.size(); i++) {
@@ -115,14 +120,15 @@ public class Kmns {
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
                 iteration++;
-                System.out.println("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
+                //System.out.println("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
+                logger.info("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
             }
         } while (condition);
 
         return clusterCenters;
     }
 
-    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> data, ArrayList<Vector> centers) {
+    public static JavaPairRDD<Integer, Vector> predictCluster2(JavaRDD<DataModel> data, ArrayList<Vector> centers) {
 
         JavaSparkContext jsc = new JavaSparkContext(data.context());
         Broadcast<ArrayList<Vector>> centersBroadcast = jsc.broadcast(centers);
@@ -137,6 +143,23 @@ public class Kmns {
                         list.add(new Tuple2<>(predictedCluster, points));
                     }
                     return list.iterator();
+                });
+
+        centersBroadcast.unpersist(false);
+        return predictedClusters;
+    }
+
+    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> data, ArrayList<Vector> centers) {
+
+        JavaSparkContext jsc = new JavaSparkContext(data.context());
+        Broadcast<ArrayList<Vector>> centersBroadcast = jsc.broadcast(centers);
+
+        JavaPairRDD<Integer, Vector> predictedClusters = data
+                .mapToPair(dataModel -> {
+                    Vector points = dataModel.getData();
+                    double[] distances = computeDistance(centersBroadcast.value(), points);
+                    int predictedCluster = findLowerValIndex(distances);
+                    return new Tuple2<>(predictedCluster, points);
                 });
 
         centersBroadcast.unpersist(false);

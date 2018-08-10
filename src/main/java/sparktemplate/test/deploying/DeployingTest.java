@@ -1,4 +1,4 @@
-package sparktemplate.deploying;
+package sparktemplate.test.deploying;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -9,6 +9,7 @@ import sparktemplate.association.AssociationSettings;
 import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.datasets.MemDataSet;
+import sparktemplate.deploying.Deploying;
 
 /**
  * Created by as on 02.08.2018.
@@ -27,10 +28,10 @@ public class DeployingTest {
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
 
-        //String path = "data/mllib/kdd_3_proc.txt"; // asscoRules
-        //String path = "data/mllib/iris.csv"; // clustering
-        String path = "data/mllib/iris2.csv"; // classifiers
-        //String path = "data/mllib/kdd_5_proc.txt"; // classifiers
+        //String path = "data_test/groceries.csv"; // asscoRules
+        //String path = "data_test/kdd_train.csv"; // clustering
+        String path = "data_test/kdd_train.csv"; // classifiers
+        //String path = "data_test/kdd_test.csv"; // classifiers
 
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSetCSV(path);
@@ -54,7 +55,7 @@ public class DeployingTest {
     public static ClassifierSettings classifierSettings() {
         ClassifierSettings classifierSettings = new ClassifierSettings();
         classifierSettings
-                .setLabelName("species") //class for kdd
+                .setLabelName("class") //class for kdd
                 .setRandomForest();
         return classifierSettings;
     }
