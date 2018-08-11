@@ -1,3 +1,5 @@
+package tests;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -17,11 +19,11 @@ import java.util.List;
 /**
  * Created by as on 14.03.2018.
  */
-public class Main {
+public class TestPIOnCluster {
     public static void main(String[] args) {
+
         //Logger.getLogger("org").setLevel(Level.OFF);
         //Logger.getLogger("akka").setLevel(Level.OFF);
-
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
 //        SparkConf conf = new SparkConf()
