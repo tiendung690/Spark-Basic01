@@ -47,16 +47,16 @@ public class KMeansImpl {
         });
         // 3
         JavaPairRDD<Integer, Tuple2<Long, Vector>> s3 = s2.reduceByKey((v1, v2) -> {
-            // DenseVector dd = v1._2().toDense();
+            //DenseVector dd = v1._2().toDense();
             //BLAS$.MODULE$.axpy(1.0, v2._2(), dd);
-            // return new Tuple2<>(v1._1() + v2._1(), dd);
+            //return new Tuple2<>(v1._1() + v2._1(), dd);
             return new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2().toArray(), v2._2().toArray()));
         });
         // 4
         JavaPairRDD<Integer, Vector> s4 = s3.mapValues(v1 -> {
-            // Vector v = v1._2();
-            // BLAS$.MODULE$.scal(1.0 / v1._1(), v);
-            // return v;
+            //Vector v = v1._2();
+            //BLAS$.MODULE$.scal(1.0 / v1._1(), v);
+            //return v;
             return divideArray(v1._2().toArray(), v1._1());
         });
         // 5
@@ -67,9 +67,9 @@ public class KMeansImpl {
     private static Map<Integer, Vector> predictClusterAndComputeNewCenters(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
         Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters)                                   // 1
                 .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))                               // 2
-                .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2(), v2._2()))) // 3
-                .mapValues(v1 -> divideArray(v1._2(), v1._1()))                                                   // 4
-                //.map(v1 -> new Tuple2<>(v1._1(), divideArray(v1._2()._2(), v1._2._1())))
+                .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2().toArray(), v2._2().toArray()))) // 3
+                .mapValues(v1 -> divideArray(v1._2().toArray(), v1._1()))                                                   // 4
+                //.map(v1 -> new Tuple2<>(v1._1(), divideArray(v1._2()._2(), v1._2._1()))) // 4
                 .collectAsMap();                                                                                  // 5
         return newCenters;
 
