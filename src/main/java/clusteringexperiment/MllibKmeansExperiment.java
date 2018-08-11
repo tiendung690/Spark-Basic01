@@ -142,7 +142,7 @@ public class MllibKmeansExperiment {
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         // Save results to text file.
-        Util.saveAsCSV(predictedData, featuresCol, predictionCol, "clustering_out/mllib_kmeans");
+        //Util.saveAsCSV(predictedData, featuresCol, predictionCol, "clustering_out/mllib_kmeans");
 
         // Keep job alive, allows access to web ui.
         //new Scanner(System.in).nextLine();

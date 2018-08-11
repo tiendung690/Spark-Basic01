@@ -45,12 +45,12 @@ public class MyImplementationKmeansExperiment {
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        String path = "data_test/kdd_test.csv";
-
+        //String path = "data_test/kdd_test.csv";
+        String path = "data/kdd_10_proc.txt";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSetCSV(path);
+        memDataSet.loadDataSetCSV(path,false,true);
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
@@ -122,7 +122,7 @@ public class MyImplementationKmeansExperiment {
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         // Save results to text file.
-        Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");
+        //Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");
 
         // Keep job alive, allows access to web ui.
         //new Scanner(System.in).nextLine();

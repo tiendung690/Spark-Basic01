@@ -1,13 +1,11 @@
-package Testy;
+package tests;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
-import org.apache.spark.ml.linalg.DenseVector;
 import org.apache.spark.ml.linalg.Vector;
-import org.apache.spark.ml.linalg.VectorUDT;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
@@ -16,7 +14,6 @@ import org.apache.spark.sql.types.StructType;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
 import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 import java.util.Arrays;
 

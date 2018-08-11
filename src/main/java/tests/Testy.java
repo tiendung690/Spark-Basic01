@@ -1,18 +1,10 @@
-package Testy;
+package tests;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.ml.feature.StringIndexer;
-import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
-import org.apache.spark.sql.types.*;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by as on 10.03.2018.

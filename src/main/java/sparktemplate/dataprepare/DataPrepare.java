@@ -1,6 +1,8 @@
 package sparktemplate.dataprepare;
 
 import org.apache.log4j.Logger;
+import org.apache.spark.ml.feature.PCA;
+import org.apache.spark.ml.feature.PCAModel;
 import org.apache.spark.ml.linalg.*;
 import org.apache.spark.sql.*;
 import org.apache.spark.sql.expressions.UserDefinedFunction;
@@ -38,6 +40,16 @@ public class DataPrepare {
                 .drop(featuresCol)
                 .withColumnRenamed("udf", featuresCol);
         return converted;
+    }
+
+    public static Dataset<Row> reduceDimensions(Dataset<Row> data, String featuresCol, String reducedDimensionsCol, int dimensions){
+        PCA pca = new PCA()
+                .setInputCol(featuresCol)
+                .setOutputCol(reducedDimensionsCol)
+                .setK(dimensions);
+        PCAModel pcaModel = pca.fit(data);
+        Dataset<Row> result = pcaModel.transform(data);
+        return result;
     }
 
     /**
