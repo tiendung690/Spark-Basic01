@@ -44,29 +44,7 @@ public class TestKMeansImplPipeline {
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt";
-        //String path = "hdfs://10.2.28.17:9000/spark/kdd_10_proc.txt.gz";
-        //String path = "hdfs://192.168.100.4:9000/spark/kdd_10_proc.txt.gz";
-        //String path = "data/mllib/kdd_10_proc.txt";
-        String path = "data/mllib/kdd_5_proc.txt";
-        //String path = "data/mllib/kdd_3_proc.txt";
-        //String path = "data/mllib/flights_low.csv";
-        //String path = "data/mllib/kddFIX.txt";
-        //String path = "data/mllib/kddcup_train.txt";
-        //String path = "data/mllib/kddcup_train.txt.gz";
-        //String path = "hdfs://10.2.28.17:9000/spark/kddcup.txt";
-        //String path = "hdfs://10.2.28.17:9000/spark/kddcup_train.txt.gz";
-        //String path = "hdfs://10.2.28.17:9000/spark/kmean.txt";
-        //String path = "data/mllib/kmean.txt";
-        //String path = "data/mllib/iris2.csv";
-        //String path = "data/mllib/creditcard.csv";
-        //String path = "data/mllib/serce.csv";
-        //String path = "data/mllib/rezygnacje.csv";
-        //String path = "data/mllib/rezygnacje.csv";
-        //String path = "data/mllib/sat.csv"; // PROBLEM Z FORMATEM DANYCH
-        //String path = "data/mllib/creditcardBIG.csv";
-        //String path = "hdfs:/192.168.100.4/data/mllib/kmean.txt";
-
+        String path = "data_test/kdd_test.csv";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);

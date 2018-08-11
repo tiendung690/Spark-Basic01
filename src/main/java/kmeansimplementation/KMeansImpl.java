@@ -117,10 +117,13 @@ public class KMeansImpl {
 
             if (centersDistance < epsilon || iteration == maxIterations) {
                 condition = false;
+                iteration++;
+                logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
+                logger.info("Coveraged in "+iteration+" iterations.");
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
                 iteration++;
-                logger.info("ITERATION: " + iteration + ", ACCUMULATOR: " + accumulator.value() + " ms");
+                logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
             }
         } while (condition);
 
@@ -188,10 +191,14 @@ public class KMeansImpl {
             //double d = Distances.distanceMinkowski(point.toArray(), centers.get(i).toArray());
 
             // Canberra. Returns 1 cluster.
-            // double d = new org.apache.commons.math3.ml.distance.CanberraDistance().compute(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.CanberraDistance().compute(point.toArray(), centers.get(i).toArray());
 
             // EarthMovers.
-            // double d = new org.apache.commons.math3.ml.distance.EarthMoversDistance().compute(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.EarthMoversDistance().compute(point.toArray(), centers.get(i).toArray());
+
+            // Cosine.
+            //double d = Distances.distanceCosine(point, centers.get(i));
+            //double d = Distances.distanceCosine(point.toArray(), centers.get(i).toArray());
 
             distances[i] = d;
         }
