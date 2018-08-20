@@ -105,7 +105,7 @@ public class TestKMeansImplPipeline {
         System.out.println("Evaluation (Silhouette measure): " + clusteringEvaluator.evaluate(predictions));
         // Summary of clustering algorithms.
         ClusteringSummary clusteringSummary = new ClusteringSummary(predictions, kMeansImplEstimator.getPredictionCol(), kMeansImplEstimator.getFeaturesCol(), kMeansImplEstimator.getK());
-        // Print size of (number of data points in) each cluster.
+        // Print size of (number of data points in) each testcluster.
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
         // Save results to text file.
         //Util.saveAsCSV(predictedData,featuresCol, predictionCol, "clustering_out/impl_kmeans");

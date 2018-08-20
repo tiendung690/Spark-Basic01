@@ -10,7 +10,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.ASettings;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.ADataSet;

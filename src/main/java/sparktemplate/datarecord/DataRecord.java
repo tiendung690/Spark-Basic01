@@ -1,4 +1,4 @@
-package sparktemplate;
+package sparktemplate.datarecord;
 
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;

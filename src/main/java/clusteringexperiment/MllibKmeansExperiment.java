@@ -39,23 +39,32 @@ public class MllibKmeansExperiment {
         //Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
+//        SparkConf conf = new SparkConf()
+//                .setAppName("KMeans_Spark")
+//                .set("spark.driver.allowMultipleContexts", "true")
+//                .set("spark.eventLog.dir", "file:///C:/logs")
+//                .set("spark.eventLog.enabled", "true")
+//                .set("spark.driver.memory", "2g")
+//                .set("spark.executor.memory", "2g")
+//                .setMaster("local[*]");
+
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation")
-                .set("spark.driver.allowMultipleContexts", "true")
+                .setAppName("KMeans_Spark")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .set("spark.driver.memory", "2g")
-                .set("spark.executor.memory", "2g")
-                .setMaster("local[*]");
+                .setMaster("spark://10.2.28.17:7077")
+                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+                .set("spark.driver.host", "10.2.28.34");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        String path = "data_test/kdd_test.csv";
+        //String path = "data_test/kdd_test.csv";
+        String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSetCSV(path);
+        memDataSet.loadDataSetCSV(path,true,true);
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
@@ -94,13 +103,16 @@ public class MllibKmeansExperiment {
 
         // Set k.
         int k = initialCenters.size(); // 4;
+        // Set max iterations.
+        int maxIterations = 5;
+
 
         // Set Mllib.KMeans initial params.
         KMeans kMeans = new KMeans()
                 .setK(k)
                 .setEpsilon(1e-4)
                 //.setSeed(20L)
-                .setMaxIterations(20)
+                .setMaxIterations(maxIterations)
                 .setInitialModel(new KMeansModel(initialCentersArray));
         //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
 
@@ -138,7 +150,7 @@ public class MllibKmeansExperiment {
         // Summary of clustering algorithms.
         ClusteringSummary clusteringSummary = new ClusteringSummary(predictedData, predictionCol, featuresCol, k);
 
-        // Print size of (number of data points in) each cluster.
+        // Print size of (number of data points in) each testcluster.
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         // Save results to text file.

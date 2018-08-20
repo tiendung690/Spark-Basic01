@@ -7,7 +7,7 @@ import org.apache.spark.SparkContext;
 import org.apache.spark.ml.clustering.ClusteringSummary;
 import org.apache.spark.ml.evaluation.ClusteringEvaluator;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
 import sparktemplate.datasets.MemDataSet;
@@ -64,11 +64,11 @@ public class TestClustering {
         System.out.println("EVAL: " + clusteringEvaluator.evaluate(kMean.getPredictions()));
         ClusteringSummary clusteringSummary = new ClusteringSummary(kMean.getPredictions(), ClusteringStrings.predictionCol, ClusteringStrings.featuresCol, kMean.getNoCluster());
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
-        // Check cluster for single record.
+        // Check testcluster for single record.
         System.out.println("check predicted cluster for record: " + kMean.clusterRecord(dataRecord4, false));
         System.out.println("get clusters no.: " + kMean.getNoCluster());
 
-        // check if record exists in each cluster
+        // check if record exists in each testcluster
         for (int i = 0; i < kMean.getNoCluster(); i++) {
             System.out.println("record in cluster " + i + " :" + kMean.getCluster(i).checkRecord(dataRecord4, false));
         }

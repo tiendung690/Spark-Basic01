@@ -33,24 +33,38 @@ public class MyImplementationKmeansExperiment {
         Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
+//        SparkConf conf = new SparkConf()
+//                .setAppName("KMeans_Implementation")
+//                .set("spark.driver.allowMultipleContexts", "true")
+//                .set("spark.eventLog.dir", "file:///C:/logs")
+//                .set("spark.eventLog.enabled", "true")
+//                .set("spark.driver.memory", "2g")
+//                .set("spark.executor.memory", "2g")
+//                .setMaster("local[*]");
+
         SparkConf conf = new SparkConf()
                 .setAppName("KMeans_Implementation")
-                .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .set("spark.driver.memory", "2g")
+                .setMaster("spark://10.2.28.17:7077")
+                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
                 .set("spark.executor.memory", "2g")
-                .setMaster("local[*]");
+                .set("spark.executor.instances", "6")
+                .set("spark.executor.cores", "2")
+                //.set("spark.cores.max", "12")
+//                //.set("spark.default.parallelism", "12")
+                .set("spark.driver.host", "10.2.28.34");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
         //String path = "data_test/kdd_test.csv";
-        String path = "data/kdd_10_proc.txt";
+        //String path = "data/kdd_10_proc.txt";
+        String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSetCSV(path,false,true);
+        memDataSet.loadDataSetCSV(path,true,true);
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
@@ -84,12 +98,14 @@ public class MyImplementationKmeansExperiment {
 
         // Set k.
         int k = initialCenters.size(); // 4;
+        // Set max iterations.
+        int maxIterations = 5;
 
         // Random k centers.
         //ArrayList<Vector> initialCenters = initializeCenters(preparedDataRDD, k);
 
         // Compute final centers.
-        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(preparedDataRDD, initialCenters, 1e-4, 20);
+        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(preparedDataRDD, initialCenters, 1e-4, maxIterations);
 
         // Predict clusters.
         JavaPairRDD<Integer, Vector> predictedDataRDD = KMeansImpl.predictCluster(preparedDataRDD, finalCenters);
@@ -118,7 +134,7 @@ public class MyImplementationKmeansExperiment {
         // Summary of clustering algorithms.
         ClusteringSummary clusteringSummary = new ClusteringSummary(predictedData, predictionCol, featuresCol, k);
 
-        // Print size of (number of data points in) each cluster.
+        // Print size of (number of data points in) each testcluster.
         System.out.println(Arrays.toString(clusteringSummary.clusterSizes()));
 
         // Save results to text file.

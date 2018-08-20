@@ -71,7 +71,7 @@ public class SaveToExternalDB {
 
         StructType schema = new StructType(new StructField[]{
                 new StructField("features", DataTypes.StringType, false, Metadata.empty()),
-                new StructField("cluster", DataTypes.IntegerType, true, Metadata.empty())
+                new StructField("testcluster", DataTypes.IntegerType, true, Metadata.empty())
         });
         JavaRDD<Row> ss= dss.toJavaRDD()
                 .map(v1 -> {

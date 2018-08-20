@@ -6,7 +6,7 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.apache.spark.sql.types.StructType;
 import scala.Tuple2;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 
 import java.util.concurrent.atomic.AtomicLong;
 

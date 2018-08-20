@@ -2,7 +2,7 @@ package sparktemplate.datasets;
 
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import java.sql.*;
 
 

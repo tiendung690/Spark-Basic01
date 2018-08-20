@@ -3,7 +3,7 @@ package sparktemplate.clustering;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.dataprepare.DataPrepareClustering;
 
@@ -57,7 +57,7 @@ public class Cluster {
      * @return informacje
      */
     public String toString() {
-        return "cluster size: " + ds.count();
+        return "testcluster size: " + ds.count();
     }
 
 

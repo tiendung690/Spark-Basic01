@@ -3,10 +3,8 @@ package sparktemplate.clustering;
 import java.io.IOException;
 
 import sparktemplate.ASettings;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import sparktemplate.datasets.ADataSet;
-import sparktemplate.datasets.DBDataSet;
-import sparktemplate.datasets.MemDataSet;
 
 
 //Interfejs pokazujacy jak implementuje sie metody grupowania

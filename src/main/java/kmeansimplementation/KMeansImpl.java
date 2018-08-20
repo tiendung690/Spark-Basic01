@@ -89,7 +89,7 @@ public class KMeansImpl {
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
-            // 1. Predict cluster.
+            // 1. Predict testcluster.
             // 2. MapToPair.
             // 3. ReduceByKey.
             // 4. MapValues.
@@ -190,7 +190,7 @@ public class KMeansImpl {
             // Minkowski. 3x slower than Euclidean.
             //double d = Distances.distanceMinkowski(point.toArray(), centers.get(i).toArray());
 
-            // Canberra. Returns 1 cluster.
+            // Canberra. Returns 1 testcluster.
             //double d = new org.apache.commons.math3.ml.distance.CanberraDistance().compute(point.toArray(), centers.get(i).toArray());
 
             // EarthMovers.

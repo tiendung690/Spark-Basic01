@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import sparktemplate.ASettings;
-import sparktemplate.DataRecord;
+import sparktemplate.datarecord.DataRecord;
 import sparktemplate.datasets.ADataSet;
 
 
