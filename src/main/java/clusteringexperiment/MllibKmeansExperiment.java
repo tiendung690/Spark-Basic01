@@ -35,32 +35,32 @@ import java.util.Arrays;
 public class MllibKmeansExperiment {
     public static void main(String[] args) {
         // INFO DISABLED
-        //Logger.getLogger("org").setLevel(Level.OFF);
-        //Logger.getLogger("akka").setLevel(Level.OFF);
+        Logger.getLogger("org").setLevel(Level.OFF);
+        Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
-
-//        SparkConf conf = new SparkConf()
-//                .setAppName("KMeans_Spark")
-//                .set("spark.driver.allowMultipleContexts", "true")
-//                .set("spark.eventLog.dir", "file:///C:/logs")
-//                .set("spark.eventLog.enabled", "true")
-//                .set("spark.driver.memory", "2g")
-//                .set("spark.executor.memory", "2g")
-//                .setMaster("local[*]");
 
         SparkConf conf = new SparkConf()
                 .setAppName("KMeans_Spark")
+                .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .setMaster("spark://10.2.28.17:7077")
-                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-                .set("spark.driver.host", "10.2.28.34");
+                .set("spark.driver.memory", "2g")
+                .set("spark.executor.memory", "2g")
+                .setMaster("local[*]");
+
+//        SparkConf conf = new SparkConf()
+//                .setAppName("KMeans_Spark")
+//                .set("spark.eventLog.dir", "file:///C:/logs")
+//                .set("spark.eventLog.enabled", "true")
+//                .setMaster("spark://10.2.28.17:7077")
+//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+//                .set("spark.driver.host", "10.2.28.34");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        //String path = "data_test/kdd_test.csv";
-        String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
+        String path = "data_test/kdd_test.csv";
+        //String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);

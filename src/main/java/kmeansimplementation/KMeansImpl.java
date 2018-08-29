@@ -114,17 +114,15 @@ public class KMeansImpl {
                 centersDistance += Distances.distanceSquared(clusterCenters.get(i).toArray(), newClusterCenters.get(i).toArray());
             }
             centersDistance = centersDistance / clusterCenters.size();
-
             if (centersDistance < epsilon || iteration == maxIterations) {
                 condition = false;
-                iteration++;
                 logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
                 logger.info("Coveraged in "+iteration+" iterations.");
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
-                iteration++;
                 logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
             }
+            iteration++;
         } while (condition);
 
         return clusterCenters;
