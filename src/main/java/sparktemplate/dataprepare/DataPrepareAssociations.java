@@ -38,20 +38,20 @@ public class DataPrepareAssociations {
      * @return przygotowane dane
      */
     public static Dataset<Row> prepareDataSet(Dataset<Row> data, SparkSession sparkSession) {
-        return prepare(data,sparkSession,removeNumericsDefault,removeNullDefault);
+        return prepare(data, sparkSession, removeNumericsDefault, removeNullDefault);
     }
 
     /**
      * Metoda przygotowuje dane do wyznaczania regul asocjacyjnych.
      *
-     * @param data dane
-     * @param sparkSession obiekt SparkSession
+     * @param data           dane
+     * @param sparkSession   obiekt SparkSession
      * @param removeNumerics usuwanie kolumn z wartosciami numerycznymi
-     * @param removeNull usuwanie pustych wartosci z wierszy
+     * @param removeNull     usuwanie pustych wartosci z wierszy
      * @return
      */
     public static Dataset<Row> prepareDataSet(Dataset<Row> data, SparkSession sparkSession, boolean removeNumerics, boolean removeNull) {
-        return prepare(data,sparkSession,removeNumerics,removeNull);
+        return prepare(data, sparkSession, removeNumerics, removeNull);
     }
 
     private static Dataset<Row> prepare(Dataset<Row> data, SparkSession sparkSession, boolean removeNumerics, boolean removeNull) {
@@ -82,14 +82,14 @@ public class DataPrepareAssociations {
             }
             ExpressionEncoder<Row> encoder = RowEncoder.apply(structType);
             // Create new dataset with concatenated column names and values.
-            String concatDelimiter = "-";
+            String concatDelimiter = "=";
             Dataset<Row> columnNamesAndValuesConcatenated = data.map(value -> {
                 Object[] obj = new Object[value.size()];
                 for (int i = 0; i < value.size(); i++) {
                     if (value.isNullAt(i)) {
                         obj[i] = value.get(i);
                     } else {
-                        obj[i] = value.get(i) + concatDelimiter + cols[i];
+                        obj[i] = cols[i] + concatDelimiter + value.get(i);
                     }
                 }
                 return RowFactory.create(obj);
