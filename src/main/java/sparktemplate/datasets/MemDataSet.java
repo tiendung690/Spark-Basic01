@@ -69,13 +69,17 @@ public class MemDataSet implements ADataSet {
                 .load(path);
     }
 
-    public void saveDataSetCSV(String path, Dataset<Row> dataset) {dataset.write().csv(path);}
+    public static void saveDataSetCSV(String path, Dataset<Row> dataset) {dataset.write().csv(path);}
 
     public void loadDataSetPARQUET(String path) {this.ds = sparkSession.read().parquet(path);}
 
     // -----------------------------------IMPORTANT--------------------------------------------------
     // Use parquet format when features are SparseVector or save as JSON with provided schema.
     public static void saveDataSetPARQUET(String path, Dataset<Row> dataset) {dataset.write().parquet(path);}
+
+    public void loadDataSetOrc(String path) {this.ds = sparkSession.read().orc(path);}
+
+    public static void saveDataSetOrc(String path, Dataset<Row> dataset) {dataset.write().orc(path);}
 
     public void loadDataSetJSON(String path) {this.ds = sparkSession.read().json(path);}
 
