@@ -87,16 +87,17 @@ public class TestKMeansImplPipeline {
                 .setMaxIterations(20)
                 .setSeed(1L);
 
+        //KMeansImplModel kMeansImplModel = kMeansImplEstimator.fit(preparedData);
+        //Dataset<Row> predictions = kMeansImplModel.transform(preparedData);
+
         // Create pipeline and add stages.
         Pipeline pipeline = new Pipeline()
                 .setStages(new PipelineStage[]{kMeansImplEstimator});
-
         // Build model.
         PipelineModel model = pipeline.fit(preparedData);
 
         // Make predictions.
         Dataset<Row> predictions = model.transform(preparedData);
-        //Dataset<Row> predictions = kMeansImplEstimator.fit(preparedData).transform(preparedData);
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol(kMeansImplEstimator.getFeaturesCol());
