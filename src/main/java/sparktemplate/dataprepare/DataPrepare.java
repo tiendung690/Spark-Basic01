@@ -19,7 +19,7 @@ import static org.apache.spark.sql.functions.udf;
 
 /**
  * Klasa zawierajaca metody przygotowujace wstepnie dane.
- * <p>
+ *
  * Created by as on 21.03.2018.
  */
 public class DataPrepare {
@@ -51,6 +51,15 @@ public class DataPrepare {
         Dataset<Row> result = pcaModel.transform(data);
         return result;
     }
+
+    public static Dataset<Row> removeNumericalCols(Dataset<Row> data){
+        return data.drop(findNumericalColumns(data).keySet().toArray(new String[0]));
+    }
+
+    public static Dataset<Row> removeSymbolicalCols(Dataset<Row> data){
+        return data.drop(findSymbolicalColumns(data).keySet().toArray(new String[0]));
+    }
+
 
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
