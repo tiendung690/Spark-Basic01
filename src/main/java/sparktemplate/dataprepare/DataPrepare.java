@@ -60,6 +60,11 @@ public class DataPrepare {
         return data.drop(findSymbolicalColumns(data).keySet().toArray(new String[0]));
     }
 
+    public static Dataset<Row> splitRandom(Dataset<Row> data, double percent){
+        Dataset<Row>[] splits = data.randomSplit(new double[]{percent, 1-percent});
+        Dataset<Row> part = splits[0];
+        return part;
+    }
 
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
