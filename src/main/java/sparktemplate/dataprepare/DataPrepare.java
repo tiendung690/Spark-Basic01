@@ -66,6 +66,14 @@ public class DataPrepare {
         return part;
     }
 
+    public static Dataset<Row> multiplyData(Dataset<Row> data, int multiplier){
+        Dataset<Row> ds = data;
+        for (int i = 1; i < multiplier; i++) {
+            ds=ds.union(data);
+        }
+        return ds;
+    }
+
     /**
      * Metoda tworzaca Dataset w oparciu o czesci skladowe innego Dataseta.
      *
