@@ -52,18 +52,15 @@ public class DataPrepare {
         return result;
     }
 
-    public static Dataset<Row> removeNumericalCols(Dataset<Row> data){
-        return data.drop(findNumericalColumns(data).keySet().toArray(new String[0]));
+    public static Dataset<Row> splitData(Dataset<Row> data, double fraction){
+        Dataset<Row>[] splits = data.randomSplit(new double[]{fraction, 1-fraction});
+        Dataset<Row> part1 = splits[0];
+        Dataset<Row> part2 = splits[1];
+        return part1;
     }
 
-    public static Dataset<Row> removeSymbolicalCols(Dataset<Row> data){
-        return data.drop(findSymbolicalColumns(data).keySet().toArray(new String[0]));
-    }
-
-    public static Dataset<Row> splitRandom(Dataset<Row> data, double percent){
-        Dataset<Row>[] splits = data.randomSplit(new double[]{percent, 1-percent});
-        Dataset<Row> part = splits[0];
-        return part;
+    public static Dataset<Row> sampleData(Dataset<Row> data, double fraction){
+        return data.sample(fraction, 10L);
     }
 
     public static Dataset<Row> multiplyData(Dataset<Row> data, int multiplier){
@@ -111,6 +108,10 @@ public class DataPrepare {
         return mapSymbolical;
     }
 
+    public static Dataset<Row> removeSymbolicalCols(Dataset<Row> data){
+        return data.drop(findSymbolicalColumns(data).keySet().toArray(new String[0]));
+    }
+
     /**
      * Metoda zwracajaca mape nazw koolumn wartosci i ich indeksy.
      *
@@ -136,6 +137,11 @@ public class DataPrepare {
         logger.info("Numerical values:" + mapNumerical.keySet().toString());
         return mapNumerical;
     }
+
+    public static Dataset<Row> removeNumericalCols(Dataset<Row> data){
+        return data.drop(findNumericalColumns(data).keySet().toArray(new String[0]));
+    }
+
 
     /**
      * Metoda wypelniajaca brakujace dane.
