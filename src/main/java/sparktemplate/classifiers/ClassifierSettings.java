@@ -42,7 +42,7 @@ public class ClassifierSettings implements ASettings {
         return (ClassifierRandomForest) randomForestClassifier;
     }
 
-    public ClassifierLinearSVC setLinearRegression() {
+    public ClassifierLinearSVC setLinearSVC() {
         classificationAlgo = ClassifierName.LINEARSVM;
         linearSVC = new ClassifierLinearSVC();
         return (ClassifierLinearSVC) linearSVC;

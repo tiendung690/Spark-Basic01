@@ -20,7 +20,7 @@ public class DataPrepareClustering {
 
     private DataModelsClustering dataModelsClustering;
     // Prepare data based on existing model.
-    private static final boolean isSingleDefault = true;
+    private static final boolean isSingleDefault = false;
     // Remove symbolical columns.
     private static final boolean removeStringsDefault = true;
     // Logger.
