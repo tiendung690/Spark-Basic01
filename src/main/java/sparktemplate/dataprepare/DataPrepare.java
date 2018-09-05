@@ -29,6 +29,13 @@ public class DataPrepare {
     private static final Logger logger = Logger.getLogger(loggerName);
 
 
+    /**
+     * Metoda zamieniajaca wektory na geste(dense). Uzyto tutaj UserDefinedFunction.
+     *
+     * @param data
+     * @param featuresCol - Kolumna zawierajaca wektory.
+     * @return
+     */
     public static Dataset<Row> convertVectorColToDense(Dataset<Row> data, String featuresCol) {
         // Prepare udf.
         UserDefinedFunction mode = udf(
@@ -42,6 +49,15 @@ public class DataPrepare {
         return converted;
     }
 
+    /**
+     * Metoda redukujaca wymiary danych.
+     *
+     * @param data
+     * @param featuresCol - Nazwa kolumny z danymi.
+     * @param reducedDimensionsCol - Nowa kolumna ze zredukowanymi danymi.
+     * @param dimensions - Liczba oczekiwanych wymiarow.
+     * @return
+     */
     public static Dataset<Row> reduceDimensions(Dataset<Row> data, String featuresCol, String reducedDimensionsCol, int dimensions){
         PCA pca = new PCA()
                 .setInputCol(featuresCol)
@@ -52,17 +68,24 @@ public class DataPrepare {
         return result;
     }
 
-    public static Dataset<Row> splitData(Dataset<Row> data, double fraction){
-        Dataset<Row>[] splits = data.randomSplit(new double[]{fraction, 1-fraction});
-        Dataset<Row> part1 = splits[0];
-        Dataset<Row> part2 = splits[1];
-        return part1;
-    }
-
+    /**
+     * Metoda zwracajaca probke danych.
+     *
+     * @param data
+     * @param fraction - czesc danych (0-1)
+     * @return
+     */
     public static Dataset<Row> sampleData(Dataset<Row> data, double fraction){
         return data.sample(fraction, 10L);
     }
 
+    /**
+     * Metoda zwielokrotniajaca dane.
+     *
+     * @param data
+     * @param multiplier - mnoznik
+     * @return
+     */
     public static Dataset<Row> multiplyData(Dataset<Row> data, int multiplier){
         Dataset<Row> ds = data;
         for (int i = 1; i < multiplier; i++) {
@@ -108,6 +131,12 @@ public class DataPrepare {
         return mapSymbolical;
     }
 
+    /**
+     * Metoda usuwajaca kolumny z wartosciami symbolicznymi.
+     *
+     * @param data
+     * @return
+     */
     public static Dataset<Row> removeSymbolicalCols(Dataset<Row> data){
         return data.drop(findSymbolicalColumns(data).keySet().toArray(new String[0]));
     }
@@ -138,6 +167,12 @@ public class DataPrepare {
         return mapNumerical;
     }
 
+    /**
+     * Metoda usuwajaca kolumny z wartosciami numerycznymi.
+     *
+     * @param data
+     * @return
+     */
     public static Dataset<Row> removeNumericalCols(Dataset<Row> data){
         return data.drop(findNumericalColumns(data).keySet().toArray(new String[0]));
     }
