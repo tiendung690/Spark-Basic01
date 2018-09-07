@@ -1,4 +1,4 @@
-package sparktemplate.testcluster;
+package sparktemplate.testremote;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
