@@ -43,6 +43,7 @@ public class MemDataSet implements ADataSet {
 
     /**
      * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
+     * Domyslny delimiter to ",".
      *
      * @param path sciezka do pliku
      */
