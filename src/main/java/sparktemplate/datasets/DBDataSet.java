@@ -99,7 +99,7 @@ public class DBDataSet implements ADataSet {
 
     /**
      * Metoda zapisujaca zbior danych do bazy.
-     * 
+     *
      * @param dataset
      * @param mode Metoda zapisu (Append, Overwrite, ...)
      */
