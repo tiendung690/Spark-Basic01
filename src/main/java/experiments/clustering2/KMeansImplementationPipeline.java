@@ -1,5 +1,6 @@
-package kmeansimplementation.pipeline;
+package experiments.clustering2;
 
+import kmeansimplementation.pipeline.KMeansImplEstimator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
@@ -24,7 +25,7 @@ import java.util.Arrays;
 /**
  * Created by as on 18.04.2018.
  */
-public class TestKMeansImplPipeline {
+public class KMeansImplementationPipeline {
     public static void main(String[] args) {
 
         // INFO DISABLED
