@@ -3,6 +3,7 @@ package sparktemplate.datasets;
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
 import sparktemplate.datarecord.DataRecord;
+
 import java.sql.*;
 
 
@@ -54,8 +55,7 @@ public class DBDataSet implements ADataSet {
     /**
      * Metoda inicjalizujaca polaczenie z baza.
      */
-    public void connect()
-    {
+    public void connect() {
         // Spark
         try {
             this.ds = sparkSession.read()
@@ -89,11 +89,21 @@ public class DBDataSet implements ADataSet {
     }
 
     /**
-     * Metoda zapisujaca zbior danych do bazy.
+     * Metoda zapisujaca zbior danych do bazy. Domyslnie dane zostana dodane do istniejacych.
      *
      * @param dataset dane do zapisania w bazie
      */
     public void save(Dataset<Row> dataset) {
+        save(dataset, SaveMode.Append);
+    }
+
+    /**
+     * Metoda zapisujaca zbior danych do bazy.
+     * 
+     * @param dataset
+     * @param mode Metoda zapisu (Append, Overwrite, ...)
+     */
+    public void save(Dataset<Row> dataset, SaveMode mode) {
         try {
             dataset.write()
                     .option("driver", driver)
@@ -103,7 +113,7 @@ public class DBDataSet implements ADataSet {
                     .option("password", password)
                     .option("inferSchema", true)
                     .format("org.apache.spark.sql.execution.datasources.jdbc.DefaultSource")
-                    .mode(SaveMode.Append)
+                    .mode(mode)
                     .save();
         } catch (Exception e) {
             System.err.println("DB exception: " + e);
