@@ -11,7 +11,7 @@ public class TestPi {
     public static void main(String[] args) {
 
         SparkConf conf = new SparkConf()
-                .setAppName("Spark_Experiment_Pi")
+                .setAppName("Spark_Pi")
                 // Cluster address.
                 .setMaster("spark://10.2.28.17:7077")
                 // Project jar. Build artifact without Spark libs.
