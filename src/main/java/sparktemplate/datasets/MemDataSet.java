@@ -55,6 +55,20 @@ public class MemDataSet implements ADataSet {
     }
 
     /**
+     *
+     * @param path
+     * @param delimiter CSV delimiter.
+     */
+    public void loadDataSetCSV(String path, String delimiter) {
+        this.ds = sparkSession.read()
+                .format("com.databricks.spark.csv")
+                .option("header", true)
+                .option("inferSchema", true)
+                .option("delimiter", delimiter)
+                .load(path);
+    }
+
+    /**
      * Odczytanie zbioru danych z pliku w formacie CSV (pierwszy wiersz zawiera nazwy atrybutow)
      *
      * @param path        sciezka do pliku
