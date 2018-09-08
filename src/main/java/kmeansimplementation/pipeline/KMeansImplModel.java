@@ -2,6 +2,7 @@ package kmeansimplementation.pipeline;
 
 
 import kmeansimplementation.DataModel;
+import kmeansimplementation.DistanceName;
 import kmeansimplementation.KMeansImpl;
 import kmeansimplementation.Util;
 import org.apache.spark.api.java.JavaPairRDD;
@@ -25,6 +26,7 @@ public class KMeansImplModel extends Model<KMeansImplModel> {
     private ArrayList<Vector> clusterCenters;
     private String featuresCol = "features";
     private String predictionCol = "prediction";
+    private DistanceName distanceName = DistanceName.EUCLIDEAN;
 
     public KMeansImplModel setClusterCenters(ArrayList<Vector> clusterCenters) {
         this.clusterCenters = clusterCenters;
@@ -53,11 +55,20 @@ public class KMeansImplModel extends Model<KMeansImplModel> {
         return predictionCol;
     }
 
+    public DistanceName getDistanceName() {
+        return distanceName;
+    }
+
+    public KMeansImplModel setDistanceName(DistanceName distanceName) {
+        this.distanceName = distanceName;
+        return this;
+    }
+
     @Override
     public Dataset<Row> transform(Dataset<?> dataset) {
 
         JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
-        JavaPairRDD<Integer, Vector> x5 = KMeansImpl.predictCluster2(x3, this.clusterCenters);
+        JavaPairRDD<Integer, Vector> x5 = KMeansImpl.predictCluster2(x3, this.clusterCenters, this.distanceName);
         Dataset<Row> dm = Util.RDDToDataset(x5, SparkSession.getActiveSession().get(), this.featuresCol, this.predictionCol);
         return dm;
     }

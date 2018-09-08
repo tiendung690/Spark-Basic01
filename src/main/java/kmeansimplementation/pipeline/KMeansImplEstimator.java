@@ -2,6 +2,7 @@ package kmeansimplementation.pipeline;
 
 
 import kmeansimplementation.DataModel;
+import kmeansimplementation.DistanceName;
 import kmeansimplementation.KMeansImpl;
 import kmeansimplementation.Util;
 import org.apache.spark.api.java.JavaRDD;
@@ -26,6 +27,7 @@ public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
     private double epsilon;
     private int maxIterations;
     private int k;
+    private DistanceName distanceName;
 
     public KMeansImplEstimator() {
         this.initialCenters = new ArrayList<>();
@@ -33,6 +35,7 @@ public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
         this.epsilon =1e-4;
         this.maxIterations = 20;
         this.k = 2;
+        this.distanceName = DistanceName.EUCLIDEAN;
     }
 
     public String getFeaturesCol() {
@@ -98,6 +101,13 @@ public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
         return this;
     }
 
+    public DistanceName getDistanceName() { return distanceName; }
+
+    public KMeansImplEstimator setDistanceName(DistanceName distanceName) {
+        this.distanceName = distanceName;
+        return this;
+    }
+
     @Override
     public KMeansImplModel fit(Dataset<?> dataset) {
         //this.transformSchema(dataset.schema());
@@ -105,8 +115,9 @@ public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
         if(this.initialCenters.isEmpty()){
             this.initialCenters = KMeansImpl.initializeCenters(x3,this.k);
         }
-        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(x3, initialCenters, this.epsilon, this.maxIterations);
+        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(x3, initialCenters, this.epsilon, this.maxIterations, this.distanceName);
         KMeansImplModel KMeansImplModel = new KMeansImplModel()
+                .setDistanceName(this.distanceName)
                 .setClusterCenters(finalCenters)
                 .setPredictionCol(this.predictionCol)
                 .setFeaturesCol(this.featuresCol);

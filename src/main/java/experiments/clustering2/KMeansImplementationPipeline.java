@@ -1,5 +1,6 @@
 package experiments.clustering2;
 
+import kmeansimplementation.DistanceName;
 import kmeansimplementation.pipeline.KMeansImplEstimator;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -45,7 +46,7 @@ public class KMeansImplementationPipeline {
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        String path = "data_test/kdd_test.csv";
+        String path = "data/kdd_10_proc.txt";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
@@ -80,13 +81,14 @@ public class KMeansImplementationPipeline {
 
         // Algorithm settings.
         KMeansImplEstimator kMeansImplEstimator = new KMeansImplEstimator()
+                .setDistanceName(DistanceName.EUCLIDEAN)
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
                 .setK(k)
                 .setEpsilon(1e-4)
                 .setInitialCenters(initialCenters)
-                .setMaxIterations(20)
-                .setSeed(1L);
+                .setMaxIterations(5)
+                .setSeed(1L); // For random centers.
 
         //KMeansImplModel kMeansImplModel = kMeansImplEstimator.fit(preparedData);
         //Dataset<Row> predictions = kMeansImplModel.transform(preparedData);
@@ -99,6 +101,7 @@ public class KMeansImplementationPipeline {
 
         // Make predictions.
         Dataset<Row> predictions = model.transform(preparedData);
+        predictions.show();
 
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
         clusteringEvaluator.setFeaturesCol(kMeansImplEstimator.getFeaturesCol());

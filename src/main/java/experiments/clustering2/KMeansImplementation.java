@@ -1,6 +1,7 @@
 package experiments.clustering2;
 
 import kmeansimplementation.DataModel;
+import kmeansimplementation.DistanceName;
 import kmeansimplementation.KMeansImpl;
 import kmeansimplementation.Util;
 import org.apache.log4j.Level;
@@ -33,43 +34,45 @@ public class KMeansImplementation {
         Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
-//        SparkConf conf = new SparkConf()
-//                .setAppName("KMeans_Implementation")
-//                .set("spark.driver.allowMultipleContexts", "true")
-//                .set("spark.eventLog.dir", "file:///C:/logs")
-//                .set("spark.eventLog.enabled", "true")
-//                .set("spark.driver.memory", "2g")
-//                .set("spark.executor.memory", "2g")
-//                .setMaster("local[*]");
-
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation")
+                .setAppName("KMeans_Implementation_repart_16")
+                .set("spark.driver.allowMultipleContexts", "true")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .setMaster("spark://10.2.28.17:7077")
-                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
-                //
-                .set("spark.executor.memory", "12g")
-//                .set("spark.executor.instances", "12")
-//                .set("spark.executor.cores", "2")
-                //.set("spark.cores.max", "3")
-                .set("spark.driver.host", "10.2.28.34");
+                .set("spark.driver.memory", "2g")
+                .set("spark.executor.memory", "2g")
+                .setMaster("local[*]");
+
+//        SparkConf conf = new SparkConf()
+//                .setAppName("KMeans_Implementation")
+//                .set("spark.eventLog.dir", "file:///C:/logs")
+//                .set("spark.eventLog.enabled", "true")
+//                .setMaster("spark://10.2.28.17:7077")
+//                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+//                //
+//                .set("spark.executor.memory", "12g")
+////                .set("spark.executor.instances", "12")
+////                .set("spark.executor.cores", "2")
+//                //.set("spark.cores.max", "3")
+//                .set("spark.driver.host", "10.2.28.34");
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
         //String path = "data_test/kdd_test.csv";
-        //String path = "data/kdd_10_proc.txt";
+        String path = "data/kdd_10_proc.txt";
         //String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
-        String path = "hdfs://10.2.28.17:9000/data/kdd_clustering";
+        //String path = "hdfs://10.2.28.17:9000/data/kdd_clustering";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
         //memDataSet.loadDataSetCSV(path,true,true);
-        memDataSet.loadDataSetPARQUET(path);
+        memDataSet.loadDataSetCSV(path);
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> preparedData = memDataSet.getDs();//dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        preparedData.repartition(16);
+
 
         // Select initial centers.
         JavaRDD<Row> filteredRDD = preparedData
@@ -106,10 +109,10 @@ public class KMeansImplementation {
         //ArrayList<Vector> initialCenters = initializeCenters(preparedDataRDD, k);
 
         // Compute final centers.
-        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(preparedDataRDD, initialCenters, 1e-4, maxIterations);
+        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(preparedDataRDD, initialCenters, 1e-4, maxIterations, DistanceName.EUCLIDEAN);
 
         // Predict clusters.
-        JavaPairRDD<Integer, Vector> predictedDataRDD = KMeansImpl.predictCluster(preparedDataRDD, finalCenters);
+        JavaPairRDD<Integer, Vector> predictedDataRDD = KMeansImpl.predictCluster(preparedDataRDD, finalCenters, DistanceName.EUCLIDEAN);
 
         // Create Dataset from RDD.
         String featuresCol = "features";

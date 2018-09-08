@@ -33,9 +33,9 @@ public class KMeansImpl {
         return initialCentersVector;
     }
 
-    private static Map<Integer, Vector> predictClusterAndComputeNewCenters2(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
+    private static Map<Integer, Vector> predictClusterAndComputeNewCenters2(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters, DistanceName distanceName) {
         // 1
-        JavaPairRDD<Integer, Vector> s1 = predictCluster2(data, clusterCenters);
+        JavaPairRDD<Integer, Vector> s1 = predictCluster2(data, clusterCenters, distanceName);
         // 2
         JavaPairRDD<Integer, Tuple2<Long, Vector>> s2 = s1.mapPartitionsToPair(t -> {
             List<Tuple2<Integer, Tuple2<Long, Vector>>> list = new ArrayList<>();
@@ -64,8 +64,8 @@ public class KMeansImpl {
         return newCenters;
     }
 
-    private static Map<Integer, Vector> predictClusterAndComputeNewCenters(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters) {
-        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters)                                   // 1
+    private static Map<Integer, Vector> predictClusterAndComputeNewCenters(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters, DistanceName distanceName) {
+        Map<Integer, Vector> newCenters = predictCluster(data, clusterCenters, distanceName)                                   // 1
                 .mapToPair(t -> new Tuple2<>(t._1(), new Tuple2<>(1L, t._2())))                               // 2
                 .reduceByKey((v1, v2) -> new Tuple2<>(v1._1() + v2._1(), sumArrayByColumn(v1._2().toArray(), v2._2().toArray()))) // 3
                 .mapValues(v1 -> divideArray(v1._2().toArray(), v1._1()))                                                   // 4
@@ -75,7 +75,7 @@ public class KMeansImpl {
 
     }
 
-    public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations) {
+    public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations, DistanceName distanceName) {
 
         JavaSparkContext jsc = new JavaSparkContext(data.context());
         LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
@@ -94,9 +94,9 @@ public class KMeansImpl {
             // 3. ReduceByKey.
             // 4. MapValues.
             // 5. CollectAsMap.
-            data.persist(StorageLevel.MEMORY_ONLY());
-            Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters(data, newClusterCenters);
-            data.unpersist();
+            //data.persist(StorageLevel.MEMORY_ONLY());
+            Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters(data, newClusterCenters, distanceName);
+            //data.unpersist();
 
 
             // Accumulator time.
@@ -117,7 +117,7 @@ public class KMeansImpl {
             if (centersDistance < epsilon || iteration == maxIterations) {
                 condition = false;
                 logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
-                logger.info("Coveraged in "+iteration+" iterations.");
+                logger.info("Coveraged in " + iteration + " iterations.");
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
                 logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
@@ -128,7 +128,7 @@ public class KMeansImpl {
         return clusterCenters;
     }
 
-    public static JavaPairRDD<Integer, Vector> predictCluster2(JavaRDD<DataModel> data, ArrayList<Vector> centers) {
+    public static JavaPairRDD<Integer, Vector> predictCluster2(JavaRDD<DataModel> data, ArrayList<Vector> centers, DistanceName distanceName) {
 
         JavaSparkContext jsc = new JavaSparkContext(data.context());
         Broadcast<ArrayList<Vector>> centersBroadcast = jsc.broadcast(centers);
@@ -138,7 +138,7 @@ public class KMeansImpl {
                     List<Tuple2<Integer, Vector>> list = new ArrayList<>();
                     while (dataModel.hasNext()) {
                         Vector points = dataModel.next().getData();
-                        double[] distances = computeDistance(centersBroadcast.value(), points);
+                        double[] distances = computeDistance(centersBroadcast.value(), points, distanceName);
                         int predictedCluster = findLowerValIndex(distances);
                         list.add(new Tuple2<>(predictedCluster, points));
                     }
@@ -149,7 +149,7 @@ public class KMeansImpl {
         return predictedClusters;
     }
 
-    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> data, ArrayList<Vector> centers) {
+    public static JavaPairRDD<Integer, Vector> predictCluster(JavaRDD<DataModel> data, ArrayList<Vector> centers, DistanceName distanceName) {
 
         JavaSparkContext jsc = new JavaSparkContext(data.context());
         Broadcast<ArrayList<Vector>> centersBroadcast = jsc.broadcast(centers);
@@ -157,7 +157,7 @@ public class KMeansImpl {
         JavaPairRDD<Integer, Vector> predictedClusters = data
                 .mapToPair(dataModel -> {
                     Vector points = dataModel.getData();
-                    double[] distances = computeDistance(centersBroadcast.value(), points);
+                    double[] distances = computeDistance(centersBroadcast.value(), points, distanceName);
                     int predictedCluster = findLowerValIndex(distances);
                     return new Tuple2<>(predictedCluster, points);
                 });
@@ -166,39 +166,56 @@ public class KMeansImpl {
         return predictedClusters;
     }
 
-    private static double[] computeDistance(ArrayList<Vector> centers, Vector point) {
+    private static double[] computeDistanceEuclidean(ArrayList<Vector> centers, Vector point) {
         double[] distances = new double[centers.size()];
         for (int i = 0; i < centers.size(); i++) {
-            //Spark sqdist.
-            //double d = Vectors.sqdist(point, centers.get(i));                                 //16s
-            //Euclidean distance with Vector.
-            //double d = Distances.distanceEuclidean(point, centers.get(i));                    //25s
             //Euclidean distance with Array.
-            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray());  //16s // DEFAULT
+            double d = Distances.distanceEuclidean(point.toArray(), centers.get(i).toArray());
             //double d = new org.apache.commons.math3.ml.distance.EuclideanDistance().compute(point.toArray(), centers.get(i).toArray());
-
-            // Chebyshev.
-            //double d = Distances.distanceChebyshev(point.toArray(), centers.get(i).toArray());
-            //double d = new org.apache.commons.math3.ml.distance.ChebyshevDistance().compute(point.toArray(), centers.get(i).toArray());
-
-            // Manhattan.
-            //double d = Distances.distanceManhattan(point.toArray(), centers.get(i).toArray());
-            //double d = new org.apache.commons.math3.ml.distance.ManhattanDistance().compute(point.toArray(), centers.get(i).toArray());
-
-            // Minkowski. 3x slower than Euclidean.
-            //double d = Distances.distanceMinkowski(point.toArray(), centers.get(i).toArray());
-
-            // Canberra. Returns 1 testcluster.
-            //double d = new org.apache.commons.math3.ml.distance.CanberraDistance().compute(point.toArray(), centers.get(i).toArray());
-
-            // EarthMovers.
-            //double d = new org.apache.commons.math3.ml.distance.EarthMoversDistance().compute(point.toArray(), centers.get(i).toArray());
-
-            // Cosine.
-            //double d = Distances.distanceCosine(point, centers.get(i));
-            //double d = Distances.distanceCosine(point.toArray(), centers.get(i).toArray());
-
+            //Spark sqdist.
+            //double d = Vectors.sqdist(point, centers.get(i));
             distances[i] = d;
+        }
+        return distances;
+    }
+
+    private static double[] computeDistanceManhattan(ArrayList<Vector> centers, Vector point) {
+        double[] distances = new double[centers.size()];
+        for (int i = 0; i < centers.size(); i++) {
+            // Manhattan.
+            double d = Distances.distanceManhattan(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.ManhattanDistance().compute(point.toArray(), centers.get(i).toArray());
+            distances[i] = d;
+        }
+        return distances;
+    }
+
+    private static double[] computeDistanceChebyshev(ArrayList<Vector> centers, Vector point) {
+        double[] distances = new double[centers.size()];
+        for (int i = 0; i < centers.size(); i++) {
+            double d = Distances.distanceChebyshev(point.toArray(), centers.get(i).toArray());
+            //double d = new org.apache.commons.math3.ml.distance.ChebyshevDistance().compute(point.toArray(), centers.get(i).toArray());
+            distances[i] = d;
+        }
+        return distances;
+    }
+
+
+    private static double[] computeDistance(ArrayList<Vector> centers, Vector point, DistanceName distanceName) {
+        double[] distances = new double[0];
+        switch (distanceName) {
+            case EUCLIDEAN:
+                distances = computeDistanceEuclidean(centers, point);
+                break;
+            case MANHATTAN:
+                distances = computeDistanceManhattan(centers, point);
+                break;
+            case CHEBYSHEV:
+                distances = computeDistanceChebyshev(centers, point);
+                break;
+            default:
+                System.out.println("Wrong distance type!");
+                break;
         }
         return distances;
     }
