@@ -132,4 +132,9 @@ public class KMean implements AClustering {
         }
         return stringBuilder.toString();
     }
+
+    public void printReport(){
+        System.out.println(getEvaluation());
+        System.out.println(getCenters());
+    }
 }
