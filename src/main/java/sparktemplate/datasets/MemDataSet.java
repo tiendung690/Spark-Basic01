@@ -23,11 +23,9 @@ public class MemDataSet implements ADataSet {
     private SparkSession sparkSession;
     private Dataset<Row> ds;
 
-    /**
-     * Konstruktor inicjalizujacy obiekt MemDataSet.
-     *
-     * @param sparkSession obiekt sparkSession
-     */
+    public MemDataSet() {
+    }
+
     public MemDataSet(SparkSession sparkSession) {
         this.sparkSession = sparkSession;
     }
@@ -37,8 +35,9 @@ public class MemDataSet implements ADataSet {
         return ds;
     }
 
-    public void setDs(Dataset<Row> ds) {
+    public MemDataSet setDs(Dataset<Row> ds) {
         this.ds = ds;
+        return this;
     }
 
     /**

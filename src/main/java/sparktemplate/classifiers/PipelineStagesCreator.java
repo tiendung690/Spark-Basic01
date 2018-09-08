@@ -21,6 +21,7 @@ public class PipelineStagesCreator {
         StringIndexerModel labelIndexer = new StringIndexer()
                 .setInputCol(ClassificationStrings.labelCol)
                 .setOutputCol(ClassificationStrings.indexedLabelCol)
+                .setHandleInvalid("skip") // Use when testing data don not contains all labels. Fix problem with LinearSVM.
                 .fit(data);
 
         // Stage 2.
@@ -28,7 +29,8 @@ public class PipelineStagesCreator {
         VectorIndexer featureIndexer = new VectorIndexer()
                 .setInputCol(ClassificationStrings.featuresCol)
                 .setOutputCol(ClassificationStrings.indexedFeaturesCol)
-                .setMaxCategories(4); // features with > 4 distinct values are treated as continuous.
+                .setHandleInvalid("keep")  // Use when testing data don not contains all labels.
+                .setMaxCategories(10); // features with > 4 distinct values are treated as continuous.
 
         // Stage 3.
         // Class that extends PipelineStage, e.g. classification algorithms.
