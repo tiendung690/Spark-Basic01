@@ -1,4 +1,4 @@
-package sparktemplate.testremote;
+package experiments.dataprepare;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -8,12 +8,11 @@ import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import sparktemplate.dataprepare.DataPrepareAssociations;
 import sparktemplate.dataprepare.DataPrepareClassification;
 import sparktemplate.dataprepare.DataPrepareClustering;
 import sparktemplate.datasets.MemDataSet;
 
-public class PrepareData1 {
+public class PrepareData3 {
     public static void main(String[] args) {
 
         // INFO DISABLED
@@ -22,7 +21,7 @@ public class PrepareData1 {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Prepare_Data_To_HDFS_KDD")
+                .setAppName("Prepare_Data_To_HDFS_REZYGNACJE")
                 .setMaster("spark://10.2.28.17:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 .set("spark.executor.memory", "15g")
@@ -33,9 +32,9 @@ public class PrepareData1 {
         JavaSparkContext jsc = new JavaSparkContext(context);
 
         // Load raw data from hdfs.
-        String path = "hdfs://10.2.28.17:9000/kdd";
+        String path = "hdfs://10.2.28.17:9000/rezygnacje";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSetCSV(path, ",");
+        memDataSet.loadDataSetCSV(path, ";");
         Dataset<Row> rawData = memDataSet.getDs();
         rawData.cache();
 
@@ -46,23 +45,14 @@ public class PrepareData1 {
         Dataset<Row> preparedClustering = dataPrepareClustering.prepareDataSet(rawData, false, false);
         preparedClustering.show(1, false);
         preparedClustering.printSchema();
-        memDataSet.saveDataSetPARQUET("hdfs://10.2.28.17:9000/prepared/kdd_clustering", preparedClustering);
+        preparedClustering.write().parquet("hdfs://10.2.28.17:9000/prepared/rezygnacje_clustering");
 
-        // Prepare data for assoc rules. Save as Parquet.
-        conf.log().info("Prepare data for assoc rules.");
-        // Select columns.
-        Dataset<Row> selectedColumns = rawData.select("protocol_type", "service", "flag",
-                "land", "logged_in", "is_host_login", "is_guest_login", "class");
-        Dataset<Row> prepareAssociation = DataPrepareAssociations.prepareDataSet(selectedColumns, sparkSession, false, true);
-        prepareAssociation.show(1, false);
-        prepareAssociation.printSchema();
-        memDataSet.saveDataSetPARQUET("hdfs://10.2.28.17:9000/prepared/kdd_association", prepareAssociation);
 
         // Prepare data for classification. Save as Parquet.
         conf.log().info("Prepare data for classification.");
-        Dataset<Row> prepareClassification = DataPrepareClassification.prepareDataSet(rawData,"class", false);
+        Dataset<Row> prepareClassification = DataPrepareClassification.prepareDataSet(rawData,"rezygn", false);
         prepareClassification.show(1, false);
         prepareClassification.printSchema();
-        memDataSet.saveDataSetPARQUET("hdfs://10.2.28.17:9000/prepared/kdd_classification", prepareClassification);
+        prepareClassification.write().parquet("hdfs://10.2.28.17:9000/prepared/rezygnacje_classification");
     }
 }

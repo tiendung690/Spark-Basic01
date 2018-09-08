@@ -39,9 +39,9 @@ public class ClusteringExperiment {
         int executorCores = Integer.valueOf(conf.get("spark.executor.cores"));
         int optimalPartitions = executorInstances * executorCores * 4;
 
-        // Load raw data from hdfs.
+        // Load PREPARED data from hdfs.
         // Training data.
-        String path = "hdfs://10.2.28.17:9000/prepared/kdd_classification";
+        String path = "hdfs://10.2.28.17:9000/prepared/kdd_clustering";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSetCSV(path);
         memDataSet.getDs().repartition(optimalPartitions);

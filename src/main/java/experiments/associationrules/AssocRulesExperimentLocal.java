@@ -5,12 +5,15 @@ import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.sql.Dataset;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import sparktemplate.association.AssociationSettings;
 import sparktemplate.association.FpG;
+import sparktemplate.dataprepare.DataPrepareAssociations;
 import sparktemplate.datasets.MemDataSet;
 
-public class AssocRulesExperiment {
+public class AssocRulesExperimentLocal {
     public static void main(String[] args) {
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
@@ -18,33 +21,26 @@ public class AssocRulesExperiment {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("FPGrowth_12C_15GB_KDD")
-                .set("spark.eventLog.dir", "file:///C:/logs")
-                .set("spark.eventLog.enabled", "true")
-                .setMaster("spark://10.2.28.17:7077")
-                .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
-                .set("spark.executor.memory", "15g")
-                .set("spark.executor.instances", "1")
-                .set("spark.executor.cores", "12")
-                //.set("spark.cores.max", "12")
-                .set("spark.driver.host", "10.2.28.34");
-
+                .setAppName("Associations_Local")
+                //.set("spark.eventLog.dir", "file:///C:/logs")
+                //.set("spark.eventLog.enabled", "true")
+                .setMaster("local[*]");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);
         JavaSparkContext jsc = new JavaSparkContext(context);
 
-        // Compute optimal partitions.
-        int executorInstances = Integer.valueOf(conf.get("spark.executor.instances"));
-        int executorCores = Integer.valueOf(conf.get("spark.executor.cores"));
-        int optimalPartitions = executorInstances * executorCores * 4;
-
-        // Load PREPARED data from hdfs.
-        // Training data.
-        String path = "hdfs://10.2.28.17:9000/prepared/kdd_associations";
+        // Load raw data.
+        String path = "data/kddcup_train.txt.gz";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSetCSV(path);
-        memDataSet.getDs().repartition(optimalPartitions);
+        // Prepare data with selected columns.
+        Dataset<Row> prepared = DataPrepareAssociations.prepareDataSet(memDataSet.getDs()
+                        .select("protocol_type", "service", "flag", "land", "logged_in",
+                                "is_host_login", "is_guest_login", "class")
+                , sparkSession, false, true);
+        prepared.repartition(16);
+        memDataSet.setDs(prepared);
 
         // Settings.
         FpG fpG = new FpG(sparkSession);
