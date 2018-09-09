@@ -1,4 +1,4 @@
-package experiments.clustering2;
+package experiments.clustering2.local;
 
 import kmeansimplementation.DataModel;
 import kmeansimplementation.DistanceName;
@@ -26,7 +26,7 @@ import java.util.Arrays;
 /**
  * Created by as on 02.08.2018.
  */
-public class KMeansImplementation {
+public class KMeansImplementationLocal {
     public static void main(String[] args) {
 
         // INFO DISABLED
@@ -80,6 +80,7 @@ public class KMeansImplementation {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row, Long> v1) ->
+                        //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
                         v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
                         //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)

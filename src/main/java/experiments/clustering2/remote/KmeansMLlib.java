@@ -1,4 +1,4 @@
-package experiments.clustering2;
+package experiments.clustering2.remote;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -38,45 +38,42 @@ public class KmeansMLlib {
         Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
-//        SparkConf conf = new SparkConf()
-//                .setAppName("KMeans_Spark")
-//                .set("spark.driver.allowMultipleContexts", "true")
-//                .set("spark.eventLog.dir", "file:///C:/logs")
-//                .set("spark.eventLog.enabled", "true")
-//                .set("spark.driver.memory", "2g")
-//                .set("spark.executor.memory", "2g")
-//                .setMaster("local[*]");
-
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Spark_parquet")
+                .setAppName("KMeansMLLib_KDD_K8")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
                 .setMaster("spark://10.2.28.17:7077")
-                .setJars(new String[] { "out/artifacts/SparkProject_jar/SparkProject.jar" })
+                .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 //
-                .set("spark.executor.memory", "2g")
-                .set("spark.executor.instances", "6")
-                .set("spark.executor.cores", "2")
+                .set("spark.executor.memory", "15g")
+                .set("spark.executor.instances", "1")
+                .set("spark.executor.cores", "12")
                 //.set("spark.cores.max", "2")
                 //
-                .set("spark.driver.host", "10.2.28.34");
+                .set("spark.driver.host", "10.2.28.31");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        //String path = "data_test/kdd_test.csv";
-        //String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
-        //String path = "hdfs://10.2.28.17:9000/kdd";
-        String path = "hdfs://10.2.28.17:9000/data/kdd_clustering";
+        // Compute optimal partitions.
+        int executorInstances = Integer.valueOf(conf.get("spark.executor.instances"));
+        int executorCores = Integer.valueOf(conf.get("spark.executor.cores"));
+        int optimalPartitions = executorInstances * executorCores * 4;
+        System.out.println("Partitions: "+optimalPartitions);
 
-        // Load mem data.
+        String path = "hdfs://10.2.28.17:9000/prepared/kdd_clustering";
+        //String path = "hdfs://10.2.28.17:9000/prepared/serce_clustering";
+        //String path = "hdfs://10.2.28.17:9000/prepared/rezygnacje_clustering";
+
+        // Load mem prepared data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        //memDataSet.loadDataSetCSV(path,true,true);
-        memDataSet.loadDataSetPARQUET(path);
+        ///memDataSet.loadDataSetCSV(path,";"); // ";" - serce, rezygnacje, "," - kdd
+        memDataSet.loadDataSetPARQUET(path); // Prepared data.
 
         // Prepare data.
-        DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> preparedData = memDataSet.getDs();// dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        //DataPrepareClustering dpc = new DataPrepareClustering();
+        Dataset<Row> preparedData = memDataSet.getDs(); //dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        preparedData.repartition(optimalPartitions);
 
         // Select initial centers.
         JavaRDD<Row> filteredRDD = preparedData
@@ -84,10 +81,14 @@ public class KmeansMLlib {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row, Long> v1) ->
+                        v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
-                        v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                        //v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 
+        System.out.println("Count centers: "+filteredRDD.count());
         // Collect centers from RDD to List.
         ArrayList<org.apache.spark.ml.linalg.Vector> initialCenters = new ArrayList<>();
         initialCenters.addAll(filteredRDD.map(v -> (org.apache.spark.ml.linalg.Vector) v.get(0)).collect());
@@ -110,9 +111,9 @@ public class KmeansMLlib {
         JavaRDD<Vector> preparedDataRDD = DatasetToRDD(preparedData);
 
         // Set k.
-        int k = initialCenters.size(); // 4;
+        int k = initialCenters.size();
         // Set max iterations.
-        int maxIterations = 5;
+        int maxIterations = 10;
 
 
         // Set Mllib.KMeans initial params.
@@ -121,8 +122,9 @@ public class KmeansMLlib {
                 .setEpsilon(1e-4)
                 //.setSeed(20L)
                 .setMaxIterations(maxIterations)
+                //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
                 .setInitialModel(new KMeansModel(initialCentersArray));
-        //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
+
 
         // Build  Mllib.KMeansModel model.
         KMeansModel model = kMeans.run(preparedDataRDD.rdd());
@@ -144,8 +146,8 @@ public class KmeansMLlib {
         predictedData.show();
 
         // Print final centers.
-        ArrayList<Vector> finalCenters = new ArrayList<>(Arrays.asList(model.clusterCenters()));
-        finalCenters.stream().forEach(s -> System.out.println(s));
+       // ArrayList<Vector> finalCenters = new ArrayList<>(Arrays.asList(model.clusterCenters()));
+       // finalCenters.stream().forEach(s -> System.out.println(s));
 
         // Evaluator for clustering results. The metric computes the Silhouette measure using the squared Euclidean distance.
         ClusteringEvaluator clusteringEvaluator = new ClusteringEvaluator();
@@ -171,7 +173,7 @@ public class KmeansMLlib {
     }
 
     public static JavaRDD<Vector> DatasetToRDD(Dataset<Row> ds) {
-        JavaRDD<org.apache.spark.mllib.linalg.Vector> x3 = ds.toJavaRDD()
+        JavaRDD<Vector> x3 = ds.toJavaRDD()
                 .map(row -> (org.apache.spark.ml.linalg.Vector) row.get(0))
                 .map(v1 -> Vectors.fromML(v1));
         return x3;

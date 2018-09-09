@@ -1,4 +1,4 @@
-package experiments.clustering;
+package experiments.clustering.local;
 
 import kmeansimplementation.Util;
 import org.apache.log4j.Level;
@@ -23,10 +23,10 @@ public class ClusteringExperimentLocal {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("Associations_Local")
-                //.set("spark.eventLog.dir", "file:///C:/logs")
-                //.set("spark.eventLog.enabled", "true")
-                .setMaster("local[*]");
+                .setAppName("ClusteringKMeansML_Local")
+                .set("spark.eventLog.dir", "file:///C:/logs")
+                .set("spark.eventLog.enabled", "true")
+                .setMaster("local[4]");
 
 
         SparkContext context = new SparkContext(conf);
@@ -35,12 +35,13 @@ public class ClusteringExperimentLocal {
 
         // Load raw data.
         //String path = "data/kddcup_train.txt.gz";
+        String path = "data/rezygnacje1.csv.gz";
         //String path = "data/kdd_10_proc.txt";
-        String path = "data/serce1.csv.gz";
+        //String path = "data/kddcup_train.txt.gz";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
         memDataSet.loadDataSetCSV(path,";");
         DataPrepareClustering dataPrepareClustering = new DataPrepareClustering();
-        Dataset<Row> prepared = dataPrepareClustering.prepareDataSet(memDataSet.getDs(), false, false);
+        Dataset<Row> prepared = dataPrepareClustering.prepareDataSet(memDataSet.getDs(), false, true);
         prepared.show(1, false);
         prepared.printSchema();
         prepared.repartition(16);
@@ -52,7 +53,8 @@ public class ClusteringExperimentLocal {
         clusteringSettings.setKMeans()
                 .setK(4)
                 .setSeed(10L)
-                .setMaxIter(10);
+                .setMaxIter(20);
+                //.setInitMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
 
 
         kMean.buildClusterer(memDataSet, clusteringSettings, true);
@@ -63,16 +65,16 @@ public class ClusteringExperimentLocal {
 
 
 
-        // Take sample,reduce dimensions and save as csv.
-        // Take random 10% data.
-        Dataset<Row> reducedSize = kMean.getPredictions().sample(0.2);
-        // Reduce dimensions to 3.
-        Dataset<Row> reduceDim = DataPrepare.reduceDimensions(reducedSize,
-                "features","features_reduced",3 ).select("features_reduced","prediction");
-        // Coalesce to 1 partition.
-        reduceDim.coalesce(1);
-        // Save as csv.
-        Util.saveAsCSV(reduceDim, "features_reduced", "prediction", "data/kdd2");
+//        // Take sample,reduce dimensions and save as csv.
+//        // Take random 10% data.
+//        Dataset<Row> reducedSize = kMean.getPredictions().sample(0.2);
+//        // Reduce dimensions to 3.
+//        Dataset<Row> reduceDim = DataPrepare.reduceDimensions(reducedSize,
+//                "features","features_reduced",3 ).select("features_reduced","prediction");
+//        // Coalesce to 1 partition.
+//        reduceDim.coalesce(1);
+//        // Save as csv.
+//        Util.saveAsCSV(reduceDim, "features_reduced", "prediction", "data/kdd2");
 
 
     }

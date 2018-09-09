@@ -1,4 +1,4 @@
-package experiments.associationrules;
+package experiments.associationrules.local;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -22,9 +22,9 @@ public class AssocRulesExperimentLocal {
 
         SparkConf conf = new SparkConf()
                 .setAppName("Associations_Local")
-                //.set("spark.eventLog.dir", "file:///C:/logs")
-                //.set("spark.eventLog.enabled", "true")
-                .setMaster("local[*]");
+                .set("spark.eventLog.dir", "file:///C:/logs")
+                .set("spark.eventLog.enabled", "true")
+                .setMaster("local[2]");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);

@@ -1,4 +1,4 @@
-package experiments.clustering;
+package experiments.clustering.remote;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -25,7 +25,7 @@ public class ClusteringExperiment {
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 .set("spark.executor.memory", "15g")
                 .set("spark.executor.instances", "1")
-                .set("spark.executor.cores", "12")
+                .set("spark.executor.cores", "8")
                 //.set("spark.cores.max", "12")
                 .set("spark.driver.host", "10.2.28.34");
 
@@ -38,12 +38,15 @@ public class ClusteringExperiment {
         int executorInstances = Integer.valueOf(conf.get("spark.executor.instances"));
         int executorCores = Integer.valueOf(conf.get("spark.executor.cores"));
         int optimalPartitions = executorInstances * executorCores * 4;
+        System.out.println("Partitions: " + optimalPartitions);
 
         // Load PREPARED data from hdfs.
         // Training data.
         String path = "hdfs://10.2.28.17:9000/prepared/kdd_clustering";
+        //String path = "hdfs://10.2.28.17:9000/prepared/serce_clustering";
+        //String path = "hdfs://10.2.28.17:9000/prepared/rezygnacje_clustering";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSetCSV(path);
+        memDataSet.loadDataSetPARQUET(path);
         memDataSet.getDs().repartition(optimalPartitions);
 
 
@@ -51,12 +54,12 @@ public class ClusteringExperiment {
         KMean kMean = new KMean(sparkSession);
         ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setKMeans()
-                .setK(4)
+                .setK(8)
                 .setSeed(10L)
                 .setMaxIter(10);
 
 
-        kMean.buildClusterer(memDataSet, clusteringSettings, false);
+        kMean.buildClusterer(memDataSet, clusteringSettings, true);
         // Show predicted clusters.
         kMean.getPredictions().show(false);
         // Evaluation.

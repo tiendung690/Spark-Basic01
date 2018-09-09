@@ -1,4 +1,4 @@
-package experiments.clustering2;
+package experiments.clustering2.remote;
 
 import kmeansimplementation.DistanceName;
 import kmeansimplementation.pipeline.KMeansImplEstimator;
@@ -35,26 +35,41 @@ public class KMeansImplementationPipeline {
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("KMeans_Implementation")
-                .set("spark.driver.allowMultipleContexts", "true")
+                .setAppName("KMeansImplementation_KDD")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .set("spark.driver.memory", "2g")
-                .set("spark.executor.memory", "2g")
-                .setMaster("local[*]");
+                .setMaster("spark://10.2.28.19:7077")
+                .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
+                //
+                .set("spark.executor.memory", "15g")
+                .set("spark.executor.instances", "1")
+                .set("spark.executor.cores", "12")
+                //.set("spark.cores.max", "2")
+                //
+                .set("spark.driver.host", "10.2.28.34");
 
         SparkContext sc = new SparkContext(conf);
         SparkSession spark = new SparkSession(sc);
 
-        String path = "data/kdd_10_proc.txt";
+        // Compute optimal partitions.
+        int executorInstances = Integer.valueOf(conf.get("spark.executor.instances"));
+        int executorCores = Integer.valueOf(conf.get("spark.executor.cores"));
+        int optimalPartitions = executorInstances * executorCores * 4;
+        System.out.println("Partitions: " + optimalPartitions);
 
-        // Load mem data.
+        //String path = "hdfs://10.2.28.17:9000/prepared/kdd_clustering";
+        String path = "hdfs://10.2.28.17:9000/prepared/serce_clustering";
+        //String path = "hdfs://10.2.28.17:9000/prepared/rezygnacje_clustering";
+
+        // Load mem prepared data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSetCSV(path);
+        ///memDataSet.loadDataSetCSV(path,";"); // ";" - serce, rezygnacje, "," - kdd
+        memDataSet.loadDataSetPARQUET(path); // Prepared data.
 
         // Prepare data.
-        DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        //DataPrepareClustering dpc = new DataPrepareClustering();
+        Dataset<Row> preparedData = memDataSet.getDs(); //dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        preparedData.repartition(optimalPartitions);
 
         // Select initial centers.
         JavaRDD<Row> filteredRDD = preparedData
@@ -62,9 +77,14 @@ public class KMeansImplementationPipeline {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row, Long> v1) ->
-                        v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
+                //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
+                //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                //v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 
+        System.out.println("Count centers: "+filteredRDD.count());
         // Collect centers from RDD to List.
         ArrayList<Vector> initialCenters = new ArrayList<>();
         initialCenters.addAll(filteredRDD.map(v -> (Vector) v.get(0)).collect());
@@ -86,9 +106,9 @@ public class KMeansImplementationPipeline {
                 .setPredictionCol("prediction")
                 .setK(k)
                 .setEpsilon(1e-4)
+                //.setSeed(1L) // For random centers.
                 .setInitialCenters(initialCenters)
-                .setMaxIterations(5)
-                .setSeed(1L); // For random centers.
+                .setMaxIterations(10);
 
         //KMeansImplModel kMeansImplModel = kMeansImplEstimator.fit(preparedData);
         //Dataset<Row> predictions = kMeansImplModel.transform(preparedData);
