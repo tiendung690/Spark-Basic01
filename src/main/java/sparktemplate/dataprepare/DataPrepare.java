@@ -9,6 +9,7 @@ import org.apache.spark.sql.expressions.UserDefinedFunction;
 import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import sparktemplate.datarecord.DataRecord;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -107,6 +108,13 @@ public class DataPrepare {
         List<Row> rows = new ArrayList<>();
         rows.add(row);
         return sparkSession.createDataFrame(rows, structType);
+    }
+
+    public static Dataset<Row> createDataSet(DataRecord dataRecord, SparkSession sparkSession) {
+        logger.info("Create dataset.");
+        List<Row> rows = new ArrayList<>();
+        rows.add(dataRecord.getRow());
+        return sparkSession.createDataFrame(rows, dataRecord.getStructType());
     }
 
     /**
