@@ -90,7 +90,7 @@ public class KMeansImpl {
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
-            // 1. Predict testcluster.
+            // 1. Predict cluster.
             // 2. MapToPair.
             // 3. ReduceByKey.
             // 4. MapValues.
