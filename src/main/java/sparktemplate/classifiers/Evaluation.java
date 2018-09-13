@@ -170,7 +170,6 @@ public class Evaluation {
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
-
                 break;
             }
             case DECISIONTREE: {

@@ -72,7 +72,7 @@ public class TestClassifiers {
             System.out.println(evaluation.getMetricByClass("class", "f1"));
             // Show predictions.
             Dataset<Row> predictions = evaluation.getPredictions().select(ClassificationStrings.labelCol, ClassificationStrings.predictedLabelCol, ClassificationStrings.featuresCol);
-            predictions.show(100);
+            predictions.show(10);
             // Print all results.
             //System.out.println("RESULT:\n" + evaluation.getStringBuilder());
 
