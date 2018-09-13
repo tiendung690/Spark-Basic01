@@ -2,6 +2,7 @@ package sparktemplate.datasets;
 
 import org.apache.spark.rdd.JdbcRDD;
 import org.apache.spark.sql.*;
+import sparktemplate.dataprepare.DataPrepare;
 import sparktemplate.datarecord.DataRecord;
 
 import java.sql.*;
@@ -150,6 +151,10 @@ public class DBDataSet implements ADataSet {
         return new DataRecord(ds.first(), ds.schema());
     }
 
+    public void getFirstRecord2(){
+        this.ds =  DataPrepare.createDataSet(getFirstRecord(), this.sparkSession);
+    }
+
     /**
      * Metoda zwracajaca kolejne wiersze danych. Moze zostac uzyta do otrzymania pierwszego wiersza.
      * Jeśli juz nie ma nastepnego zwraca null.
@@ -169,6 +174,10 @@ public class DBDataSet implements ADataSet {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public void getNextRecord2(){
+        this.ds =  DataPrepare.createDataSet(getNextRecord(),this.sparkSession);
     }
 
     /**

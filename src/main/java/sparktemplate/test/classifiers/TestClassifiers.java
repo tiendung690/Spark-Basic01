@@ -75,7 +75,6 @@ public class TestClassifiers {
             predictions.show(10);
             // Print all results.
             //System.out.println("RESULT:\n" + evaluation.getStringBuilder());
-            System.out.println("fghj");
 
             // Single object.
             MemDataSet memDataSetSingle = new MemDataSet().setDs(dataSetTest3.getDs().limit(1));
