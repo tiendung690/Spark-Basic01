@@ -25,6 +25,7 @@ public class Evaluation {
     private Dataset<Row> predictions;
     private MulticlassClassificationEvaluator evaluator;
     private StringBuilder stringBuilder;
+    private Classifier classifier;
 
     /**
      * Konstruktor inicjalizujacy obiekt Evaluation
@@ -146,6 +147,9 @@ public class Evaluation {
         System.out.format("Weighted false positive rate = %f\n", metrics.weightedFalsePositiveRate());
     }
 
+    public Classifier getClassifier() {
+        return classifier;
+    }
 
     /**
      * Metoda budujaca model na podstawie danych treningowych oraz klasyfikujaca dane testowe.
@@ -170,6 +174,7 @@ public class Evaluation {
                 TrivialLinearSVM algo = new TrivialLinearSVM(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
+                this.classifier = algo;
                 break;
             }
             case DECISIONTREE: {
@@ -177,7 +182,7 @@ public class Evaluation {
                 TrivialDecisionTree algo = new TrivialDecisionTree(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
-
+                this.classifier = algo;
                 break;
             }
             case RANDOMFORESTS: {
@@ -185,7 +190,7 @@ public class Evaluation {
                 TrivialRandomForests algo = new TrivialRandomForests(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
-
+                this.classifier = algo;
                 break;
             }
             case LOGISTICREGRESSION: {
@@ -193,7 +198,7 @@ public class Evaluation {
                 TrivialLogisticRegression algo = new TrivialLogisticRegression(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
-
+                this.classifier = algo;
                 break;
             }
             case NAIVEBAYES: {
@@ -201,7 +206,7 @@ public class Evaluation {
                 TrivialNaiveBayes algo = new TrivialNaiveBayes(sparkSession);
                 algo.build(trainingDataSet, classifierSettings, isTrainingPrepared, removeStrings);
                 this.predictions = algo.classify(testingDataSet, classifierSettings, isTestingPrepared, removeStrings);
-
+                this.classifier = algo;
                 break;
             }
             default:
