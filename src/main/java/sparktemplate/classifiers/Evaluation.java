@@ -1,6 +1,8 @@
 package sparktemplate.classifiers;
 
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
+import org.apache.spark.mllib.evaluation.MulticlassMetrics;
+import org.apache.spark.mllib.linalg.Matrix;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
@@ -105,7 +107,8 @@ public class Evaluation {
      * Metoda wypisuje na ekran tekst opisujacy wyniki ekperymentu
      */
     public void printReport() {
-        System.out.println(getReport());
+        //System.out.println(getReport());
+        getReport2();
     }
 
     private String getReport() {
@@ -115,6 +118,32 @@ public class Evaluation {
                 "\nCoverage: " + getCoverage() +
                 "\nF1: " + get_F1() +
                 "\n---------------------";
+    }
+
+    private void getReport2(){
+        MulticlassMetrics metrics = new MulticlassMetrics(this.predictions.select(ClassificationStrings.indexedLabelCol,ClassificationStrings.predictionCol));
+        // Confusion matrix
+        Matrix confusion = metrics.confusionMatrix();
+        System.out.println("Confusion matrix: \n" + confusion);
+
+        // Complette accuracy.
+        System.out.println("Accuracy = " + metrics.accuracy());
+
+        // Stats by labels
+        for (int i = 0; i < metrics.labels().length; i++) {
+            System.out.format("Class %f precision = %f\n", metrics.labels()[i], metrics.precision(
+                    metrics.labels()[i]));
+            System.out.format("Class %f recall = %f\n", metrics.labels()[i], metrics.recall(
+                    metrics.labels()[i]));
+            System.out.format("Class %f F1 score = %f\n", metrics.labels()[i], metrics.fMeasure(
+                    metrics.labels()[i]));
+        }
+
+        //Weighted stats
+        System.out.format("Weighted precision = %f\n", metrics.weightedPrecision());
+        System.out.format("Weighted recall = %f\n", metrics.weightedRecall());
+        System.out.format("Weighted F1 score = %f\n", metrics.weightedFMeasure());
+        System.out.format("Weighted false positive rate = %f\n", metrics.weightedFalsePositiveRate());
     }
 
 
