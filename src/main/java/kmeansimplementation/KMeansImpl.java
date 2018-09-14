@@ -75,9 +75,43 @@ public class KMeansImpl {
 
     }
 
+    private static Map<Integer, Vector> predictClusterAndComputeNewCentersFull(JavaRDD<DataModel> data, ArrayList<Vector> clusterCenters, DistanceName distanceName) {
+        JavaPairRDD<Integer, Vector> predictedClusters = predictCluster(data, clusterCenters, distanceName);
+        Map<Integer, Vector> newCenters = predictedClusters
+                .mapToPair(t -> {
+                    Integer predictedCluster = t._1();
+                    Vector row = t._2();
+                    return new Tuple2<Integer, Tuple2<Long, Vector>>(predictedCluster, new Tuple2<>(1L, row));
+                })
+                .reduceByKey((v1, v2) -> {
+                    // Key as predictedCluster.
+                    // Element.
+                    Long elementNumber = v1._1();
+                    Vector elementRow = v1._2();
+                    // Next element.
+                    Long nextElementNumber = v2._1();
+                    Vector nextElementRow = v2._2();
+                    // Count numbers.
+                    Long count = elementNumber + nextElementNumber;
+                    // Sum rows by column.
+                    Vector sumByColumn = sumArrayByColumn(elementRow.toArray(), nextElementRow.toArray());
+                    return new Tuple2<Long, Vector>(count, sumByColumn);
+                })
+                .mapValues(v1 -> {
+                    // Key as predictedCluster.
+                    Long clusterSize = v1._1();
+                    Vector rowsSummedUpByColumn = v1._2();
+                    // Divide each value of vector(now single row) by clusterSize.
+                    Vector dividedRow = divideArray(rowsSummedUpByColumn.toArray(), clusterSize);
+                    return dividedRow;
+                })
+                .collectAsMap();
+        return newCenters;
+    }
+
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations, DistanceName distanceName) {
 
-        logger.info("Selected distance metric: "+distanceName.name());
+        logger.info("Selected distance metric: " + distanceName.name());
         JavaSparkContext jsc = new JavaSparkContext(data.context());
         LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
         ArrayList<Vector> clusterCenters = new ArrayList<>(centers);
