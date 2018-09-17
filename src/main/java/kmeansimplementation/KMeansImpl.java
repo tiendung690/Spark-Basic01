@@ -24,8 +24,8 @@ public class KMeansImpl {
     public static final String loggerName = "K-Means Implementation";
     private static final Logger logger = Logger.getLogger(loggerName);
 
-    public static ArrayList<Vector> initializeCenters(JavaRDD<DataModel> data, int k) {
-        ArrayList<DataModel> initialCenters = new ArrayList<>(data.takeSample(false, k, 20L));
+    public static ArrayList<Vector> initializeCenters(JavaRDD<DataModel> data, int k, long seed) {
+        ArrayList<DataModel> initialCenters = new ArrayList<>(data.takeSample(false, k, seed));
         ArrayList<Vector> initialCentersVector = new ArrayList<>();
         for (DataModel dataModel : initialCenters) {
             initialCentersVector.add(dataModel.getData());

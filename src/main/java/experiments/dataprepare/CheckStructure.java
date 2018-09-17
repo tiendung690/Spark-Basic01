@@ -18,7 +18,7 @@ public class CheckStructure {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("CheckStruckt")
+                .setAppName("CheckStruckt2")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
                 .setMaster("spark://10.2.28.19:7077")
@@ -35,22 +35,23 @@ public class CheckStructure {
         SparkSession sparkSession = new SparkSession(context);
         JavaSparkContext jsc = new JavaSparkContext(context);
 
-//        // Load data from hdfs.
-//        String path = "hdfs://10.2.28.17:9000/prepared/kdd_association";
-//        MemDataSet memDataSet = new MemDataSet(sparkSession);
-//        memDataSet.loadDataSetPARQUET(path);
-//        Dataset<Row> rawData = memDataSet.getDs();
-//        rawData.show(2,false);
-//        rawData.printSchema();
-
-
-        // Load raw data from hdfs.
-        String path = "hdfs://10.2.28.17:9000/kdd";
+        // Load data from hdfs.
+        String path = "hdfs://10.2.28.17:9000/prepared/kdd_association";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSetCSV(path, ",");
+        memDataSet.loadDataSetPARQUET(path);
         Dataset<Row> rawData = memDataSet.getDs();
-        //System.out.println(rawData.storageLevel().replication());
-        //rawData.repartition(24);
+        rawData.show(2,false);
+        rawData.printSchema();
         System.out.println(rawData.count());
+
+
+//        // Load raw data from hdfs.
+//        String path = "hdfs://10.2.28.17:9000/kdd";
+//        MemDataSet memDataSet = new MemDataSet(sparkSession);
+//        memDataSet.loadDataSetCSV(path, ",");
+//        Dataset<Row> rawData = memDataSet.getDs();
+//        System.out.println(rawData.storageLevel().replication());
+//        rawData.repartition(24);
+//        System.out.println(rawData.count());
     }
 }

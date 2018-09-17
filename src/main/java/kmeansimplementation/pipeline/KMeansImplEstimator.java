@@ -113,9 +113,9 @@ public class KMeansImplEstimator extends Estimator<KMeansImplModel> {
         //this.transformSchema(dataset.schema());
         JavaRDD<DataModel> x3 = Util.DatasetToRDD(dataset.select(this.featuresCol));
         if(this.initialCenters.isEmpty()){
-            this.initialCenters = KMeansImpl.initializeCenters(x3,this.k);
+            this.initialCenters = KMeansImpl.initializeCenters(x3,this.k, this.seed);
         }
-        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(x3, initialCenters, this.epsilon, this.maxIterations, this.distanceName);
+        ArrayList<Vector> finalCenters = KMeansImpl.computeCenters(x3, this.initialCenters, this.epsilon, this.maxIterations, this.distanceName);
         KMeansImplModel KMeansImplModel = new KMeansImplModel()
                 .setDistanceName(this.distanceName)
                 .setClusterCenters(finalCenters)
