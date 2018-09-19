@@ -28,24 +28,20 @@ import java.util.Arrays;
  */
 public class KMeansImplementationPipeline {
     public static void main(String[] args) {
-
         // INFO DISABLED
         Logger.getLogger("org").setLevel(Level.OFF);
         Logger.getLogger("akka").setLevel(Level.OFF);
         //Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("KMeansImplementation_KDD")
-                .set("spark.eventLog.dir", "file:///C:/logs")
-                .set("spark.eventLog.enabled", "true")
+                .setAppName("KMeans_Implementation")
+                //.set("spark.eventLog.dir", "file:///C:/logs")
+                //.set("spark.eventLog.enabled", "true")
                 .setMaster("spark://10.2.28.19:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
-                //
                 .set("spark.executor.memory", "15g")
                 .set("spark.executor.instances", "1")
                 .set("spark.executor.cores", "12")
-                //.set("spark.cores.max", "2")
-                //
                 .set("spark.driver.host", "10.2.28.34");
 
         SparkContext sc = new SparkContext(conf);
@@ -77,14 +73,14 @@ public class KMeansImplementationPipeline {
                 .zipWithIndex()
                 // .filter((Tuple2<Row,Long> v1) -> v1._2 >= start && v1._2 < end)
                 .filter((Tuple2<Row, Long> v1) ->
-                        v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
-                //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
-                //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
-                //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
-                //v1._2 == 50 || v1._2 == 2)
+                        //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
+                        //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
+                        //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                        v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 
-        System.out.println("Count centers: "+filteredRDD.count());
+        System.out.println("Count centers: " + filteredRDD.count());
         // Collect centers from RDD to List.
         ArrayList<Vector> initialCenters = new ArrayList<>();
         initialCenters.addAll(filteredRDD.map(v -> (Vector) v.get(0)).collect());
@@ -98,6 +94,8 @@ public class KMeansImplementationPipeline {
 
         // Set k.
         int k = initialCenters.size(); // 4;
+        // Set max iterations.
+        int maxIterations = 10;
 
         // Algorithm settings.
         KMeansImplEstimator kMeansImplEstimator = new KMeansImplEstimator()
@@ -106,9 +104,10 @@ public class KMeansImplementationPipeline {
                 .setPredictionCol("prediction")
                 .setK(k)
                 .setEpsilon(1e-4)
-                //.setSeed(1L) // For random centers.
+                .setSeed(5L) // For random centers, if the initial centers are not set.
                 .setInitialCenters(initialCenters)
-                .setMaxIterations(10);
+                .setMaxIterations(maxIterations);
+
 
         //KMeansImplModel kMeansImplModel = kMeansImplEstimator.fit(preparedData);
         //Dataset<Row> predictions = kMeansImplModel.transform(preparedData);
@@ -138,7 +137,3 @@ public class KMeansImplementationPipeline {
     }
 }
 
-
-// Add new column.
-//Dataset<Row> final12 = otherDataset.select(otherDataset.col("colA"), otherDataSet.col("colB"));
-//Dataset<Row> result = final12.withColumn("columnName", lit(1))

@@ -112,15 +112,15 @@ public class KMeansImpl {
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations, DistanceName distanceName) {
 
         logger.info("Selected distance metric: " + distanceName.name());
-        JavaSparkContext jsc = new JavaSparkContext(data.context());
-        LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
+        //JavaSparkContext jsc = new JavaSparkContext(data.context());
+        //LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
         ArrayList<Vector> clusterCenters = new ArrayList<>(centers);
         boolean condition = true;
         int iteration = 0;
 
         do {
             // Accumulator time.
-            long startTime = System.currentTimeMillis();
+            //long startTime = System.currentTimeMillis();
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
@@ -129,14 +129,12 @@ public class KMeansImpl {
             // 3. ReduceByKey.
             // 4. MapValues.
             // 5. CollectAsMap.
-            //data.persist(StorageLevel.MEMORY_ONLY());
             Map<Integer, Vector> newCenters = predictClusterAndComputeNewCenters(data, newClusterCenters, distanceName);
-            //data.unpersist();
 
 
             // Accumulator time.
-            long endTime = System.currentTimeMillis();
-            accumulator.add(endTime - startTime);
+            //long endTime = System.currentTimeMillis();
+            //accumulator.add(endTime - startTime);
 
             double centersDistance = 0.0;
             for (int i = 0; i < clusterCenters.size(); i++) {
@@ -151,11 +149,11 @@ public class KMeansImpl {
             centersDistance = centersDistance / clusterCenters.size();
             if (centersDistance < epsilon || iteration == maxIterations) {
                 condition = false;
-                logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
-                logger.info("Coveraged in " + iteration + " iterations.");
+                //logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
+                //logger.info("Coveraged in " + iteration + " iterations.");
             } else {
                 clusterCenters = new ArrayList<>(newClusterCenters);
-                logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
+                //logger.info("Iteration: " + iteration + ", Accumulator: " + accumulator.value() + " ms");
             }
             iteration++;
         } while (condition);
@@ -268,14 +266,6 @@ public class KMeansImpl {
         return index;
     }
 
-    public static Vector sumArrayByColumn(Vector t1, Vector t2) {
-        double[] tab = new double[t1.size()];
-        for (int i = 0; i < t1.size(); i++) {
-            tab[i] = t1.apply(i) + t2.apply(i);
-        }
-        return new DenseVector(tab);
-    }
-
     public static Vector sumArrayByColumn(double[] t1, double[] t2) {
         double[] tab = new double[t1.length];
         for (int i = 0; i < t1.length; i++) {
@@ -284,13 +274,6 @@ public class KMeansImpl {
         return new DenseVector(tab);
     }
 
-    public static Vector divideArray(Vector t1, Long l) {
-        double[] tab = new double[t1.size()];
-        for (int i = 0; i < t1.size(); i++) {
-            tab[i] = t1.apply(i) / l;
-        }
-        return new DenseVector(tab);
-    }
 
     public static Vector divideArray(double[] t1, Long l) {
         double[] tab = new double[t1.length];

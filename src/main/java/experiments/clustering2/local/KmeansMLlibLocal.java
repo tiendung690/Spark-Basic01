@@ -63,8 +63,8 @@ public class KmeansMLlibLocal {
         SparkSession spark = new SparkSession(sc);
 
         //String path = "data/rezygnacje1.csv.gz";
-        //String path = "data/serce1.csv.gz";
-        String path = "data/kddcup_train.txt.gz";
+        String path = "data/serce1.csv.gz";
+        //String path = "data/kddcup_train.txt.gz";
         //String path = "data/kdd_10_proc.txt";
         //String path = "data_test/kdd_test.csv";
         //String path = "hdfs://10.2.28.17:9000/kdd/kdd_10_proc.txt";
@@ -74,7 +74,7 @@ public class KmeansMLlibLocal {
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
         //memDataSet.loadDataSetCSV(path,true,true);
-        memDataSet.loadDataSetCSV(path,",");
+        memDataSet.loadDataSetCSV(path,";");
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
@@ -88,8 +88,8 @@ public class KmeansMLlibLocal {
                 .filter((Tuple2<Row, Long> v1) ->
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
-                        v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
-                        //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                        //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
                         //v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 

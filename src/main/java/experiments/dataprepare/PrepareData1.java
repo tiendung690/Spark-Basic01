@@ -23,10 +23,10 @@ public class PrepareData1 {
 
         SparkConf conf = new SparkConf()
                 .setAppName("Prepare_Data_To_HDFS_KDD")
-                .setMaster("spark://10.2.28.17:7077")
+                .setMaster("spark://10.2.28.19:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 .set("spark.executor.memory", "15g")
-                .set("spark.driver.host", "10.2.28.31");
+                .set("spark.driver.host", "10.2.28.34");
 
         SparkContext context = new SparkContext(conf);
         SparkSession sparkSession = new SparkSession(context);

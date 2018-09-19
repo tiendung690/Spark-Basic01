@@ -35,23 +35,25 @@ public class CheckStructure {
         SparkSession sparkSession = new SparkSession(context);
         JavaSparkContext jsc = new JavaSparkContext(context);
 
-        // Load data from hdfs.
-        String path = "hdfs://10.2.28.17:9000/prepared/kdd_association";
+
+        // Load raw data from hdfs.
+        String path = "hdfs://10.2.28.17:9000/serce";
         MemDataSet memDataSet = new MemDataSet(sparkSession);
-        memDataSet.loadDataSetPARQUET(path);
+        memDataSet.loadDataSetCSV(path, ";");
         Dataset<Row> rawData = memDataSet.getDs();
-        rawData.show(2,false);
         rawData.printSchema();
         System.out.println(rawData.count());
 
 
-//        // Load raw data from hdfs.
-//        String path = "hdfs://10.2.28.17:9000/kdd";
+
+//        // Load data from hdfs.
+//        String path = "hdfs://10.2.28.17:9000/prepared/kdd_association";
 //        MemDataSet memDataSet = new MemDataSet(sparkSession);
-//        memDataSet.loadDataSetCSV(path, ",");
+//        memDataSet.loadDataSetPARQUET(path);
 //        Dataset<Row> rawData = memDataSet.getDs();
-//        System.out.println(rawData.storageLevel().replication());
-//        rawData.repartition(24);
+//        rawData.show(2,false);
+//        rawData.printSchema();
 //        System.out.println(rawData.count());
+
     }
 }

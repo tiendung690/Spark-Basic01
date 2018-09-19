@@ -18,14 +18,14 @@ public class ClusteringExperiment {
         Logger.getLogger("INFO").setLevel(Level.OFF);
 
         SparkConf conf = new SparkConf()
-                .setAppName("FPGrowth_12C_15GB_KDD")
+                .setAppName("Kmeans_MLLib")
                 .set("spark.eventLog.dir", "file:///C:/logs")
                 .set("spark.eventLog.enabled", "true")
-                .setMaster("spark://10.2.28.17:7077")
+                .setMaster("spark://10.2.28.19:7077")
                 .setJars(new String[]{"out/artifacts/SparkProject_jar/SparkProject.jar"})
                 .set("spark.executor.memory", "15g")
                 .set("spark.executor.instances", "1")
-                .set("spark.executor.cores", "8")
+                .set("spark.executor.cores", "12")
                 //.set("spark.cores.max", "12")
                 .set("spark.driver.host", "10.2.28.34");
 
