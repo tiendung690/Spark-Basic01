@@ -19,6 +19,12 @@ import java.util.Arrays;
  */
 public class Util {
 
+    /**
+     * Konwersja z Dataset na JavaRDD.
+     *
+     * @param ds dane RDD
+     * @return
+     */
     public static JavaRDD<DataModel> DatasetToRDD(Dataset<Row> ds) {
         JavaRDD<DataModel> x3 = ds.toJavaRDD().map(row -> {
             KMeansImplModel KMeansImplModel = new KMeansImplModel();
@@ -28,6 +34,15 @@ public class Util {
         return x3;
     }
 
+    /**
+     * Konwersja z JavaRDD na Dataset.
+     *
+     * @param x dane RDD
+     * @param spark obiekt SparkSession
+     * @param featuresCol nazwa kolumny atrybutow
+     * @param predictionCol nazwa kolumny predykcji
+     * @return dane Dataset
+     */
     public static Dataset<Row> RDDToDataset(JavaPairRDD<Integer, Vector> x, SparkSession spark, String featuresCol, String predictionCol) {
         JavaRDD<Row> ss = x.map(v1 -> RowFactory.create(v1._2(), v1._1()));
         StructType schema = new StructType(new StructField[]{
@@ -38,6 +53,14 @@ public class Util {
         return dm;
     }
 
+    /**
+     * Zapis Dataset do pliku CSV.
+     *
+     * @param dm dane Dataset
+     * @param featuresCol nazwa kolumny z atrybutami
+     * @param predictionCol nazwa kolumny z predykcjami
+     * @param path sciezka zapisu pliku
+     */
     public static void saveAsCSV(Dataset<Row> dm, String featuresCol, String predictionCol, String path) {
         JavaRDD<Row> rr = dm.select(featuresCol, predictionCol).toJavaRDD().map(value -> {
             Vector vector = (Vector) value.get(0);
