@@ -8,6 +8,7 @@ import sparktemplate.classifiers.ClassifierSettings;
 import sparktemplate.classifiers.Evaluation;
 import sparktemplate.clustering.ClusteringSettings;
 import sparktemplate.clustering.KMean;
+import sparktemplate.clustering.KMeanImpl;
 import sparktemplate.datasets.ADataSet;
 
 /**
@@ -25,6 +26,13 @@ public class Deploying {
     public static String clustering(SparkContext sparkContext, ADataSet dataSet, ClusteringSettings clusteringSettings) {
         SparkSession sparkSession = new SparkSession(sparkContext);
         KMean kMean = new KMean(sparkSession);
+        kMean.buildClusterer(dataSet, clusteringSettings, false);
+        return kMean.getStringBuilder().toString();
+    }
+
+    public static String clusteringImpl(SparkContext sparkContext, ADataSet dataSet, ClusteringSettings clusteringSettings) {
+        SparkSession sparkSession = new SparkSession(sparkContext);
+        KMeanImpl kMean = new KMeanImpl(sparkSession);
         kMean.buildClusterer(dataSet, clusteringSettings, false);
         return kMean.getStringBuilder().toString();
     }

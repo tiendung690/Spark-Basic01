@@ -39,6 +39,7 @@ public class DeployingTest {
         //System.out.println(Deploying.assocRules(context, memDataSet, associationSettings()));
         System.out.println(Deploying.classification(context, memDataSet, memDataSet,classifierSettings()));
         //System.out.println(Deploying.clustering(context, memDataSet, clusteringSettings()));
+       // System.out.println(Deploying.clusteringImpl(context, memDataSet, clusteringSettingsImpl()));
 
 
     }
@@ -47,8 +48,17 @@ public class DeployingTest {
         ClusteringSettings clusteringSettings = new ClusteringSettings();
         clusteringSettings.setKMeans()
                 .setK(4)
-                .setSeed(10L)
+                .setSeed(15L)
                 .setMaxIter(20);
+        return clusteringSettings;
+    }
+
+    public static ClusteringSettings clusteringSettingsImpl() {
+        ClusteringSettings clusteringSettings = new ClusteringSettings();
+        clusteringSettings.setKMeansImpl()
+                .setK(4)
+                .setSeed(15L)
+                .setMaxIterations(20);
         return clusteringSettings;
     }
 

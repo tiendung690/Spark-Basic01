@@ -121,8 +121,8 @@ public class Evaluation {
                 "\n---------------------";
     }
 
-    private void getReport2(){
-        MulticlassMetrics metrics = new MulticlassMetrics(this.predictions.select(ClassificationStrings.indexedLabelCol,ClassificationStrings.predictionCol));
+    private void getReport2() {
+        MulticlassMetrics metrics = new MulticlassMetrics(this.predictions.select(ClassificationStrings.indexedLabelCol, ClassificationStrings.predictionCol));
         // Confusion matrix
         Matrix confusion = metrics.confusionMatrix();
         System.out.println("Confusion matrix: \n" + confusion);
@@ -145,6 +145,29 @@ public class Evaluation {
         System.out.format("Weighted recall = %f\n", metrics.weightedRecall());
         System.out.format("Weighted F1 score = %f\n", metrics.weightedFMeasure());
         System.out.format("Weighted false positive rate = %f\n", metrics.weightedFalsePositiveRate());
+    }
+
+    private String getReport3() {
+        StringBuilder stringBuilder2 = new StringBuilder();
+        MulticlassMetrics metrics = new MulticlassMetrics(this.predictions.select(ClassificationStrings.indexedLabelCol, ClassificationStrings.predictionCol));
+        // Confusion matrix
+        Matrix confusion = metrics.confusionMatrix();
+        stringBuilder2 = stringBuilder2.append("Confusion matrix: \n" + confusion + "\n");
+
+        // Complette accuracy.
+        stringBuilder2 = stringBuilder2.append("Accuracy = " + metrics.accuracy());
+
+        // Stats by labels
+        for (int i = 0; i < metrics.labels().length; i++) {
+            String precision = "Class " + metrics.labels()[i] + " precision = " + metrics.precision(metrics.labels()[i]) + "\n";
+            stringBuilder2 = stringBuilder2.append(precision);
+            String recall = "Class " + metrics.labels()[i] + " recall = " + metrics.recall(metrics.labels()[i]) + "\n";
+            stringBuilder2 = stringBuilder2.append(recall);
+            String f1 = "Class " + metrics.labels()[i] + " F1 score = " + metrics.fMeasure(metrics.labels()[i]) + "\n";
+            stringBuilder2 = stringBuilder2.append(f1);
+        }
+
+        return stringBuilder2.toString();
     }
 
     public Classifier getClassifier() {
@@ -214,7 +237,7 @@ public class Evaluation {
                 break;
 
         }
-        stringBuilder = stringBuilder.append(getReport());
+        stringBuilder = stringBuilder.append(getReport3());
     }
 
 
