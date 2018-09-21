@@ -112,15 +112,15 @@ public class KMeansImpl {
     public static ArrayList<Vector> computeCenters(JavaRDD<DataModel> data, ArrayList<Vector> centers, double epsilon, int maxIterations, DistanceName distanceName) {
 
         logger.info("Selected distance metric: " + distanceName.name());
-        //JavaSparkContext jsc = new JavaSparkContext(data.context());
-        //LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
+        JavaSparkContext jsc = new JavaSparkContext(data.context());
+        LongAccumulator accumulator = jsc.sc().longAccumulator("K-means_Accumulator");
         ArrayList<Vector> clusterCenters = new ArrayList<>(centers);
         boolean condition = true;
         int iteration = 0;
 
         do {
             // Accumulator time.
-            //long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
 
             ArrayList<Vector> newClusterCenters = new ArrayList<>(clusterCenters);
 
@@ -133,8 +133,8 @@ public class KMeansImpl {
 
 
             // Accumulator time.
-            //long endTime = System.currentTimeMillis();
-            //accumulator.add(endTime - startTime);
+            long endTime = System.currentTimeMillis();
+            accumulator.add(endTime - startTime);
 
             double centersDistance = 0.0;
             for (int i = 0; i < clusterCenters.size(); i++) {

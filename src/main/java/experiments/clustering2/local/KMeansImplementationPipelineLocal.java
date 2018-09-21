@@ -36,9 +36,8 @@ public class KMeansImplementationPipelineLocal {
 
         SparkConf conf = new SparkConf()
                 .setAppName("KMeans_Implementation_rezygn_k4")
-                .set("spark.driver.allowMultipleContexts", "true")
-                .set("spark.eventLog.dir", "file:///C:/logs")
-                .set("spark.eventLog.enabled", "true")
+                //.set("spark.eventLog.dir", "file:///C:/logs")
+                //.set("spark.eventLog.enabled", "true")
                 .setMaster("local[*]");
 
         SparkContext sc = new SparkContext(conf);
@@ -46,16 +45,19 @@ public class KMeansImplementationPipelineLocal {
 
         //String path = "data/kddcup_train.txt.gz";
         //String path = "data/kdd_10_proc.txt";
-        String path = "data/serce1.csv.gz";
+        //String path = "data/serce1.csv.gz";
         //String path = "data/rezygnacje1.csv.gz";
 
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
-        memDataSet.loadDataSetCSV(path,";");
+        //memDataSet.loadDataSetCSV(path,";");
+        memDataSet.loadDataSetPARQUET("kdd_clustering");
+
 
         // Prepare data.
-        DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        //DataPrepareClustering dpc = new DataPrepareClustering();
+        //Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        Dataset<Row> preparedData = memDataSet.getDs();
 
         // Select initial centers.
         JavaRDD<Row> filteredRDD = preparedData
@@ -66,8 +68,8 @@ public class KMeansImplementationPipelineLocal {
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
                         //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
-                        v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
-                        //v1._2 == 50 || v1._2 == 2)
+                        //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                        v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 
         // Collect centers from RDD to List.
@@ -82,18 +84,18 @@ public class KMeansImplementationPipelineLocal {
         initialCenters.stream().forEach(t -> System.out.println(t));
 
         // Set k.
-        int k = initialCenters.size(); // 4;
+        int k = 23;//initialCenters.size(); // 4;
 
         // Algorithm settings.
         KMeansImplEstimator kMeansImplEstimator = new KMeansImplEstimator()
-                .setDistanceName(DistanceName.EUCLIDEAN)
+                .setDistanceName(DistanceName.CHEBYSHEV)
                 .setFeaturesCol("features")
                 .setPredictionCol("prediction")
                 .setK(k)
                 .setEpsilon(1e-4)
                 .setSeed(1L) // For random centers.
-                .setInitialCenters(initialCenters)
-                .setMaxIterations(10);
+                //.setInitialCenters(initialCenters)
+                .setMaxIterations(30);
 
         //KMeansImplModel kMeansImplModel = kMeansImplEstimator.fit(preparedData);
         //Dataset<Row> predictions = kMeansImplModel.transform(preparedData);

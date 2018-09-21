@@ -1,5 +1,6 @@
 package sparktemplate.clustering;
 
+import kmeansimplementation.pipeline.KMeansImplEstimator;
 import org.apache.spark.ml.clustering.KMeans;
 import sparktemplate.ASettings;
 
@@ -9,14 +10,22 @@ import sparktemplate.ASettings;
 public class ClusteringSettings implements ASettings {
 
     private KMeans kMeans;
+    private KMeansImplEstimator kMeansImplEstimator;
     private ClusteringName clusteringAlgo;
 
     public class ClusteringKMeans extends KMeans{}
+    public class ClusteringKMeansImpl extends KMeansImplEstimator {}
 
     public ClusteringKMeans setKMeans() {
         clusteringAlgo = ClusteringName.KMEANS;
         kMeans = new ClusteringKMeans();
         return (ClusteringKMeans) kMeans;
+    }
+
+    public ClusteringKMeansImpl setKMeansImpl(){
+        clusteringAlgo = ClusteringName.KMEANSIMPL;
+        kMeansImplEstimator = new ClusteringKMeansImpl();
+        return (ClusteringKMeansImpl) kMeansImplEstimator;
     }
 
     @Override
@@ -29,6 +38,9 @@ public class ClusteringSettings implements ASettings {
         switch (clusteringAlgo) {
             case KMEANS: {
                 return kMeans;
+            }
+            case KMEANSIMPL: {
+                return kMeansImplEstimator;
             }
             default:
                 System.out.println("Wrong type! " + clusteringAlgo);

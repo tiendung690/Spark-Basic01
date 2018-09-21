@@ -40,9 +40,8 @@ public class KmeansMLlibLocal {
 
         SparkConf conf = new SparkConf()
                 .setAppName("KMeans_MLLib_kdd_k4")
-                .set("spark.driver.allowMultipleContexts", "true")
-                .set("spark.eventLog.dir", "file:///C:/logs")
-                .set("spark.eventLog.enabled", "true")
+                //.set("spark.eventLog.dir", "file:///C:/logs")
+                //.set("spark.eventLog.enabled", "true")
                 .setMaster("local[*]");
 
 //        SparkConf conf = new SparkConf()
@@ -74,11 +73,14 @@ public class KmeansMLlibLocal {
         // Load mem data.
         MemDataSet memDataSet = new MemDataSet(spark);
         //memDataSet.loadDataSetCSV(path,true,true);
-        memDataSet.loadDataSetCSV(path,";");
+        //memDataSet.loadDataSetCSV(path,";");
+        memDataSet.loadDataSetPARQUET("kdd_clustering");
 
         // Prepare data.
         DataPrepareClustering dpc = new DataPrepareClustering();
-        Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, true).select("features"); //normFeatures //features
+        //Dataset<Row> preparedData = dpc.prepareDataSet(memDataSet.getDs(), false, false).select("features"); //normFeatures //features
+        Dataset<Row> preparedData =  memDataSet.getDs();
+
 
         // Select initial centers.
         JavaRDD<Row> filteredRDD = preparedData
@@ -88,8 +90,8 @@ public class KmeansMLlibLocal {
                 .filter((Tuple2<Row, Long> v1) ->
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150 || v1._2 == 450 || v1._2 == 500)
                         //v1._2 == 1 || v1._2 == 200 || v1._2 == 22 || v1._2 == 100 || v1._2 == 300 || v1._2 == 150)
-                        //v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
-                        v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
+                        v1._2 == 1 || v1._2 == 2 || v1._2 == 22 || v1._2 == 100)
+                        //v1._2 == 50 || v1._2 == 2 ||  v1._2 == 100)
                         //v1._2 == 50 || v1._2 == 2)
                 .map(r -> r._1);
 
@@ -117,14 +119,14 @@ public class KmeansMLlibLocal {
         // Set k.
         int k = initialCenters.size();
         // Set max iterations.
-        int maxIterations = 10;
+        int maxIterations = 30;
 
 
         // Set Mllib.KMeans initial params.
         KMeans kMeans = new KMeans()
                 .setK(k)
                 .setEpsilon(1e-4)
-                //.setSeed(20L)
+                .setSeed(1L)
                 .setMaxIterations(maxIterations)
                 //.setInitializationMode(org.apache.spark.mllib.clustering.KMeans.RANDOM());
                 .setInitialModel(new KMeansModel(initialCentersArray));
