@@ -10,6 +10,8 @@ import sparktemplate.ASettings;
 import sparktemplate.datasets.ADataSet;
 import sparktemplate.strings.ClassificationStrings;
 
+import java.util.Optional;
+
 
 /**
  * Klasa  <tt>Evaluation</tt> opisuje standardowe funkcjonalnosci obiektu
@@ -190,6 +192,11 @@ public class Evaluation {
 
         ClassifierName classificationType = ClassifierName.valueOf(classifierSettings.getAlgo());
         stringBuilder = stringBuilder.append("type: " + classificationType + "\n");
+
+        // If label not set, get decision class form last column.
+        if (!Optional.ofNullable(classifierSettings.getLabelName()).isPresent()){
+            classifierSettings.setLabelName(trainingDataSet.getDs().columns()[trainingDataSet.getDs().columns().length-1]);
+        }
 
         switch (classificationType) {
             case LINEARSVM: {
